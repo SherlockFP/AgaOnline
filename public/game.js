@@ -300,6 +300,15 @@ function attachChatListeners() {
 
 // Start game
 function startGame() {
+    // Check minimum players
+    const lobbyPlayersList = document.getElementById('lobbyPlayersList');
+    const playerCount = lobbyPlayersList ? lobbyPlayersList.children.length : 0;
+    
+    if (playerCount < 2) {
+        alert('Oyunu başlatmak için en az 2 oyuncu gerekli!');
+        return;
+    }
+    
     socket.emit('startGame');
 }
 
@@ -347,9 +356,11 @@ function buyProperty() {
 // Toggle trade panel
 function toggleTradePanel() {
     const panel = document.getElementById('tradePanel');
-    panel.classList.toggle('active');
-    if (panel.classList.contains('active')) {
+    if (panel.style.display === 'none' || !panel.style.display) {
+        panel.style.display = 'flex';
         updateTradePanel();
+    } else {
+        panel.style.display = 'none';
     }
 }
 
@@ -760,7 +771,20 @@ socket.on('gameStarted', ({ lobby, properties, currentPlayer }) => {
     const myPlayer = lobby.players.find(p => p.id === socket.id);
     updateMyProperties(properties, myPlayer);
     
+    // Update current player display
     document.getElementById('currentPlayerName').textContent = currentPlayer.name;
+    const appearanceEl = document.getElementById('currentPlayerAppearance');
+    if (appearanceEl) appearanceEl.textContent = currentPlayer.appearance || '👤';
+    
+    // Initialize dice result message
+    const diceResult = document.getElementById('diceResult');
+    if (diceResult) {
+        if (currentPlayer.id === socket.id) {
+            diceResult.textContent = '🎲 Sıra sizde! Zar atmak için butona tıklayın';
+        } else {
+            diceResult.textContent = `⏳ ${currentPlayer.name} oynuyor...`;
+        }
+    }
     
     if (currentPlayer.id === socket.id) {
         document.getElementById('rollDiceBtn').disabled = false;

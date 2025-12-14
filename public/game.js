@@ -9,13 +9,13 @@ var isHost = false;
 var soundEnabled = false;
 var socket;
 
-// Wait for DOM and socket.io to load
-window.addEventListener('DOMContentLoaded', function() {
+// Initialize socket with retry mechanism
+function initializeSocket() {
     console.log('🔌 Initializing socket...');
     
     if (typeof io === 'undefined') {
-        console.error('❌ Socket.io failed to load!');
-        alert('Connection error. Please refresh the page.');
+        console.warn('⏳ Socket.io not loaded yet, retrying...');
+        setTimeout(initializeSocket, 100);
         return;
     }
     
@@ -34,7 +34,15 @@ window.addEventListener('DOMContentLoaded', function() {
     socket.on('error', function(error) {
         console.error('❌ Socket error:', error);
     });
-});
+}
+
+// Start initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSocket);
+} else {
+    // DOM already loaded
+    initializeSocket();
+}
 
 // Simple global functions for onclick - MUST be after variable declarations
 function selectAppearance(element) {

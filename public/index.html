@@ -182,12 +182,11 @@
                         </div>
                     </div>
                     <div class="dice-controls">
-                        <button id="rollDiceBtn" class="btn-dice" onclick="rollDice()">
-                            <span class="dice-icon">🎲</span>
-                            ZAR AT
-                        </button>
                         <button id="endTurnBtn" class="btn-end-turn" onclick="endTurn()" disabled>
                             TURU BİTİR
+                        </button>
+                        <button class="btn-trade-header" onclick="toggleTradePanel()">
+                            💰 TRADE
                         </button>
                     </div>
                 </div>
@@ -237,8 +236,9 @@
                                     <div id="diceResult" class="dice-result">Zar atmak için butona tıklayın</div>
                                 </div>
                                 <button class="btn-trade-center" onclick="toggleTradePanel()">
-                                    💰 TRADE YAP
-                                </button>
+                                    💰 Tid="rollDiceBtn" class="btn-dice-center" onclick="rollDice()">
+                                    <span class="dice-icon">🎲</span>
+                                    ZAR AT
                             </div>
                         </div>
                     </div>
@@ -271,8 +271,7 @@
                                 <h4>Vereceğin Para</h4>
                                 <input type="number" id="offerMoney" min="0" value="0">
                             </div>
-                 sounds.js"></script>
-    <script src="           <div class="trade-section">
+                            <div class="trade-section">
                                 <h4>İstediğin Mülkler</h4>
                                 <div id="requestPropertiesList"></div>
                                 <h4>İstediğin Para</h4>
@@ -300,6 +299,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Custom Notification System -->
+    <div id="notificationContainer" class="notification-container"></div>
 
     <script src="sounds.js"></script>
     <script src="/socket.io/socket.io.js"></script>

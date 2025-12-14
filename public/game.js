@@ -8,6 +8,125 @@ var currentTrade = null;
 var isHost = false;
 var soundEnabled = false;
 var socket;
+var isJoiningLobby = false;
+
+// Currency symbols by country
+var currencySymbols = {
+    usa: '$',
+    turkey: '₺',
+    germany: '€',
+    japan: '¥',
+    china: '¥',
+    russia: '₽',
+    world: '$'
+};
+
+// Custom Notification System
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    
+    notification.innerHTML = `
+        <span class="notification-icon">${icons[type] || icons.info}</span>
+        <span class="notification-message">${message}</span>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
+}
+
+// Replace all alerts with notifications
+window.alert = function(message) {
+    showNotification(message, 'info');
+};
+
+// Get currency symbol based on selected country
+function getCurrencySymbol() {
+    return currencySymbols[selectedCountry] || '$';
+}
+
+// Format money with currency
+function formatMoney(amount) {
+    return getCurrencySymbol() + amount.toLocaleString();
+}
+
+// Show property popup
+function showPropertyPopup(property) {
+    // Remove existing popup if any
+    const existingPopup = document.querySelector('.property-popup');
+    const existingOverlay = document.querySelector('.popup-overlay');
+    if (existingPopup) existingPopup.remove();
+    if (existingOverlay) existingOverlay.remove();
+    
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.onclick = closePropertyPopup;
+    
+    // Create popup
+    const popup = document.createElement('div');
+    popup.className = 'property-popup';
+    
+    const currency = getCurrencySymbol();
+    const canBuy = !property.owner && gameState.players.find(p => p.id === socket.id).money >= property.price;
+    
+    popup.innerHTML = `
+        <div class="property-popup-header">
+            ${property.color ? `<div class="property-popup-color-bar" style="background: ${getColorCode(property.color)}"></div>` : ''}
+            <div class="property-popup-name">${property.name}</div>
+            <div class="property-popup-price">${formatMoney(property.price)}</div>
+        </div>
+        <div class="property-popup-details">
+            ${property.rent ? `<div class="property-detail-row">
+                <span class="property-detail-label">Kira:</span>
+                <span class="property-detail-value">${currency}${property.rent}</span>
+            </div>` : ''}
+            ${property.rentWithHouse ? `<div class="property-detail-row">
+                <span class="property-detail-label">1 Ev ile:</span>
+                <span class="property-detail-value">${currency}${property.rentWithHouse}</span>
+            </div>` : ''}
+            ${property.housePrice ? `<div class="property-detail-row">
+                <span class="property-detail-label">Ev Fiyatı:</span>
+                <span class="property-detail-value">${currency}${property.housePrice}</span>
+            </div>` : ''}
+            ${property.owner ? `<div class="property-detail-row">
+                <span class="property-detail-label">Sahibi:</span>
+                <span class="property-detail-value">${gameState.players.find(p => p.id === property.owner)?.name || 'Bilinmeyen'}</span>
+            </div>` : ''}
+        </div>
+        <div class="property-popup-actions">
+            ${canBuy ? `<button class="btn-popup-action btn-popup-buy" onclick="buyProperty()">
+                💰 Satın Al
+            </button>` : ''}
+            <button class="btn-popup-action btn-popup-close" onclick="closePropertyPopup()">
+                ${canBuy ? 'İptal' : 'Kapat'}
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(popup);
+}
+
+function closePropertyPopup() {
+    const popup = document.querySelector('.property-popup');
+    const overlay = document.querySelector('.popup-overlay');
+    if (popup) popup.remove();
+    if (overlay) overlay.remove();
+}
 
 // Initialize socket immediately - socket.io is already loaded
 console.log('🔌 Initializing socket...');
@@ -229,18 +348,27 @@ function showLobbies() {
 // Join lobby
 function joinLobby(lobbyId) {
     // Prevent duplicate joins
-    if (currentLobbyId) {
-        console.log('Already in a lobby');
+    if (currentLobbyId || isJoiningLobby) {
+        console.log('Already in a lobby or joining');
+        showNotification('Zaten bir lobiye katılıyorsunuz!', 'warning');
         return;
     }
     
     const playerName = document.getElementById('playerNameInput').value.trim();
     if (!playerName) {
-        alert('Lütfen isminizi girin!');
+        showNotification('Lütfen isminizi girin!', 'warning');
         return;
     }
-    isHost = false;
+    isJoiningLobby = true;
     console.log('🚪 Joining lobby:', { lobbyId, playerName, appearance: selectedAppearance });
+    socket.emit('joinLobby', { lobbyId, playerName, appearance: selectedAppearance });
+    
+    // Reset flag after 2 seconds if no response
+    setTimeout(() => {
+        if (!currentLobbyId) {
+            isJoiningLobby = false;
+        }
+    }, 2000arance });
     socket.emit('joinLobby', { lobbyId, playerName, appearance: selectedAppearance });
 }
 
@@ -357,6 +485,8 @@ function endTurn() {
 // Buy property
 function buyProperty() {
     socket.emit('buyProperty');
+    closePropertyPopup();
+    showNotification('Mülk satın alındı!', 'success');
 }
 
 // Toggle trade panel
@@ -677,6 +807,7 @@ socket.on('lobbiesUpdate', (lobbies) => {
 socket.on('lobbyJoined', ({ lobbyId, lobby }) => {
     console.log('✅ Joined lobby successfully!', { lobbyId, lobby });
     
+    isJoiningLobby = false;
     currentLobbyId = lobbyId;
     currentPlayerId = socket.id;
     isHost = lobby.hostId === socket.id;
@@ -843,15 +974,10 @@ socket.on('diceRolled', ({ dice1, dice2, player, landedSpace, message }) => {
     if (landedSpace) {
         addMessage(`📍 <strong>${player.name}</strong> ${landedSpace.name} karesine geldi`, 'default');
         
-        // Show buy button if property is available
+        // Show property popup if available and it's my turn
         if ((landedSpace.type === 'property' || landedSpace.type === 'railroad' || landedSpace.type === 'utility') 
-            && !landedSpace.owner && player.id === socket.id) {
-            const buyBtn = document.createElement('button');
-            buyBtn.className = 'btn btn-primary btn-small';
-            buyBtn.textContent = `Satın Al ($${landedSpace.price})`;
-            buyBtn.onclick = buyProperty;
-            buyBtn.style.marginTop = '10px';
-            document.getElementById('boardMessages').appendChild(buyBtn);
+            && player.id === socket.id) {
+            showPropertyPopup(landedSpace);
         }
     }
     

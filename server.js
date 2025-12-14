@@ -459,13 +459,19 @@ io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
   socket.on('createLobby', ({ playerName, country, appearance }) => {
+    console.log('🎮 Creating lobby:', { playerName, country, appearance, socketId: socket.id });
+    
     const lobby = new Lobby(socket.id, playerName, country || 'usa', appearance || '👤');
     lobbies.set(lobby.id, lobby);
     players.set(socket.id, { lobbyId: lobby.id, name: playerName });
     
     socket.join(lobby.id);
+    console.log('✅ Lobby created:', lobby.id);
+    
     socket.emit('lobbyCreated', { lobbyId: lobby.id, lobby: lobby.toJSON() });
     io.emit('lobbiesUpdate', Array.from(lobbies.values()).map(l => l.toJSON()));
+    
+    console.log('📤 Sent lobbyCreated event to client');
   });
 
   socket.on('getLobbies', () => {

@@ -8,21 +8,35 @@ let selectedCountry = 'usa';
 let selectedAppearance = '👤';
 let isHost = false;
 
+// Socket connection debugging
+socket.on('connect', () => {
+    console.log('✅ Socket connected:', socket.id);
+});
+
+socket.on('disconnect', () => {
+    console.log('❌ Socket disconnected');
+});
+
+socket.on('error', (error) => {
+    console.error('❌ Socket error:', error);
+    alert('Error: ' + error);
+});
+
 // Simple global functions for onclick
 function selectAppearance(element) {
-    console.log('Appearance clicked via onclick');
+    console.log('✨ Appearance clicked via onclick');
     document.querySelectorAll('.appearance-card').forEach(c => c.classList.remove('selected'));
     element.classList.add('selected');
     selectedAppearance = element.getAttribute('data-appearance');
-    console.log('Selected appearance:', selectedAppearance);
+    console.log('✅ Selected appearance:', selectedAppearance);
 }
 
 function selectCountry(element) {
-    console.log('Country clicked via onclick');
+    console.log('🌍 Country clicked via onclick');
     document.querySelectorAll('.country-card').forEach(c => c.classList.remove('selected'));
     element.classList.add('selected');
     selectedCountry = element.getAttribute('data-country');
-    console.log('Selected country:', selectedCountry);
+    console.log('✅ Selected country:', selectedCountry);
 }
 
 // Initialize sound manager after user interaction
@@ -164,11 +178,17 @@ function createLobby() {
         return;
     }
     
-    console.log('Creating lobby with:', {
+    console.log('🎮 Creating lobby with:', {
         playerName,
         country: selectedCountry,
-        appearance: selectedAppearance
+        appearance: selectedAppearance,
+        socketConnected: socket.connected
     });
+    
+    if (!socket.connected) {
+        alert('Sunucuya bağlanılamadı! Lütfen sayfayı yenileyin.');
+        return;
+    }
     
     if (soundEnabled && window.soundManager) {
         try {
@@ -178,6 +198,7 @@ function createLobby() {
     
     isHost = true;
     socket.emit('createLobby', { playerName, country: selectedCountry, appearance: selectedAppearance });
+    console.log('📤 Lobby creation request sent');
 }
 
 // Show lobbies
@@ -552,6 +573,8 @@ function getColorCode(color) {
 
 // Socket event listeners
 socket.on('lobbyCreated', ({ lobbyId, lobby }) => {
+    console.log('✅ Lobby created successfully!', { lobbyId, lobby });
+    
     currentLobbyId = lobbyId;
     currentPlayerId = socket.id;
     isHost = lobby.hostId === socket.id;
@@ -562,13 +585,18 @@ socket.on('lobbyCreated', ({ lobbyId, lobby }) => {
     updateLobbyPlayers(lobby.players, lobby.hostId);
     updateLobbyChat(lobby.chatMessages);
     updateLobbySettings(lobby.settings);
+    
+    console.log('🔄 Switching to lobby screen...');
     showScreen('lobbyScreen');
     attachChatListeners();
     
     if (isHost) {
         document.getElementById('startGameBtn').style.display = 'block';
         document.getElementById('lobbySettings').style.display = 'block';
+        console.log('👑 You are the host!');
     }
+    
+    console.log('✅ Lobby screen loaded');
 });
 
 socket.on('lobbiesUpdate', (lobbies) => {

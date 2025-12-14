@@ -702,7 +702,7 @@ function updatePlayersInfo(players, currentPlayerId) {
                 <div class="player-appearance">${player.appearance || '👤'}</div>
                 <div class="player-name">${player.name}</div>
             </div>
-            <div class="player-money">💰 $${player.money.toLocaleString()}</div>
+            <div class="player-money">💰 ${formatMoney(player.money)}</div>
             <div class="player-properties-count">🏠 ${player.properties.length} Mülk</div>
             ${player.inJail ? '<div style="color: #ef4444; font-weight: 700; margin-top: 5px;">⛓️ HAPİSTE</div>' : ''}
         `;

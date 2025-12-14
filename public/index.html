@@ -100,6 +100,45 @@
                 
                 <div class="lobby-layout-pro">
                     <div class="lobby-left-pro">
+                        <!-- Character & Color Selection -->
+                        <div class="lobby-card-pro customization-section">
+                            <div class="card-header-pro">
+                                <h3>🎨 Özelleştirme</h3>
+                            </div>
+                            <div class="card-content-pro">
+                                <div class="customization-group">
+                                    <label class="custom-label">Karakter Seç:</label>
+                                    <div class="character-selector">
+                                        <div class="character-option" data-char="🎩" onclick="selectCharacter(this)">🎩</div>
+                                        <div class="character-option" data-char="🚗" onclick="selectCharacter(this)">🚗</div>
+                                        <div class="character-option" data-char="🐶" onclick="selectCharacter(this)">🐶</div>
+                                        <div class="character-option" data-char="🐱" onclick="selectCharacter(this)">🐱</div>
+                                        <div class="character-option" data-char="🎸" onclick="selectCharacter(this)">🎸</div>
+                                        <div class="character-option" data-char="⚽" onclick="selectCharacter(this)">⚽</div>
+                                        <div class="character-option" data-char="🎮" onclick="selectCharacter(this)">🎮</div>
+                                        <div class="character-option" data-char="🚀" onclick="selectCharacter(this)">🚀</div>
+                                    </div>
+                                </div>
+                                <div class="customization-group">
+                                    <label class="custom-label">Renk Seç:</label>
+                                    <div class="color-selector" id="colorSelector">
+                                        <div class="color-option" data-color="#ef4444" style="background: #ef4444;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#f59e0b" style="background: #f59e0b;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#10b981" style="background: #10b981;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#3b82f6" style="background: #3b82f6;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#ec4899" style="background: #ec4899;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#14b8a6" style="background: #14b8a6;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#f97316" style="background: #f97316;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#84cc16" style="background: #84cc16;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#06b6d4" style="background: #06b6d4;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#a855f7" style="background: #a855f7;" onclick="selectColor(this)"></div>
+                                        <div class="color-option" data-color="#f43f5e" style="background: #f43f5e;" onclick="selectColor(this)"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
                         <div class="lobby-card-pro players-section-pro">
                             <div class="card-header-pro">
                                 <h3>👥 Oyuncular <span id="playerCount" class="player-count-badge">0/6</span></h3>

@@ -382,10 +382,17 @@ class Lobby {
     };
   }
 
-  addPlayer(playerId, playerName, appearance = '👤') {
-    const colors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00', '#FF00FF', '#00FFFF'];
+  addPlayer(playerId, playerName, appearance = '👤', color = null) {
+    // Use player-selected color or assign one
     const usedColors = this.players.map(p => p.color);
-    const availableColor = colors.find(c => !usedColors.includes(c)) || '#FFFFFF';
+    let playerColor = color;
+    
+    // If color is already taken or not provided, don't allow
+    if (!playerColor || usedColors.includes(playerColor)) {
+      const defaultColors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899',
+                             '#14b8a6', '#f97316', '#84cc16', '#06b6d4', '#a855f7', '#f43f5e'];
+      playerColor = defaultColors.find(c => !usedColors.includes(c)) || '#94a3b8';
+    }
     
     this.players.push({
       id: playerId,
@@ -395,7 +402,7 @@ class Lobby {
       properties: [],
       inJail: false,
       jailTurns: 0,
-      color: availableColor,
+      color: playerColor,
       appearance: appearance
     });
   }
@@ -478,7 +485,7 @@ io.on('connection', (socket) => {
     socket.emit('lobbiesUpdate', Array.from(lobbies.values()).map(l => l.toJSON()));
   });
 
-  socket.on('joinLobby', ({ lobbyId, playerName, appearance }) => {
+  socket.on('joinLobby', ({ lobbyId, playerName, appearance, color }) => {
     const lobby = lobbies.get(lobbyId);
     if (!lobby) {
       socket.emit('error', 'Lobby not found');
@@ -493,7 +500,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    lobby.addPlayer(socket.id, playerName, appearance || '👤');
+    lobby.addPlayer(socket.id, playerName, appearance || '👤', color);
     players.set(socket.id, { lobbyId: lobby.id, name: playerName });
     
     socket.join(lobbyId);

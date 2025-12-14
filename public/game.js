@@ -1,6 +1,8 @@
 // Global variables - MUST be declared first
 var selectedCountry = 'usa';
-var selectedAppearance = '👤';
+var selectedAppearance = '🎩';
+var selectedColor = '#ef4444';
+var usedColors = [];
 var currentLobbyId = null;
 var currentPlayerId = null;
 var gameState = null;
@@ -381,8 +383,8 @@ function joinLobby(lobbyId) {
         return;
     }
     isJoiningLobby = true;
-    console.log('🚪 Joining lobby:', { lobbyId, playerName, appearance: selectedAppearance });
-    socket.emit('joinLobby', { lobbyId, playerName, appearance: selectedAppearance });
+    console.log('🚪 Joining lobby:', { lobbyId, playerName, appearance: selectedAppearance, color: selectedColor });
+    socket.emit('joinLobby', { lobbyId, playerName, appearance: selectedAppearance, color: selectedColor });
     
     // Reset flag after 2 seconds if no response
     setTimeout(function() {
@@ -390,6 +392,45 @@ function joinLobby(lobbyId) {
             isJoiningLobby = false;
         }
     }, 2000);
+}
+
+// Character selection
+function selectCharacter(element) {
+    document.querySelectorAll('.character-option').forEach(function(el) {
+        el.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    selectedAppearance = element.getAttribute('data-char');
+    console.log('✅ Selected character:', selectedAppearance);
+}
+
+// Color selection
+function selectColor(element) {
+    if (element.classList.contains('taken')) {
+        showNotification('Bu renk başka bir oyuncu tarafından kullanılıyor!', 'warning');
+        return;
+    }
+    
+    document.querySelectorAll('.color-option').forEach(function(el) {
+        el.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    selectedColor = element.getAttribute('data-color');
+    console.log('✅ Selected color:', selectedColor);
+}
+
+// Update available colors based on lobby players
+function updateAvailableColors(players) {
+    usedColors = players.map(function(p) { return p.color; }).filter(Boolean);
+    
+    document.querySelectorAll('.color-option').forEach(function(el) {
+        var color = el.getAttribute('data-color');
+        if (usedColors.includes(color)) {
+            el.classList.add('taken');
+        } else {
+            el.classList.remove('taken');
+        }
+    });
 }
 
 // Back to menu
@@ -679,8 +720,6 @@ function updatePlayerPositions(players) {
         token.remove(); 
     });
     
-    const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-    
     // Add tokens for each player
     players.forEach(function(player, index) {
         const space = document.getElementById('space-' + player.position);
@@ -688,7 +727,8 @@ function updatePlayerPositions(players) {
             const token = document.createElement('div');
             token.className = 'player-token-pro';
             token.setAttribute('data-player-id', player.id);
-            const playerColor = colors[index % colors.length];
+            // Use player's selected color
+            const playerColor = player.color || '#94a3b8';
             token.style.backgroundColor = playerColor;
             token.style.borderColor = playerColor;
             token.style.left = ((index % 3) * 18 + 2) + 'px';
@@ -811,6 +851,15 @@ function getColorCode(color) {
     updateLobbyPlayers(lobby.players, lobby.hostId);
     updateLobbyChat(lobby.chatMessages);
     updateLobbySettings(lobby.settings);
+    updateAvailableColors(lobby.players);
+    
+    // Set default selections
+    var defaultChar = document.querySelector('.character-option[data-char="🎩"]');
+    if (defaultChar) defaultChar.classList.add('selected');
+    var defaultColor = document.querySelector('.color-option[data-color="#ef4444"]');
+    if (defaultColor && !defaultColor.classList.contains('taken')) {
+        defaultColor.classList.add('selected');
+    }
     
     console.log('🔄 Switching to lobby screen...');
     showScreen('lobbyScreen');
@@ -870,6 +919,7 @@ socket.on('lobbyUpdate', (lobby) => {
     console.log('🔄 Lobby updated:', lobby);
     updateLobbyPlayers(lobby.players, lobby.hostId);
     updateLobbyChat(lobby.chatMessages);
+    updateAvailableColors(lobby.players);
     
     if (lobby.hostId === socket.id) {
         document.getElementById('startGameBtn').style.display = 'block';
@@ -1391,22 +1441,33 @@ function updateChatTargets(players) {
 function updatePropertyColors() {
     if (!gameState || !gameState.properties) return;
     
-    var colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-    
     gameState.properties.forEach(function(property) {
         var spaceEl = document.getElementById('space-' + property.id);
         if (!spaceEl) return;
         
         if (property.owner) {
-            var playerIndex = gameState.players.findIndex(function(p) { return p.id === property.owner; });
-            if (playerIndex >= 0) {
-                var ownerColor = colors[playerIndex % colors.length];
-                spaceEl.style.boxShadow = '0 0 0 3px ' + ownerColor + ', 0 4px 8px rgba(0,0,0,0.3)';
-                spaceEl.style.borderColor = ownerColor;
+            var owner = gameState.players.find(function(p) { return p.id === property.owner; });
+            if (owner && owner.color) {
+                // Full background color with transparency
+                var rgbaColor = hexToRgba(owner.color, 0.4);
+                spaceEl.style.background = 'linear-gradient(145deg, ' + rgbaColor + ', ' + hexToRgba(owner.color, 0.2) + ')';
+                spaceEl.style.boxShadow = '0 0 0 4px ' + owner.color + ', 0 6px 12px rgba(0,0,0,0.4), inset 0 0 20px ' + rgbaColor;
+                spaceEl.style.borderColor = owner.color;
+                spaceEl.style.borderWidth = '3px';
             }
         } else {
+            spaceEl.style.background = 'linear-gradient(145deg, #ffffff, #f7fafc)';
             spaceEl.style.boxShadow = '';
-            spaceEl.style.borderColor = '';
+            spaceEl.style.borderColor = '#2d3748';
+            spaceEl.style.borderWidth = '2px';
         }
     });
+}
+
+// Helper function to convert hex to rgba
+function hexToRgba(hex, alpha) {
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
 }

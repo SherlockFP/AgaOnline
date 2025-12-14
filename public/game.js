@@ -640,7 +640,12 @@ socket.on('lobbiesUpdate', (lobbies) => {
         list.appendChild(item);
     });
     
-    if (lobbies.Joined', ({ lobbyId, lobby }) => {
+    if (lobbies.filter(l => !l.started).length === 0) {
+        list.innerHTML = '<p style="text-align: center; color: #718096;">Henüz lobi yok</p>';
+    }
+});
+
+socket.on('lobbyJoined', ({ lobbyId, lobby }) => {
     console.log('✅ Joined lobby successfully!', { lobbyId, lobby });
     
     currentLobbyId = lobbyId;
@@ -670,12 +675,7 @@ socket.on('lobbyUpdate', (lobby) => {
 });
 
 socket.on('chatMessage', (message) => {
-    console.log('💬 Chat message received:', message);ameBtn').style.display = 'block';
-        document.getElementById('lobbySettings').style.display = 'block';
-    }
-});
-
-socket.on('chatMessage', (message) => {
+    console.log('💬 Chat message received:', message);
     addChatMessage(message);
 });
 

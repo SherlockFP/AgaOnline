@@ -229,7 +229,12 @@ function showLobbies() {
 // Join lobby
 function joinLobby(lobbyId) {
     const playerName = document.getElementById('playerNameInput').value.trim();
+    if (!playerName) {
+        alert('Lütfen isminizi girin!');
+        return;
+    }
     isHost = false;
+    console.log('🚪 Joining lobby:', { lobbyId, playerName, appearance: selectedAppearance });
     socket.emit('joinLobby', { lobbyId, playerName, appearance: selectedAppearance });
 }
 
@@ -456,17 +461,20 @@ function rejectTrade() {
 }
 
 // Add message to board
-function addMessage(text) {
-    const messagesDiv = document.getElementById('boardMessages');
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'board-message';
-    msgDiv.textContent = text;
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    
-    // Keep only last 5 messages
-    while (messagesDiv.children.length > 5) {
-        messagesDiv.removeChild(messagesDiv.firstChild);
+function addMessage(text, type = 'default') {
+    // Add to activity log
+    const activityLog = document.getElementById('activityLog');
+    if (activityLog) {
+        const item = document.createElement('div');
+        item.className = `activity-item ${type}`;
+        const timestamp = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        item.innerHTML = `<span style="opacity: 0.6; font-size: 0.85em;">[${timestamp}]</span> ${text}`;
+        activityLog.insertBefore(item, activityLog.firstChild);
+        
+        // Keep only last 50 messages
+        while (activityLog.children.length > 50) {
+            activityLog.removeChild(activityLog.lastChild);
+        }
     }
 }
 
@@ -528,17 +536,16 @@ function updatePlayersInfo(players, currentPlayerId) {
     
     players.forEach(player => {
         const card = document.createElement('div');
-        card.className = `player-card ${player.id === currentPlayerId ? 'active' : ''}`;
-        card.style.borderLeftColor = player.color;
+        card.className = `player-item-pro ${player.id === currentPlayerId ? 'active-turn' : ''}`;
         
         card.innerHTML = `
-            <div class="player-card-header">
-                <div class="player-color" style="background-color: ${player.color}"></div>
-                <div class="player-card-name">${player.name}</div>
+            <div class="player-header">
+                <div class="player-appearance">${player.appearance || '👤'}</div>
+                <div class="player-name">${player.name}</div>
             </div>
-            <div class="player-card-money">$${player.money}</div>
-            <div class="player-card-properties">${player.properties.length} mülk</div>
-            ${player.inJail ? '<div style="color: red; font-weight: bold;">HAP─░STE</div>' : ''}
+            <div class="player-money">💰 $${player.money.toLocaleString()}</div>
+            <div class="player-properties-count">🏠 ${player.properties.length} Mülk</div>
+            ${player.inJail ? '<div style="color: #ef4444; font-weight: 700; margin-top: 5px;">⛓️ HAPİSTE</div>' : ''}
         `;
         
         playersDiv.appendChild(card);
@@ -551,19 +558,22 @@ function updateMyProperties(properties, myPlayer) {
     propertiesDiv.innerHTML = '';
     
     if (myPlayer.properties.length === 0) {
-        propertiesDiv.innerHTML = '<p style="color: #718096; text-align: center;">Henüz mülkünüz yok</p>';
+        propertiesDiv.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center;">Henüz mülkünüz yok</p>';
         return;
     }
     
     myPlayer.properties.forEach(propId => {
         const prop = properties[propId];
         const card = document.createElement('div');
-        card.className = 'property-card';
+        card.className = 'property-item-pro';
         card.style.borderLeftColor = getColorCode(prop.color);
         
         card.innerHTML = `
-            <div class="property-card-name">${prop.name}</div>
-            <div class="property-card-value">$${prop.price}</div>
+            <div class="property-name">${prop.name}</div>
+            <div class="property-details">
+                <span>💵 $${prop.price}</span>
+                <span>🏘️ ${prop.houses || 0}</span>
+            </div>
         `;
         
         propertiesDiv.appendChild(card);
@@ -630,17 +640,37 @@ socket.on('lobbiesUpdate', (lobbies) => {
         list.appendChild(item);
     });
     
-    if (lobbies.filter(l => !l.started).length === 0) {
-        list.innerHTML = '<p style="text-align: center; color: #718096;">Henüz lobi yok</p>';
-    }
+    if (lobbies.Joined', ({ lobbyId, lobby }) => {
+    console.log('✅ Joined lobby successfully!', { lobbyId, lobby });
+    
+    currentLobbyId = lobbyId;
+    currentPlayerId = socket.id;
+    isHost = lobby.hostId === socket.id;
+    
+    document.getElementById('inviteLinkText').textContent = 
+        `${window.location.origin}?lobby=${lobbyId}`;
+    
+    updateLobbyPlayers(lobby.players, lobby.hostId);
+    updateLobbyChat(lobby.chatMessages);
+    updateLobbySettings(lobby.settings);
+    
+    showScreen('lobbyScreen');
+    attachChatListeners();
 });
 
 socket.on('lobbyUpdate', (lobby) => {
+    console.log('🔄 Lobby updated:', lobby);
     updateLobbyPlayers(lobby.players, lobby.hostId);
     updateLobbyChat(lobby.chatMessages);
     
     if (lobby.hostId === socket.id) {
         document.getElementById('startGameBtn').style.display = 'block';
+        document.getElementById('lobbySettings').style.display = 'block';
+    }
+});
+
+socket.on('chatMessage', (message) => {
+    console.log('💬 Chat message received:', message);ameBtn').style.display = 'block';
         document.getElementById('lobbySettings').style.display = 'block';
     }
 });
@@ -740,17 +770,24 @@ socket.on('gameStarted', ({ lobby, properties, currentPlayer }) => {
 });
 
 socket.on('diceRolled', ({ dice1, dice2, player, landedSpace, message }) => {
-    document.getElementById('dice1').textContent = dice1;
-    document.getElementById('dice2').textContent = dice2;
+    // Update dice display
+    const dice1El = document.getElementById('dice1');
+    const dice2El = document.getElementById('dice2');
+    const diceResult = document.getElementById('diceResult');
     
-    addMessage(`${player.name} ${dice1} ve ${dice2} attı (Toplam: ${dice1 + dice2})`);
+    if (dice1El) dice1El.querySelector('.dice-dot').textContent = dice1;
+    if (dice2El) dice2El.querySelector('.dice-dot').textContent = dice2;
+    if (diceResult) diceResult.textContent = `🎲 Toplam: ${dice1 + dice2}`;
+    
+    // Add to activity log with type
+    addMessage(`🎲 <strong>${player.appearance || '👤'} ${player.name}</strong> zar attı: ${dice1} + ${dice2} = ${dice1 + dice2}`, 'dice-roll');
     
     if (message) {
-        addMessage(message);
+        addMessage(message, 'default');
     }
     
     if (landedSpace) {
-        addMessage(`${player.name} ${landedSpace.name} karesine geldi`);
+        addMessage(`📍 <strong>${player.name}</strong> ${landedSpace.name} karesine geldi`, 'default');
         
         // Show buy button if property is available
         if ((landedSpace.type === 'property' || landedSpace.type === 'railroad' || landedSpace.type === 'utility') 
@@ -773,14 +810,19 @@ socket.on('diceRolled', ({ dice1, dice2, player, landedSpace, message }) => {
 });
 
 socket.on('propertyBought', ({ player, property }) => {
-    addMessage(`${player.name} ${property.name} satın aldı!`);
+    addMessage(`🏠 <strong>${player.name}</strong> ${property.name} satın aldı! ($${property.price})`, 'property-buy');
 });
 
 socket.on('rentDue', ({ player, owner, amount, property }) => {
-    addMessage(`${player.name} ${owner.name}'e ${amount}$ kira ödemeli (${property.name})`);
+    addMessage(`💰 <strong>${player.name}</strong> ${owner.name}'e $${amount} kira ödemeli (${property.name})`, 'rent-paid');
     
     if (player.id === socket.id) {
         socket.emit('payRent', { amount, toPlayerId: owner.id });
+    }
+});
+
+socket.on('rentPaid', ({ fromPlayer, toPlayer, amount }) => {
+    addMessage(`💸 <strong>${fromPlayer.name}</strong> ${toPlayer.name}'e $${amount} kira ödedi`, 'rent-paid');
     
     // Play money sound
     if (soundEnabled && window.soundManager) {
@@ -789,25 +831,20 @@ socket.on('rentDue', ({ player, owner, amount, property }) => {
         } else if (toPlayer.id === socket.id) {
             window.soundManager.moneyReceived();
         }
+    }
+});
+
+socket.on('taxPaid', ({ player, amount }) => {
+    addMessage(`💵 <strong>${player.name}</strong> $${amount} vergi ödedi`, 'default');
+});
+
+socket.on('playerJailed', (player) => {
+    addMessage(`⛓️ <strong>${player.name}</strong> hapse gönderildi!`, 'default');
     
     // Play jail sound
     if (soundEnabled && window.soundManager) {
         window.soundManager.jailSound();
     }
-    }
-    }
-});
-
-socket.on('rentPaid', ({ fromPlayer, toPlayer, amount }) => {
-    addMessage(`${fromPlayer.name} ${toPlayer.name}'e ${amount}$ kira ödedi`);
-});
-
-socket.on('taxPaid', ({ player, amount }) => {
-    addMessage(`${player.name} ${amount}$ vergi ödedi`);
-});
-
-socket.on('playerJailed', (player) => {
-    addMessage(`${player.name} hapse gönderildi!`);
 });
 // Play turn change sound
     if (soundEnabled && window.soundManager) {
@@ -835,8 +872,23 @@ socket.on('gameUpdate', ({ players, properties }) => {
 });
 
 socket.on('turnChanged', (currentPlayer) => {
+    // Update top bar
     document.getElementById('currentPlayerName').textContent = currentPlayer.name;
-    addMessage(`Sıra: ${currentPlayer.name}`);
+    const appearanceEl = document.getElementById('currentPlayerAppearance');
+    if (appearanceEl) appearanceEl.textContent = currentPlayer.appearance || '👤';
+    
+    // Add to activity log
+    addMessage(`🔄 Sıra değişti: <strong>${currentPlayer.appearance || '👤'} ${currentPlayer.name}</strong>`, 'turn-change');
+    
+    // Update dice result
+    const diceResult = document.getElementById('diceResult');
+    if (diceResult) {
+        if (currentPlayer.id === socket.id) {
+            diceResult.textContent = '🎲 Sıra sizde! Zar atmak için butona tıklayın';
+        } else {
+            diceResult.textContent = `⏳ ${currentPlayer.name} oynuyor...`;
+        }
+    }
     
     if (currentPlayer.id === socket.id) {
         document.getElementById('rollDiceBtn').disabled = false;

@@ -675,37 +675,60 @@ function initializeBoard(properties) {
 // Update player positions
 function updatePlayerPositions(players) {
     // Remove all existing tokens
-    document.querySelectorAll('.player-token').forEach(token => token.remove());
+    document.querySelectorAll('.player-token-pro').forEach(function(token) { 
+        token.remove(); 
+    });
     
     const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
     
     // Add tokens for each player
-    players.forEach((player, index) => {
-        const space = document.getElementById(`space-${player.position}`);
+    players.forEach(function(player, index) {
+        const space = document.getElementById('space-' + player.position);
         if (space) {
             const token = document.createElement('div');
-            token.className = 'player-token-pro moving';
+            token.className = 'player-token-pro';
+            token.setAttribute('data-player-id', player.id);
             const playerColor = colors[index % colors.length];
             token.style.backgroundColor = playerColor;
             token.style.borderColor = playerColor;
-            token.style.left = `${(index % 3) * 18 + 2}px`;
-            token.style.top = `${Math.floor(index / 3) * 18 + 2}px`;
+            token.style.left = ((index % 3) * 18 + 2) + 'px';
+            token.style.top = (Math.floor(index / 3) * 18 + 2) + 'px';
             
             // Add player name inside token
             token.innerHTML = `
                 <div class="token-appearance">${player.appearance || '👤'}</div>
                 <div class="token-name">${player.name}</div>
             `;
-            token.title = `${player.name} - $${player.money}`;
+            token.title = player.name + ' - ' + formatMoney(player.money);
             
             space.appendChild(token);
-            
-            // Remove moving class after animation
-            setTimeout(() => {
-                token.classList.remove('moving');
-            }, 600);
         }
     });
+}
+
+// Animate token movement
+function animateTokenMovement(player, newPosition, callback) {
+    var token = document.querySelector('.player-token-pro[data-player-id="' + player.id + '"]');
+    if (!token) {
+        // If no token, just update positions and callback
+        if (gameState) {
+            updatePlayerPositions(gameState.players);
+        }
+        if (callback) callback();
+        return;
+    }
+    
+    // Add jump animation
+    token.classList.add('token-jumping');
+    
+    setTimeout(function() {
+        token.classList.remove('token-jumping');
+        // Update all positions
+        if (gameState) {
+            updatePlayerPositions(gameState.players);
+        }
+        if (callback) callback();
+    }, 600);
 }
 
 // Update players info
@@ -967,11 +990,22 @@ socket.on('gameStarted', ({ lobby, properties, currentPlayer }) => {
         }
     }
     
-    if (currentPlayer.id === socket.id) {
-        document.getElementById('rollDiceBtn').disabled = false;
-    } else {
-        document.getElementById('rollDiceBtn').disabled = true;
+    // Set initial button state
+    var rollDiceBtn = document.getElementById('rollDiceBtn');
+    if (rollDiceBtn) {
+        if (currentPlayer.id === socket.id) {
+            rollDiceBtn.disabled = false;
+            rollDiceBtn.style.opacity = '1';
+            rollDiceBtn.style.cursor = 'pointer';
+        } else {
+            rollDiceBtn.disabled = true;
+            rollDiceBtn.style.opacity = '0.5';
+            rollDiceBtn.style.cursor = 'not-allowed';
+        }
     }
+    
+    // Initialize chat targets
+    updateChatTargets(lobby.players);
 });
 
 socket.on('diceRolled', function(data) {
@@ -980,7 +1014,12 @@ socket.on('diceRolled', function(data) {
     var player = data.player;
     var landedSpace = data.landedSpace;
     var message = data.message;
-    // Update dice display
+    var newPosition = data.newPosition;
+    
+    // Disable dice button immediately
+    document.getElementById('rollDiceBtn').disabled = true;
+    
+    // Update dice display with animation
     const dice1El = document.getElementById('dice1');
     const dice2El = document.getElementById('dice2');
     const diceResult = document.getElementById('diceResult');
@@ -996,22 +1035,28 @@ socket.on('diceRolled', function(data) {
         addMessage(message, 'default');
     }
     
-    if (landedSpace) {
-        addMessage(`📍 <strong>${player.name}</strong> ${landedSpace.name} karesine geldi`, 'default');
-        
-        // Show property popup if available and it's my turn
-        if ((landedSpace.type === 'property' || landedSpace.type === 'railroad' || landedSpace.type === 'utility') 
-            && player.id === socket.id) {
-            showPropertyPopup(landedSpace);
-        }
+    // Animate token movement
+    if (newPosition !== undefined) {
+        animateTokenMovement(player, newPosition, function() {
+            // After animation, show popup
+            if (landedSpace) {
+                addMessage(`📍 <strong>${player.name}</strong> ${landedSpace.name} karesine geldi`, 'default');
+                
+                // Show property popup if available and it's my turn
+                if ((landedSpace.type === 'property' || landedSpace.type === 'railroad' || landedSpace.type === 'utility') 
+                    && player.id === socket.id && !landedSpace.owner) {
+                    setTimeout(function() {
+                        showPropertyPopup(landedSpace);
+                    }, 300);
+                }
+            }
+        });
     }
     
-    
-    // Play purchase sound
+    // Play dice sound
     if (soundEnabled && window.soundManager) {
-        window.soundManager.propertyBuy();
+        window.soundManager.diceRoll();
     }
-    document.getElementById('endTurnBtn').disabled = false;
 });
 
 socket.on('propertyBought', function(data) {
@@ -1093,17 +1138,17 @@ socket.on('gameUpdate', function(data) {
     }
 });
 
-socket.on('turnChanged', (currentPlayer) => {
+socket.on('turnChanged', function(currentPlayer) {
     // Update top bar
     document.getElementById('currentPlayerName').textContent = currentPlayer.name;
-    const appearanceEl = document.getElementById('currentPlayerAppearance');
+    var appearanceEl = document.getElementById('currentPlayerAppearance');
     if (appearanceEl) appearanceEl.textContent = currentPlayer.appearance || '👤';
     
     // Add to activity log
     addMessage(`🔄 Sıra değişti: <strong>${currentPlayer.appearance || '👤'} ${currentPlayer.name}</strong>`, 'turn-change');
     
     // Update dice result
-    const diceResult = document.getElementById('diceResult');
+    var diceResult = document.getElementById('diceResult');
     if (diceResult) {
         if (currentPlayer.id === socket.id) {
             diceResult.textContent = '🎲 Sıra sizde! Zar atmak için butona tıklayın';
@@ -1112,15 +1157,22 @@ socket.on('turnChanged', (currentPlayer) => {
         }
     }
     
-    if (currentPlayer.id === socket.id) {
-        document.getElementById('rollDiceBtn').disabled = false;
-        document.getElementById('endTurnBtn').disabled = true;
-    } else {
-        document.getElementById('rollDiceBtn').disabled = true;
-        document.getElementById('endTurnBtn').disabled = true;
+    // Enable/disable dice button based on whose turn it is
+    var rollDiceBtn = document.getElementById('rollDiceBtn');
+    if (rollDiceBtn) {
+        if (currentPlayer.id === socket.id) {
+            rollDiceBtn.disabled = false;
+            rollDiceBtn.style.opacity = '1';
+            rollDiceBtn.style.cursor = 'pointer';
+        } else {
+            rollDiceBtn.disabled = true;
+            rollDiceBtn.style.opacity = '0.5';
+            rollDiceBtn.style.cursor = 'not-allowed';
+        }
     }
     
     if (gameState) {
+        gameState.currentTurn = gameState.players.findIndex(function(p) { return p.id === currentPlayer.id; });
         updatePlayersInfo(gameState.players, currentPlayer.id);
     }
 });

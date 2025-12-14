@@ -497,6 +497,11 @@ io.on('connection', (socket) => {
     players.set(socket.id, { lobbyId: lobby.id, name: playerName });
     
     socket.join(lobbyId);
+    
+    // Send lobbyJoined to the joining player
+    socket.emit('lobbyJoined', { lobbyId: lobby.id, lobby: lobby.toJSON() });
+    
+    // Update all players in lobby
     io.to(lobbyId).emit('lobbyUpdate', lobby.toJSON());
     io.emit('lobbiesUpdate', Array.from(lobbies.values()).map(l => l.toJSON()));
   });
@@ -564,7 +569,8 @@ io.on('connection', (socket) => {
       dice1, 
       dice2, 
       player: currentPlayer, 
-      landedSpace 
+      landedSpace,
+      newPosition: currentPlayer.position
     });
     
     handleLandedSpace(lobby, currentPlayer, landedSpace);

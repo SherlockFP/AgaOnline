@@ -527,15 +527,27 @@ function updatePlayerPositions(players) {
     // Remove all existing tokens
     document.querySelectorAll('.player-token').forEach(token => token.remove());
     
+    const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    
     // Add tokens for each player
     players.forEach((player, index) => {
         const space = document.getElementById(`space-${player.position}`);
         if (space) {
             const token = document.createElement('div');
-            token.className = 'player-token moving';
-            token.style.backgroundColor = player.color;
-            token.style.left = `${(index % 3) * 15 + 5}px`;
-            token.title = player.name;
+            token.className = 'player-token-pro moving';
+            const playerColor = colors[index % colors.length];
+            token.style.backgroundColor = playerColor;
+            token.style.borderColor = playerColor;
+            token.style.left = `${(index % 3) * 18 + 2}px`;
+            token.style.top = `${Math.floor(index / 3) * 18 + 2}px`;
+            
+            // Add player name inside token
+            token.innerHTML = `
+                <div class="token-appearance">${player.appearance || '👤'}</div>
+                <div class="token-name">${player.name}</div>
+            `;
+            token.title = `${player.name} - $${player.money}`;
+            
             space.appendChild(token);
             
             // Remove moving class after animation

@@ -2298,3 +2298,220 @@ body::before {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===================================
+   IMPROVED PLAYER TOKENS ON BOARD
+   =================================== */
+
+.player-token-pro {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    border: 3px solid;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 0 20px currentColor,
+        inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    animation: token-pulse-pro 2s ease-in-out infinite;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.player-token-pro:hover {
+    transform: scale(1.2) translateY(-5px);
+    z-index: 20;
+}
+
+.token-appearance {
+    font-size: 1.3em;
+    line-height: 1;
+}
+
+.token-name {
+    font-size: 0.5em;
+    font-weight: 800;
+    color: #1a1c2e;
+    text-align: center;
+    line-height: 1;
+    margin-top: 2px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes token-pulse-pro {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.4),
+            0 0 20px currentColor,
+            inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        transform: scale(1.08);
+        box-shadow: 
+            0 6px 16px rgba(0, 0, 0, 0.5),
+            0 0 30px currentColor,
+            inset 0 2px 4px rgba(255, 255, 255, 0.5);
+    }
+}
+
+.player-token-pro.moving {
+    animation: token-jump-pro 0.8s ease-in-out;
+}
+
+@keyframes token-jump-pro {
+    0%, 100% { 
+        transform: translateY(0) scale(1) rotate(0deg); 
+    }
+    25% { 
+        transform: translateY(-25px) scale(1.3) rotate(15deg); 
+    }
+    50% { 
+        transform: translateY(-35px) scale(1.4) rotate(-15deg); 
+    }
+    75% { 
+        transform: translateY(-15px) scale(1.2) rotate(10deg); 
+    }
+}
+
+/* Property Popup */
+.property-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: linear-gradient(135deg, rgba(30, 30, 60, 0.98), rgba(50, 50, 80, 0.98));
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    padding: 30px;
+    min-width: 400px;
+    max-width: 500px;
+    z-index: 1000;
+    opacity: 0;
+    animation: popup-appear 0.3s ease forwards;
+}
+
+@keyframes popup-appear {
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.property-popup-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.property-popup-color-bar {
+    height: 40px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.property-popup-name {
+    font-size: 1.8em;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.property-popup-price {
+    font-size: 1.3em;
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+.property-popup-details {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.property-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.property-detail-row:last-child {
+    border-bottom: none;
+}
+
+.property-detail-label {
+    font-weight: 600;
+}
+
+.property-detail-value {
+    font-weight: 800;
+    color: #fff;
+}
+
+.property-popup-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-popup-action {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1em;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-popup-buy {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.btn-popup-buy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+.btn-popup-close {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+}
+
+.btn-popup-close:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(107, 114, 128, 0.6);
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 999;
+    opacity: 0;
+    animation: overlay-appear 0.3s ease forwards;
+}
+
+@keyframes overlay-appear {
+    to {
+        opacity: 1;
+    }
+}

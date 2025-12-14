@@ -512,17 +512,21 @@ function rollDice() {
     socket.emit('rollDice');
     document.getElementById('rollDiceBtn').disabled = true;
     
+    // Add rolling animation to dice container
+    var diceContainer = document.querySelector('.dice-container');
+    if (diceContainer) {
+        diceContainer.classList.add('rolling');
+        
+        // Remove animation class after it completes
+        setTimeout(function() {
+            diceContainer.classList.remove('rolling');
+        }, 800);
+    }
+    
     // Play dice roll sound
     if (soundEnabled && window.soundManager) {
         window.soundManager.diceRoll();
     }
-    
-    // Add rolling animation
-    const dice1 = document.getElementById('dice1');
-    const dice2 = document.getElementById('dice2');
-    if (dice1 && dice2) {
-        dice1.classList.add('rolling');
-        dice2.classList.add('rolling');
     
     // Play purchase sound
     if (soundEnabled && window.soundManager) {

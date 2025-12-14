@@ -375,7 +375,7 @@ class Lobby {
     this.tradeOffers = [];
     this.chatMessages = [];
     this.settings = {
-      startingMoney: 1500,
+      startingMoney: 2000,
       passGoMoney: 200,
       jailTurns: 3,
       jailFine: 50

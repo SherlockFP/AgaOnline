@@ -153,22 +153,24 @@ body::before {
 
 .appearance-card {
     background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-    border: 3px solid transparent;
+    border: 3px solid #cbd5e0;
     border-radius: 15px;
     padding: 20px;
-    cursor: pointer;
+    cursor: pointer !important;
     transition: all 0.3s ease;
     font-size: 2.5em;
     text-align: center;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
 }
 
 .appearance-card:hover {
     transform: translateY(-5px) scale(1.1);
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
     border-color: #667eea;
+    background: linear-gradient(135deg, #e6f2ff 0%, #d4e6ff 100%);
 }
 
 .appearance-card.selected {
@@ -176,6 +178,10 @@ body::before {
     border-color: #667eea;
     transform: scale(1.15);
     box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+}
+
+.appearance-card:active {
+    transform: scale(1.05);
 }
 
 /* Country Selector */
@@ -198,16 +204,17 @@ body::before {
 
 .country-card {
     background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-    border: 3px solid transparent;
+    border: 3px solid #cbd5e0;
     border-radius: 15px;
     padding: 20px 10px;
-    cursor: pointer;
+    cursor: pointer !important;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
 }
 
 .country-card::before {
@@ -229,6 +236,7 @@ body::before {
     transform: translateY(-5px) scale(1.05);
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
     border-color: #667eea;
+    background: linear-gradient(135deg, #e6f2ff 0%, #d4e6ff 100%);
 }
 
 .country-card.selected {
@@ -236,6 +244,10 @@ body::before {
     border-color: #667eea;
     transform: scale(1.08);
     box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+}
+
+.country-card:active {
+    transform: scale(1.02);
 }
 
 .country-card.selected .country-name {

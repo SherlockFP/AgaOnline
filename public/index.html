@@ -20,47 +20,47 @@
                 <div class="appearance-selector">
                     <h3>Appearance Seçin:</h3>
                     <div class="appearance-grid">
-                        <div class="appearance-card" data-appearance="👤">👤</div>
-                        <div class="appearance-card" data-appearance="😎">😎</div>
-                        <div class="appearance-card" data-appearance="🤠">🤠</div>
-                        <div class="appearance-card" data-appearance="🎩">🎩</div>
-                        <div class="appearance-card" data-appearance="👑">👑</div>
-                        <div class="appearance-card" data-appearance="🎯">🎯</div>
-                        <div class="appearance-card" data-appearance="🚀">🚀</div>
-                        <div class="appearance-card" data-appearance="⚡">⚡</div>
-                        <div class="appearance-card" data-appearance="🔥">🔥</div>
-                        <div class="appearance-card" data-appearance="💎">💎</div>
+                        <div class="appearance-card selected" data-appearance="👤" onclick="selectAppearance(this)">👤</div>
+                        <div class="appearance-card" data-appearance="😎" onclick="selectAppearance(this)">😎</div>
+                        <div class="appearance-card" data-appearance="🤠" onclick="selectAppearance(this)">🤠</div>
+                        <div class="appearance-card" data-appearance="🎩" onclick="selectAppearance(this)">🎩</div>
+                        <div class="appearance-card" data-appearance="👑" onclick="selectAppearance(this)">👑</div>
+                        <div class="appearance-card" data-appearance="🎯" onclick="selectAppearance(this)">🎯</div>
+                        <div class="appearance-card" data-appearance="🚀" onclick="selectAppearance(this)">🚀</div>
+                        <div class="appearance-card" data-appearance="⚡" onclick="selectAppearance(this)">⚡</div>
+                        <div class="appearance-card" data-appearance="🔥" onclick="selectAppearance(this)">🔥</div>
+                        <div class="appearance-card" data-appearance="💎" onclick="selectAppearance(this)">💎</div>
                     </div>
                 </div>
                 
                 <div class="country-selector">
                     <h3>Board Seçin:</h3>
                     <div class="country-grid">
-                        <div class="country-card" data-country="world">
+                        <div class="country-card" data-country="world" onclick="selectCountry(this)">
                             <div class="country-flag">🌍</div>
                             <div class="country-name">World</div>
                         </div>
-                        <div class="country-card" data-country="usa">
+                        <div class="country-card selected" data-country="usa" onclick="selectCountry(this)">
                             <div class="country-flag">🇺🇸</div>
                             <div class="country-name">USA</div>
                         </div>
-                        <div class="country-card" data-country="turkey">
+                        <div class="country-card" data-country="turkey" onclick="selectCountry(this)">
                             <div class="country-flag">🇹🇷</div>
                             <div class="country-name">Türkiye</div>
                         </div>
-                        <div class="country-card" data-country="germany">
+                        <div class="country-card" data-country="germany" onclick="selectCountry(this)">
                             <div class="country-flag">🇩🇪</div>
                             <div class="country-name">Deutschland</div>
                         </div>
-                        <div class="country-card" data-country="japan">
+                        <div class="country-card" data-country="japan" onclick="selectCountry(this)">
                             <div class="country-flag">🇯🇵</div>
                             <div class="country-name">Japan</div>
                         </div>
-                        <div class="country-card" data-country="china">
+                        <div class="country-card" data-country="china" onclick="selectCountry(this)">
                             <div class="country-flag">🇨🇳</div>
                             <div class="country-name">China</div>
                         </div>
-                        <div class="country-card" data-country="russia">
+                        <div class="country-card" data-country="russia" onclick="selectCountry(this)">
                             <div class="country-flag">🇷🇺</div>
                             <div class="country-name">Russia</div>
                         </div>
@@ -229,6 +229,7 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="sounds.js"></script>
     <script src="game.js"></script>
 </body>
 </html>

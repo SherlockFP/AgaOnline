@@ -8,6 +8,23 @@ let selectedCountry = 'usa';
 let selectedAppearance = '👤';
 let isHost = false;
 
+// Simple global functions for onclick
+function selectAppearance(element) {
+    console.log('Appearance clicked via onclick');
+    document.querySelectorAll('.appearance-card').forEach(c => c.classList.remove('selected'));
+    element.classList.add('selected');
+    selectedAppearance = element.getAttribute('data-appearance');
+    console.log('Selected appearance:', selectedAppearance);
+}
+
+function selectCountry(element) {
+    console.log('Country clicked via onclick');
+    document.querySelectorAll('.country-card').forEach(c => c.classList.remove('selected'));
+    element.classList.add('selected');
+    selectedCountry = element.getAttribute('data-country');
+    console.log('Selected country:', selectedCountry);
+}
+
 // Initialize sound manager after user interaction
 let soundEnabled = false;
 document.addEventListener('click', () => {

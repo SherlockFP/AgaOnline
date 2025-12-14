@@ -17,42 +17,73 @@ document.addEventListener('click', () => {
     }
 }, { once: true });
 
-// Initialize appearance selector
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize selectors when page loads
+window.addEventListener('load', () => {
+    console.log('Initializing selectors...');
     initializeAppearanceSelector();
     initializeCountrySelector();
 });
 
 function initializeAppearanceSelector() {
     const appearanceCards = document.querySelectorAll('.appearance-card');
-    appearanceCards.forEach(card => {
-        card.addEventListener('click', () => {
+    console.log('Found appearance cards:', appearanceCards.length);
+    
+    appearanceCards.forEach((card, index) => {
+        card.addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('Appearance clicked:', this.getAttribute('data-appearance'));
+            
             appearanceCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedAppearance = card.getAttribute('data-appearance');
-            if (window.soundManager) window.soundManager.buttonClick();
+            this.classList.add('selected');
+            selectedAppearance = this.getAttribute('data-appearance');
+            
+            if (window.soundManager) {
+                try {
+                    window.soundManager.buttonClick();
+                } catch(e) {}
+            }
         });
+        
+        // Add hover effect
+        card.style.cursor = 'pointer';
     });
+    
     // Select first appearance by default
     if (appearanceCards.length > 0) {
         appearanceCards[0].classList.add('selected');
+        console.log('Default appearance selected:', selectedAppearance);
     }
 }
 
 function initializeCountrySelector() {
     const countryCards = document.querySelectorAll('.country-card');
-    countryCards.forEach(card => {
-        card.addEventListener('click', () => {
+    console.log('Found country cards:', countryCards.length);
+    
+    countryCards.forEach((card, index) => {
+        card.addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('Country clicked:', this.getAttribute('data-country'));
+            
             countryCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedCountry = card.getAttribute('data-country');
-            if (window.soundManager) window.soundManager.buttonClick();
+            this.classList.add('selected');
+            selectedCountry = this.getAttribute('data-country');
+            
+            if (window.soundManager) {
+                try {
+                    window.soundManager.buttonClick();
+                } catch(e) {}
+            }
         });
+        
+        // Add hover effect
+        card.style.cursor = 'pointer';
     });
+    
     // Select USA by default
     const usaCard = document.querySelector('.country-card[data-country="usa"]');
     if (usaCard) {
         usaCard.classList.add('selected');
+        console.log('Default country selected:', selectedCountry);
     }
 }
 
@@ -116,8 +147,16 @@ function createLobby() {
         return;
     }
     
+    console.log('Creating lobby with:', {
+        playerName,
+        country: selectedCountry,
+        appearance: selectedAppearance
+    });
+    
     if (soundEnabled && window.soundManager) {
-        window.soundManager.buttonClick();
+        try {
+            window.soundManager.buttonClick();
+        } catch(e) {}
     }
     
     isHost = true;
@@ -190,8 +229,8 @@ function saveSettings() {
     alert('Settings saved!');
 }
 
-// Enter key for chat
-document.addEventListener('DOMContentLoaded', () => {
+// Enter key for chat - will be attached when lobby screen shows
+function attachChatListeners() {
     const chatInput = document.getElementById('lobbyChatInput');
     if (chatInput) {
         chatInput.addEventListener('keypress', (e) => {
@@ -200,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+}
 
 // Start game
 function startGame() {
@@ -507,6 +546,7 @@ socket.on('lobbyCreated', ({ lobbyId, lobby }) => {
     updateLobbyChat(lobby.chatMessages);
     updateLobbySettings(lobby.settings);
     showScreen('lobbyScreen');
+    attachChatListeners();
     
     if (isHost) {
         document.getElementById('startGameBtn').style.display = 'block';

@@ -714,6 +714,43 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('gameChat', ({ message, type, targetId }) => {
+    const playerData = players.get(socket.id);
+    if (!playerData) return;
+    
+    const lobby = lobbies.get(playerData.lobbyId);
+    if (!lobby || !lobby.started) return;
+
+    const player = lobby.getPlayer(socket.id);
+    
+    if (type === 'all') {
+      io.to(lobby.id).emit('gameChatMessage', {
+        senderId: socket.id,
+        senderName: player.name,
+        message: message,
+        type: 'all',
+        timestamp: Date.now()
+      });
+    } else if (type === 'private' && targetId) {
+      // Send to target
+      io.to(targetId).emit('gameChatMessage', {
+        senderId: socket.id,
+        senderName: player.name,
+        message: message,
+        type: 'private',
+        timestamp: Date.now()
+      });
+      // Send back to sender
+      socket.emit('gameChatMessage', {
+        senderId: socket.id,
+        senderName: 'Sen → ' + lobby.getPlayer(targetId).name,
+        message: message,
+        type: 'private',
+        timestamp: Date.now()
+      });
+    }
+  });
+
   socket.on('updateSettings', (newSettings) => {
     const playerData = players.get(socket.id);
     if (!playerData) return;
@@ -747,14 +784,41 @@ io.on('connection', (socket) => {
   });
 });
 
+// Chance cards
+const chanceCards = [
+  { type: 'move', text: 'Başlangıca git ve 200 al', position: 0 },
+  { type: 'money', text: 'Banka hatası senin lehine! 200 al', amount: 200 },
+  { type: 'money', text: 'Doktor ücretini öde: 50', amount: -50 },
+  { type: 'money', text: 'Okul ücretini öde: 150', amount: -150 },
+  { type: 'jail', text: 'Hapse git! Başlangıçtan geçemezsin!', position: 10 },
+  { type: 'money', text: 'Vergi iadesi al: 20', amount: 20 },
+  { type: 'money', text: 'Hastane masrafları: 100', amount: -100 },
+  { type: 'money', text: 'Doğum günün! Her oyuncu sana 10 versin', amount: 10, perPlayer: true },
+  { type: 'repair', text: 'Evlerini onar: Her ev için 25, Her otel için 100', houseCost: 25, hotelCost: 100 }
+];
+
+// Community Chest cards
+const chestCards = [
+  { type: 'money', text: 'Banka hatası senin lehine! 200 al', amount: 200 },
+  { type: 'money', text: 'Doktor ücretini öde: 50', amount: -50 },
+  { type: 'money', text: 'Sigorta primi: 50 al', amount: 50 },
+  { type: 'jail', text: 'Hapse git!', position: 10 },
+  { type: 'money', text: 'Satış geliri: 50 al', amount: 50 },
+  { type: 'money', text: 'Okul ücretini öde: 100', amount: -100 },
+  { type: 'money', text: 'Danışmanlık ücreti al: 25', amount: 25 },
+  { type: 'money', text: 'Güzellik yarışması kazandın: 10', amount: 10 }
+];
+
 function handleLandedSpace(lobby, player, space) {
+  let autoEndTurn = false;
+  
   if (space.type === 'property' || space.type === 'railroad' || space.type === 'utility') {
     if (space.owner && space.owner !== player.id && !space.mortgaged) {
       const owner = lobby.getPlayer(space.owner);
       let rent = 0;
 
       if (space.type === 'property') {
-        rent = space.rent[space.houses];
+        rent = space.rent[space.houses || 0];
       } else if (space.type === 'railroad') {
         const railroadCount = lobby.properties.filter(p => 
           p.type === 'railroad' && p.owner === space.owner
@@ -769,22 +833,87 @@ function handleLandedSpace(lobby, player, space) {
         rent = (dice1 + dice2) * (utilityCount === 1 ? 4 : 10);
       }
 
-      io.to(lobby.id).emit('rentDue', { player, owner, amount: rent, property: space });
+      player.money -= rent;
+      owner.money += rent;
+      io.to(lobby.id).emit('rentPaid', { fromPlayer: player, toPlayer: owner, amount: rent, property: space });
+      autoEndTurn = true;
     }
+    // If property is available, don't auto-end turn (let player decide to buy)
   } else if (space.type === 'tax') {
     player.money -= space.amount;
     io.to(lobby.id).emit('taxPaid', { player, amount: space.amount });
+    autoEndTurn = true;
   } else if (space.type === 'gotojail') {
     player.inJail = true;
     player.position = 10;
     player.jailTurns = 0;
     io.to(lobby.id).emit('playerJailed', player);
+    autoEndTurn = true;
+  } else if (space.type === 'chance') {
+    const card = chanceCards[Math.floor(Math.random() * chanceCards.length)];
+    handleCard(lobby, player, card, 'Şans');
+    autoEndTurn = true;
+  } else if (space.type === 'chest') {
+    const card = chestCards[Math.floor(Math.random() * chestCards.length)];
+    handleCard(lobby, player, card, 'Toplum Sandığı');
+    autoEndTurn = true;
+  } else if (space.type === 'parking' || space.type === 'jail' || space.type === 'go') {
+    // Free parking, just visiting jail, or GO - auto end turn
+    autoEndTurn = true;
   }
 
   io.to(lobby.id).emit('gameUpdate', {
     players: lobby.players,
     properties: lobby.properties
   });
+  
+  // Auto end turn after 2 seconds if needed
+  if (autoEndTurn) {
+    setTimeout(() => {
+      lobby.nextTurn();
+      io.to(lobby.id).emit('turnChanged', lobby.getCurrentPlayer());
+    }, 2000);
+  }
+}
+
+function handleCard(lobby, player, card, cardType) {
+  io.to(lobby.id).emit('cardDrawn', { player, card, cardType });
+  
+  if (card.type === 'money') {
+    if (card.perPlayer) {
+      // Each player pays the current player
+      lobby.players.forEach(p => {
+        if (p.id !== player.id) {
+          p.money -= card.amount;
+          player.money += card.amount;
+        }
+      });
+    } else {
+      player.money += card.amount;
+    }
+  } else if (card.type === 'move') {
+    player.position = card.position;
+    if (card.position === 0) {
+      player.money += 200; // Pass GO bonus
+    }
+  } else if (card.type === 'jail') {
+    player.inJail = true;
+    player.position = 10;
+    player.jailTurns = 0;
+    io.to(lobby.id).emit('playerJailed', player);
+  } else if (card.type === 'repair') {
+    let totalCost = 0;
+    lobby.properties.forEach(prop => {
+      if (prop.owner === player.id && prop.houses) {
+        if (prop.houses === 5) {
+          totalCost += card.hotelCost;
+        } else {
+          totalCost += prop.houses * card.houseCost;
+        }
+      }
+    });
+    player.money -= totalCost;
+  }
 }
 
 const PORT = process.env.PORT || 3000;

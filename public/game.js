@@ -81,35 +81,56 @@ function showPropertyPopup(property) {
     popup.className = 'property-popup';
     
     const currency = getCurrencySymbol();
-    const canBuy = !property.owner && gameState.players.find(p => p.id === socket.id).money >= property.price;
+    var myPlayer = gameState.players.find(function(p) { return p.id === socket.id; });
+    var canBuy = !property.owner && myPlayer && myPlayer.money >= property.price;
     
     popup.innerHTML = `
         <div class="property-popup-header">
             ${property.color ? `<div class="property-popup-color-bar" style="background: ${getColorCode(property.color)}"></div>` : ''}
             <div class="property-popup-name">${property.name}</div>
-            <div class="property-popup-price">${formatMoney(property.price)}</div>
+            <div class="property-popup-price">Fiyat: ${formatMoney(property.price)}</div>
+            ${myPlayer ? `<div class="property-popup-balance">Paran: ${formatMoney(myPlayer.money)}</div>` : ''}
         </div>
         <div class="property-popup-details">
             ${property.rent ? `<div class="property-detail-row">
-                <span class="property-detail-label">Kira:</span>
-                <span class="property-detail-value">${currency}${property.rent}</span>
+                <span class="property-detail-label">🏠 Kira:</span>
+                <span class="property-detail-value">${formatMoney(property.rent[0])}</span>
             </div>` : ''}
-            ${property.rentWithHouse ? `<div class="property-detail-row">
-                <span class="property-detail-label">1 Ev ile:</span>
-                <span class="property-detail-value">${currency}${property.rentWithHouse}</span>
+            ${property.rent && property.rent[1] ? `<div class="property-detail-row">
+                <span class="property-detail-label">🏘️ 1 Ev ile:</span>
+                <span class="property-detail-value">${formatMoney(property.rent[1])}</span>
             </div>` : ''}
-            ${property.housePrice ? `<div class="property-detail-row">
-                <span class="property-detail-label">Ev Fiyatı:</span>
-                <span class="property-detail-value">${currency}${property.housePrice}</span>
+            ${property.rent && property.rent[2] ? `<div class="property-detail-row">
+                <span class="property-detail-label">🏘️ 2 Ev ile:</span>
+                <span class="property-detail-value">${formatMoney(property.rent[2])}</span>
+            </div>` : ''}
+            ${property.rent && property.rent[3] ? `<div class="property-detail-row">
+                <span class="property-detail-label">🏘️ 3 Ev ile:</span>
+                <span class="property-detail-value">${formatMoney(property.rent[3])}</span>
+            </div>` : ''}
+            ${property.rent && property.rent[4] ? `<div class="property-detail-row">
+                <span class="property-detail-label">🏘️ 4 Ev ile:</span>
+                <span class="property-detail-value">${formatMoney(property.rent[4])}</span>
+            </div>` : ''}
+            ${property.rent && property.rent[5] ? `<div class="property-detail-row">
+                <span class="property-detail-label">🏨 Otel ile:</span>
+                <span class="property-detail-value">${formatMoney(property.rent[5])}</span>
+            </div>` : ''}
+            ${property.houseCost ? `<div class="property-detail-row">
+                <span class="property-detail-label">🔨 Ev Fiyatı:</span>
+                <span class="property-detail-value">${formatMoney(property.houseCost)}</span>
             </div>` : ''}
             ${property.owner ? `<div class="property-detail-row">
-                <span class="property-detail-label">Sahibi:</span>
-                <span class="property-detail-value">${gameState.players.find(p => p.id === property.owner)?.name || 'Bilinmeyen'}</span>
+                <span class="property-detail-label">👤 Sahibi:</span>
+                <span class="property-detail-value">${(function() {
+                    var owner = gameState.players.find(function(p) { return p.id === property.owner; });
+                    return owner ? owner.name : 'Bilinmeyen';
+                })()}</span>
             </div>` : ''}
         </div>
         <div class="property-popup-actions">
             ${canBuy ? `<button class="btn-popup-action btn-popup-buy" onclick="buyProperty()">
-                💰 Satın Al
+                💰 Satın Al (${formatMoney(property.price)})
             </button>` : ''}
             <button class="btn-popup-action btn-popup-close" onclick="closePropertyPopup()">
                 ${canBuy ? 'İptal' : 'Kapat'}
@@ -364,12 +385,11 @@ function joinLobby(lobbyId) {
     socket.emit('joinLobby', { lobbyId, playerName, appearance: selectedAppearance });
     
     // Reset flag after 2 seconds if no response
-    setTimeout(() => {
+    setTimeout(function() {
         if (!currentLobbyId) {
             isJoiningLobby = false;
         }
-    }, 2000arance });
-    socket.emit('joinLobby', { lobbyId, playerName, appearance: selectedAppearance });
+    }, 2000);
 }
 
 // Back to menu
@@ -954,7 +974,12 @@ socket.on('gameStarted', ({ lobby, properties, currentPlayer }) => {
     }
 });
 
-socket.on('diceRolled', ({ dice1, dice2, player, landedSpace, message }) => {
+socket.on('diceRolled', function(data) {
+    var dice1 = data.dice1;
+    var dice2 = data.dice2;
+    var player = data.player;
+    var landedSpace = data.landedSpace;
+    var message = data.message;
     // Update dice display
     const dice1El = document.getElementById('dice1');
     const dice2El = document.getElementById('dice2');
@@ -989,8 +1014,12 @@ socket.on('diceRolled', ({ dice1, dice2, player, landedSpace, message }) => {
     document.getElementById('endTurnBtn').disabled = false;
 });
 
-socket.on('propertyBought', ({ player, property }) => {
-    addMessage(`🏠 <strong>${player.name}</strong> ${property.name} satın aldı! ($${property.price})`, 'property-buy');
+socket.on('propertyBought', function(data) {
+    var player = data.player;
+    var property = data.property;
+    
+    addMessage(`🏠 <strong>${player.name}</strong> ${property.name} satın aldı! (${formatMoney(property.price)})`, 'property-buy');
+    updatePropertyColors();
 });
 
 socket.on('rentDue', ({ player, owner, amount, property }) => {
@@ -1018,7 +1047,7 @@ socket.on('taxPaid', ({ player, amount }) => {
     addMessage(`💵 <strong>${player.name}</strong> $${amount} vergi ödedi`, 'default');
 });
 
-socket.on('playerJailed', (player) => {
+socket.on('playerJailed', function(player) {
     addMessage(`⛓️ <strong>${player.name}</strong> hapse gönderildi!`, 'default');
     
     // Play jail sound
@@ -1026,28 +1055,41 @@ socket.on('playerJailed', (player) => {
         window.soundManager.jailSound();
     }
 });
+
+socket.on('cardDrawn', function(data) {
+    var player = data.player;
+    var card = data.card;
+    var cardType = data.cardType;
+    
+    // Show card with animation
+    showNotification(`🎴 ${cardType}: ${card.text}`, card.amount >= 0 ? 'success' : 'warning');
+    addMessage(`🎴 <strong>${player.name}</strong> ${cardType} kartı çekti: ${card.text}`, 'dice-roll');
+});
+
 // Play turn change sound
     if (soundEnabled && window.soundManager) {
         window.soundManager.turnChange();
     }
     
     
-socket.on('gameUpdate', ({ players, properties }) => {
+socket.on('gameUpdate', function(data) {
+    var players = data.players;
+    var properties = data.properties;
+    
     if (gameState) {
         gameState.players = players;
         if (properties) gameState.properties = properties;
         
         updatePlayerPositions(players);
-        const currentPlayer = players[gameState.currentTurn];
+        var currentPlayer = players[gameState.currentTurn];
         updatePlayersInfo(players, currentPlayer.id);
-    // Play trade proposed sound
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.tradeProposed();
-    }
-    
+        updateChatTargets(players);
+        updatePropertyColors();
         
-        const myPlayer = players.find(p => p.id === socket.id);
-        updateMyProperties(gameState.properties, myPlayer);
+        var myPlayer = players.find(function(p) { return p.id === socket.id; });
+        if (myPlayer) {
+            updateMyProperties(gameState.properties, myPlayer);
+        }
     }
 });
 
@@ -1210,3 +1252,109 @@ window.addEventListener('load', () => {
         }, 500);
     }
 });
+
+// Game chat functions
+function sendGameMessage() {
+    var input = document.getElementById('gameChatInput');
+    var target = document.getElementById('chatTarget').value;
+    var message = input.value.trim();
+    
+    if (!message) return;
+    
+    if (target === 'all') {
+        socket.emit('gameChat', { message: message, type: 'all' });
+    } else {
+        socket.emit('gameChat', { message: message, type: 'private', targetId: target });
+    }
+    
+    input.value = '';
+}
+
+// Listen for Enter key in game chat
+document.addEventListener('DOMContentLoaded', function() {
+    var gameChatInput = document.getElementById('gameChatInput');
+    if (gameChatInput) {
+        gameChatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendGameMessage();
+            }
+        });
+    }
+});
+
+socket.on('gameChatMessage', function(data) {
+    addGameChatMessage(data);
+});
+
+function addGameChatMessage(data) {
+    var chatContainer = document.getElementById('gameChatMessages');
+    if (!chatContainer) return;
+    
+    var msgDiv = document.createElement('div');
+    msgDiv.className = 'game-chat-msg';
+    
+    if (data.type === 'private') {
+        msgDiv.classList.add('private-msg');
+        msgDiv.innerHTML = `
+            <div class="chat-msg-header">
+                <span class="chat-sender">${data.senderName}</span>
+                <span class="private-label">🔒 Özel</span>
+            </div>
+            <div class="chat-msg-text">${data.message}</div>
+        `;
+    } else {
+        msgDiv.innerHTML = `
+            <div class="chat-msg-header">
+                <span class="chat-sender">${data.senderName}:</span>
+            </div>
+            <div class="chat-msg-text">${data.message}</div>
+        `;
+    }
+    
+    chatContainer.appendChild(msgDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// Update chat target select with current players
+function updateChatTargets(players) {
+    var select = document.getElementById('chatTarget');
+    if (!select) return;
+    
+    var currentValue = select.value;
+    select.innerHTML = '<option value="all">📢 Herkese</option>';
+    
+    players.forEach(function(player) {
+        if (player.id !== socket.id) {
+            var option = document.createElement('option');
+            option.value = player.id;
+            option.textContent = '🔒 ' + player.name;
+            select.appendChild(option);
+        }
+    });
+    
+    select.value = currentValue;
+}
+
+// Update property colors based on owner
+function updatePropertyColors() {
+    if (!gameState || !gameState.properties) return;
+    
+    var colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    
+    gameState.properties.forEach(function(property) {
+        var spaceEl = document.getElementById('space-' + property.id);
+        if (!spaceEl) return;
+        
+        if (property.owner) {
+            var playerIndex = gameState.players.findIndex(function(p) { return p.id === property.owner; });
+            if (playerIndex >= 0) {
+                var ownerColor = colors[playerIndex % colors.length];
+                spaceEl.style.boxShadow = '0 0 0 3px ' + ownerColor + ', 0 4px 8px rgba(0,0,0,0.3)';
+                spaceEl.style.borderColor = ownerColor;
+            }
+        } else {
+            spaceEl.style.boxShadow = '';
+            spaceEl.style.borderColor = '';
+        }
+    });
+}

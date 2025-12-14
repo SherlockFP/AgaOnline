@@ -1855,6 +1855,119 @@ body::before {
     gap: 8px;
 }
 
+/* Game Chat Styles */
+.chat-card {
+    margin-top: 15px;
+}
+
+.game-chat-messages {
+    height: 250px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.game-chat-msg {
+    margin-bottom: 12px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.game-chat-msg.private-msg {
+    background: rgba(251, 191, 36, 0.1);
+    border-left: 3px solid #fbbf24;
+}
+
+.chat-msg-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.chat-sender {
+    font-weight: 700;
+    color: #60a5fa;
+    font-size: 0.85em;
+}
+
+.private-label {
+    font-size: 0.75em;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.chat-msg-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9em;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.game-chat-input {
+    display: flex;
+    gap: 5px;
+}
+
+.chat-target-select {
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.85em;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.chat-target-select:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.chat-target-select option {
+    background: #1a1c2e;
+    color: #fff;
+}
+
+.game-chat-input input {
+    flex: 1;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.9em;
+}
+
+.game-chat-input input:focus {
+    outline: none;
+    border-color: #6366f1;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-send-chat {
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+}
+
+.btn-send-chat:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
 .property-item-pro {
     padding: 10px;
     background: rgba(255, 255, 255, 0.05);
@@ -2305,38 +2418,42 @@ body::before {
 
 .player-token-pro {
     position: absolute;
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
     border: 3px solid;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.4),
-        0 0 20px currentColor,
-        inset 0 2px 4px rgba(255, 255, 255, 0.5);
-    animation: token-pulse-pro 2s ease-in-out infinite;
-    z-index: 10;
+        0 6px 16px rgba(0, 0, 0, 0.5),
+        0 0 25px currentColor,
+        inset 0 2px 4px rgba(255, 255, 255, 0.7);
+    animation: token-pulse-small 2s ease-in-out infinite;
+    z-index: 100;
     cursor: pointer;
+    transform: translateY(-45px);
 }
 
 .player-token-pro:hover {
-    transform: scale(1.2) translateY(-5px);
-    z-index: 20;
+    transform: scale(1.3) translateY(-50px);
+    z-index: 200;
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.6),
+        0 0 35px currentColor;
 }
 
 .token-appearance {
-    font-size: 1.3em;
+    font-size: 1.1em;
     line-height: 1;
 }
 
 .token-name {
-    font-size: 0.5em;
-    font-weight: 800;
+    font-size: 0.45em;
+    font-weight: 900;
     color: #1a1c2e;
     text-align: center;
     line-height: 1;
@@ -2429,6 +2546,14 @@ body::before {
     font-size: 1.3em;
     color: #fbbf24;
     font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.property-popup-balance {
+    font-size: 1.1em;
+    color: #10b981;
+    font-weight: 600;
+    margin-top: 8px;
 }
 
 .property-popup-details {

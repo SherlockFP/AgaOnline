@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgaOnline - Global Monopoly</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Main Menu -->
+        <div id="mainMenu" class="screen active">
+            <div class="menu-container">
+                <h1 class="game-title">� AGA ONLINE 🌍</h1>
+                <div class="subtitle">Global Monopoly Experience</div>
+                <div class="player-name-input">
+                    <input type="text" id="playerNameInput" placeholder="İsminizi girin" maxlength="15">
+                </div>
+                
+                <div class="appearance-selector">
+                    <h3>Appearance Seçin:</h3>
+                    <div class="appearance-grid">
+                        <div class="appearance-card" data-appearance="👤">👤</div>
+                        <div class="appearance-card" data-appearance="😎">😎</div>
+                        <div class="appearance-card" data-appearance="🤠">🤠</div>
+                        <div class="appearance-card" data-appearance="🎩">🎩</div>
+                        <div class="appearance-card" data-appearance="👑">👑</div>
+                        <div class="appearance-card" data-appearance="🎯">🎯</div>
+                        <div class="appearance-card" data-appearance="🚀">🚀</div>
+                        <div class="appearance-card" data-appearance="⚡">⚡</div>
+                        <div class="appearance-card" data-appearance="🔥">🔥</div>
+                        <div class="appearance-card" data-appearance="💎">💎</div>
+                    </div>
+                </div>
+                
+                <div class="country-selector">
+                    <h3>Board Seçin:</h3>
+                    <div class="country-grid">
+                        <div class="country-card" data-country="world">
+                            <div class="country-flag">🌍</div>
+                            <div class="country-name">World</div>
+                        </div>
+                        <div class="country-card" data-country="usa">
+                            <div class="country-flag">🇺🇸</div>
+                            <div class="country-name">USA</div>
+                        </div>
+                        <div class="country-card" data-country="turkey">
+                            <div class="country-flag">🇹🇷</div>
+                            <div class="country-name">Türkiye</div>
+                        </div>
+                        <div class="country-card" data-country="germany">
+                            <div class="country-flag">🇩🇪</div>
+                            <div class="country-name">Deutschland</div>
+                        </div>
+                        <div class="country-card" data-country="japan">
+                            <div class="country-flag">🇯🇵</div>
+                            <div class="country-name">Japan</div>
+                        </div>
+                        <div class="country-card" data-country="china">
+                            <div class="country-flag">🇨🇳</div>
+                            <div class="country-name">China</div>
+                        </div>
+                        <div class="country-card" data-country="russia">
+                            <div class="country-flag">🇷🇺</div>
+                            <div class="country-name">Russia</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-buttons">
+                    <button class="btn btn-primary" onclick="createLobby()">Yeni Lobi Oluştur</button>
+                    <button class="btn btn-secondary" onclick="showLobbies()">Lobiler</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lobbies List -->
+        <div id="lobbiesScreen" class="screen">
+            <div class="lobbies-container">
+                <h2>Mevcut Lobiler</h2>
+                <div id="lobbiesList"></div>
+                <button class="btn btn-back" onclick="backToMenu()">Geri</button>
+            </div>
+        </div>
+
+        <!-- Lobby Screen -->
+        <div id="lobbyScreen" class="screen">
+            <div class="lobby-container">
+                <h2>Lobi</h2>
+                <div class="lobby-info">
+                    <div class="invite-link">
+                        <span id="inviteLinkText"></span>
+                        <button class="btn btn-small" onclick="copyInviteLink()">Kopyala</button>
+                    </div>
+                </div>
+                
+                <div class="lobby-content">
+                    <div class="lobby-left">
+                        <div class="players-waiting">
+                            <h3>Oyuncular</h3>
+                            <div id="lobbyPlayersList"></div>
+                        </div>
+                        
+                        <div id="lobbySettings" class="lobby-settings" style="display: none;">
+                            <h3>⚙️ Game Settings</h3>
+                            <div class="setting-item">
+                                <label>Starting Money:</label>
+                                <input type="number" id="startingMoney" value="1500" step="100" min="500" max="5000">
+                            </div>
+                            <div class="setting-item">
+                                <label>Pass GO Money:</label>
+                                <input type="number" id="passGoMoney" value="200" step="50" min="100" max="500">
+                            </div>
+                            <div class="setting-item">
+                                <label>Jail Turns:</label>
+                                <input type="number" id="jailTurns" value="3" min="1" max="5">
+                            </div>
+                            <div class="setting-item">
+                                <label>Jail Fine:</label>
+                                <input type="number" id="jailFine" value="50" step="10" min="0" max="200">
+                            </div>
+                            <button class="btn btn-small btn-primary" onclick="saveSettings()">Save Settings</button>
+                        </div>
+                    </div>
+                    
+                    <div class="lobby-chat">
+                        <h3>💬 Chat</h3>
+                        <div id="lobbyChatMessages"></div>
+                        <div class="chat-input">
+                            <input type="text" id="lobbyChatInput" placeholder="Mesaj yaz..." maxlength="200">
+                            <button class="btn btn-small" onclick="sendLobbyMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lobby-actions">
+                    <button id="startGameBtn" class="btn btn-primary" onclick="startGame()" style="display: none;">Oyunu Başlat</button>
+                    <button class="btn btn-back" onclick="leaveLobby()">Lobiden Çık</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="game-container">
+                <!-- Top Bar -->
+                <div class="top-bar">
+                    <div class="current-player">
+                        Sıra: <span id="currentPlayerName"></span>
+                    </div>
+                    <div class="game-controls">
+                        <button id="rollDiceBtn" class="btn btn-primary" onclick="rollDice()">Zar At</button>
+                        <button id="endTurnBtn" class="btn btn-secondary" onclick="endTurn()" disabled>Turu Bitir</button>
+                        <button class="btn btn-small" onclick="toggleTradePanel()">Trade</button>
+                    </div>
+                </div>
+
+                <!-- Main Game Area -->
+                <div class="game-area">
+                    <!-- Players Panel -->
+                    <div class="players-panel">
+                        <h3>Oyuncular</h3>
+                        <div id="playersInfo"></div>
+                    </div>
+
+                    <!-- Board -->
+                    <div class="board-container">
+                        <div id="monopolyBoard" class="monopoly-board">
+                            <!-- Board spaces will be generated by JavaScript -->
+                        </div>
+                        <div class="board-center">
+                            <div class="dice-display">
+                                <div id="dice1" class="dice">?</div>
+                                <div id="dice2" class="dice">?</div>
+                            </div>
+                            <div id="boardMessages" class="board-messages"></div>
+                        </div>
+                    </div>
+
+                    <!-- Properties Panel -->
+                    <div class="properties-panel">
+                        <h3>Mülklerim</h3>
+                        <div id="myProperties"></div>
+                    </div>
+                </div>
+
+                <!-- Trade Panel (Hidden by default) -->
+                <div id="tradePanel" class="trade-panel">
+                    <div class="trade-content">
+                        <h3>Trade Yap</h3>
+                        <div class="trade-sections">
+                            <div class="trade-section">
+                                <h4>Oyuncu Seç</h4>
+                                <select id="tradePlayerSelect"></select>
+                            </div>
+                            <div class="trade-section">
+                                <h4>Vereceğin Mülkler</h4>
+                                <div id="offerPropertiesList"></div>
+                                <h4>Vereceğin Para</h4>
+                                <input type="number" id="offerMoney" min="0" value="0">
+                            </div>
+                 sounds.js"></script>
+    <script src="           <div class="trade-section">
+                                <h4>İstediğin Mülkler</h4>
+                                <div id="requestPropertiesList"></div>
+                                <h4>İstediğin Para</h4>
+                                <input type="number" id="requestMoney" min="0" value="0">
+                            </div>
+                        </div>
+                        <div class="trade-actions">
+                            <button class="btn btn-primary" onclick="proposeTrade()">Teklif Gönder</button>
+                            <button class="btn btn-back" onclick="toggleTradePanel()">İptal</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trade Notification -->
+                <div id="tradeNotification" class="trade-notification" style="display: none;">
+                    <div class="trade-notification-content">
+                        <h3>Trade Teklifi</h3>
+                        <div id="tradeDetails"></div>
+                        <div class="trade-actions">
+                            <button class="btn btn-primary" onclick="acceptTrade()">Kabul Et</button>
+                            <button class="btn btn-secondary" onclick="rejectTrade()">Reddet</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

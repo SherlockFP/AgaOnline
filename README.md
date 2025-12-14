@@ -1,14 +1,14 @@
-# 🎲 Monopoly Online - Premium Edition
+# � AGA ONLINE - Global Monopoly Experience
 
 Ultra profesyonel, tam özellikli online Monopoly oyunu. Richup.io benzeri multiplayer deneyim.
 
 ## ✨ Premium Özellikler
 
-### 🌍 Multi-Country Support
-- **6 Farklı Ülke:** USA 🇺🇸, Türkiye 🇹🇷, Almanya 🇩🇪, Japonya 🇯🇵, Çin 🇨🇳, Rusya 🇷🇺
-- Her ülkenin kendi iconic lokasyonları
+### 🌍 Multi-Board Support
+- **7 Farklı Board:** USA 🇺🇸, Türkiye 🇹🇷, Almanya 🇩🇪, Japonya 🇯🇵, Çin 🇨🇳, Rusya 🇷🇺, World 🌍
+- Her board'un kendi iconic lokasyonları
 - Ülkeye özel para birimleri ($, ₺, €, ¥, ₽)
-- 240 benzersiz property (40 property x 6 ülke)
+- 280 benzersiz property (40 property x 7 board)
 
 ### 🎮 Oyun Özellikleri
 - ✅ Online multiplayer (2-6 oyuncu)
@@ -21,6 +21,9 @@ Ultra profesyonel, tam özellikli online Monopoly oyunu. Richup.io benzeri multi
 - ✅ Hapishane mekaniği
 - ✅ Vergiler ve özel kareler
 - ✅ GO'dan geçince para kazanma
+- ✅ **Player Appearance Selector** - 10 farklı emoji karakteri seç
+- ✅ **In-Game Chat** - Lobide diğer oyuncularla sohbet et
+- ✅ **Host Settings** - Host oyun kurallarını özelleştirebilir (başlangıç parası, GO parası, hapishane kuralları)
 
 ### 🎨 Premium Tasarım
 - **Modern UI/UX:** Gradient backgrounds, glassmorphism effects
@@ -84,12 +87,14 @@ http://localhost:3000
 
 ## Oyun Kuralları
 
-- Her oyuncu $1500 ile başlar
+- Her oyuncu $1500 ile başlar (host ayarları değiştirilebilir)
 - GO'dan geçince $200 kazanırsın
 - Mülklere indiğinde satın alabilirsin
 - Başkasının mülküne inince kira ödersin
 - Trading ile oyuncularla takas yapabilirsin
 - 3 kez üst üste zar atamadan hapisten çıkamazsın
+- Lobide chat ile diğer oyuncularla konuşabilirsin
+- 10 farklı appearance arasından karakterini seçebilirsin
 
 ## Geliştirme
 

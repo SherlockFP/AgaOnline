@@ -674,9 +674,11 @@ function updateLobbyChat(messages) {
     if (!chatContainer) return;
     
     chatContainer.innerHTML = '';
-    messages.forEach(msg => {
-        addChatMessage(msg);
-    });
+    if (messages && Array.isArray(messages)) {
+        messages.forEach(msg => {
+            addChatMessage(msg);
+        });
+    }
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 

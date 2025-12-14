@@ -9,40 +9,23 @@ var isHost = false;
 var soundEnabled = false;
 var socket;
 
-// Initialize socket with retry mechanism
-function initializeSocket() {
-    console.log('🔌 Initializing socket...');
-    
-    if (typeof io === 'undefined') {
-        console.warn('⏳ Socket.io not loaded yet, retrying...');
-        setTimeout(initializeSocket, 100);
-        return;
-    }
-    
-    socket = io();
-    console.log('✅ Socket object created');
-    
-    // Socket connection event handlers
-    socket.on('connect', function() {
-        console.log('✅ Socket connected:', socket.id);
-    });
+// Initialize socket immediately - socket.io is already loaded
+console.log('🔌 Initializing socket...');
+socket = io();
+console.log('✅ Socket initialized');
 
-    socket.on('disconnect', function() {
-        console.log('❌ Socket disconnected');
-    });
-    
-    socket.on('error', function(error) {
-        console.error('❌ Socket error:', error);
-    });
-}
+// Socket connection event handlers
+socket.on('connect', function() {
+    console.log('✅ Socket connected:', socket.id);
+});
 
-// Start initialization when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeSocket);
-} else {
-    // DOM already loaded
-    initializeSocket();
-}
+socket.on('disconnect', function() {
+    console.log('❌ Socket disconnected');
+});
+
+socket.on('error', function(error) {
+    console.error('❌ Socket error:', error);
+});
 
 // Simple global functions for onclick - MUST be after variable declarations
 function selectAppearance(element) {

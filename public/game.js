@@ -186,8 +186,9 @@ function createLobby() {
         return;
     }
     
-    if (!socket) {
+    if (!socket || !socket.connected) {
         alert('Sunucu bağlantısı henüz hazır değil! Lütfen birkaç saniye bekleyin.');
+        console.error('❌ Socket not ready:', {socket: !!socket, connected: socket ? socket.connected : false});
         return;
     }
     

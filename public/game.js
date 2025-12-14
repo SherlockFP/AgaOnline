@@ -1,21 +1,47 @@
 // Global variables - MUST be declared first
-let selectedCountry = 'usa';
-let selectedAppearance = '👤';
-let currentLobbyId = null;
-let currentPlayerId = null;
-let gameState = null;
-let currentTrade = null;
-let isHost = false;
+var selectedCountry = 'usa';
+var selectedAppearance = '👤';
+var currentLobbyId = null;
+var currentPlayerId = null;
+var gameState = null;
+var currentTrade = null;
+var isHost = false;
+var soundEnabled = false;
+var socket;
 
-// Initialize socket immediately
-console.log('🔌 Initializing socket...');
-const socket = io();
-console.log('✅ Socket object created');
+// Wait for DOM and socket.io to load
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🔌 Initializing socket...');
+    
+    if (typeof io === 'undefined') {
+        console.error('❌ Socket.io failed to load!');
+        alert('Connection error. Please refresh the page.');
+        return;
+    }
+    
+    socket = io();
+    console.log('✅ Socket object created');
+    
+    // Socket connection event handlers
+    socket.on('connect', function() {
+        console.log('✅ Socket connected:', socket.id);
+    });
+
+    socket.on('disconnect', function() {
+        console.log('❌ Socket disconnected');
+    });
+    
+    socket.on('error', function(error) {
+        console.error('❌ Socket error:', error);
+    });
+});
 
 // Simple global functions for onclick - MUST be after variable declarations
 function selectAppearance(element) {
     console.log('✨ Appearance clicked via onclick');
-    document.querySelectorAll('.appearance-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.appearance-card').forEach(function(c) {
+        c.classList.remove('selected');
+    });
     element.classList.add('selected');
     selectedAppearance = element.getAttribute('data-appearance');
     console.log('✅ Selected appearance:', selectedAppearance);
@@ -23,24 +49,16 @@ function selectAppearance(element) {
 
 function selectCountry(element) {
     console.log('🌍 Country clicked via onclick');
-    document.querySelectorAll('.country-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.country-card').forEach(function(c) {
+        c.classList.remove('selected');
+    });
     element.classList.add('selected');
     selectedCountry = element.getAttribute('data-country');
     console.log('✅ Selected country:', selectedCountry);
 }
 
-// Socket connection event handlers
-socket.on('connect', () => {
-    console.log('✅ Socket connected:', socket.id);
-});
-
-socket.on('disconnect', () => {
-    console.log('❌ Socket disconnected');
-});
-
 // Initialize sound manager after user interaction
-let soundEnabled = false;
-document.addEventListener('click', () => {
+document.addEventListener('click', function() {
     if (!soundEnabled && window.soundManager) {
         soundEnabled = true;
         window.soundManager.audioContext.resume();

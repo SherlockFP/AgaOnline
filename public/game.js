@@ -1,28 +1,18 @@
-const socket = io();
-
+// Global variables - MUST be declared first
+let selectedCountry = 'usa';
+let selectedAppearance = '👤';
 let currentLobbyId = null;
 let currentPlayerId = null;
 let gameState = null;
 let currentTrade = null;
-let selectedCountry = 'usa';
-let selectedAppearance = '👤';
 let isHost = false;
 
-// Socket connection debugging
-socket.on('connect', () => {
-    console.log('✅ Socket connected:', socket.id);
-});
+// Initialize socket immediately
+console.log('🔌 Initializing socket...');
+const socket = io();
+console.log('✅ Socket object created');
 
-socket.on('disconnect', () => {
-    console.log('❌ Socket disconnected');
-});
-
-socket.on('error', (error) => {
-    console.error('❌ Socket error:', error);
-    alert('Error: ' + error);
-});
-
-// Simple global functions for onclick
+// Simple global functions for onclick - MUST be after variable declarations
 function selectAppearance(element) {
     console.log('✨ Appearance clicked via onclick');
     document.querySelectorAll('.appearance-card').forEach(c => c.classList.remove('selected'));
@@ -38,6 +28,15 @@ function selectCountry(element) {
     selectedCountry = element.getAttribute('data-country');
     console.log('✅ Selected country:', selectedCountry);
 }
+
+// Socket connection event handlers
+socket.on('connect', () => {
+    console.log('✅ Socket connected:', socket.id);
+});
+
+socket.on('disconnect', () => {
+    console.log('❌ Socket disconnected');
+});
 
 // Initialize sound manager after user interaction
 let soundEnabled = false;
@@ -175,6 +174,11 @@ function createLobby() {
     const playerName = document.getElementById('playerNameInput').value.trim();
     if (!playerName) {
         alert('Lütfen isminizi girin!');
+        return;
+    }
+    
+    if (!socket) {
+        alert('Sunucu bağlantısı henüz hazır değil! Lütfen birkaç saniye bekleyin.');
         return;
     }
     
@@ -571,8 +575,8 @@ function getColorCode(color) {
     return colors[color] || '#333';
 }
 
-// Socket event listeners
-socket.on('lobbyCreated', ({ lobbyId, lobby }) => {
+    // Socket event listeners
+    socket.on('lobbyCreated', ({ lobbyId, lobby }) => {
     console.log('✅ Lobby created successfully!', { lobbyId, lobby });
     
     currentLobbyId = lobbyId;

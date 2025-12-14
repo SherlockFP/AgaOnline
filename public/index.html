@@ -84,57 +84,86 @@
 
         <!-- Lobby Screen -->
         <div id="lobbyScreen" class="screen">
-            <div class="lobby-container">
-                <h2>Lobi</h2>
-                <div class="lobby-info">
-                    <div class="invite-link">
-                        <span id="inviteLinkText"></span>
-                        <button class="btn btn-small" onclick="copyInviteLink()">Kopyala</button>
+            <div class="lobby-container-pro">
+                <div class="lobby-header-pro">
+                    <h2>🎮 Oyun Lobisi</h2>
+                    <div class="invite-section-pro">
+                        <div class="invite-label">Davet Linki:</div>
+                        <div class="invite-link-box">
+                            <input type="text" id="inviteLinkText" readonly>
+                            <button class="btn-copy-pro" onclick="copyInviteLink()">
+                                📋 Kopyala
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="lobby-content">
-                    <div class="lobby-left">
-                        <div class="players-waiting">
-                            <h3>Oyuncular</h3>
-                            <div id="lobbyPlayersList"></div>
+                <div class="lobby-layout-pro">
+                    <div class="lobby-left-pro">
+                        <div class="lobby-card-pro players-section-pro">
+                            <div class="card-header-pro">
+                                <h3>👥 Oyuncular <span id="playerCount" class="player-count-badge">0/6</span></h3>
+                            </div>
+                            <div class="card-content-pro">
+                                <div id="lobbyPlayersList" class="lobby-players-grid"></div>
+                            </div>
                         </div>
                         
-                        <div id="lobbySettings" class="lobby-settings" style="display: none;">
-                            <h3>⚙️ Game Settings</h3>
-                            <div class="setting-item">
-                                <label>Starting Money:</label>
-                                <input type="number" id="startingMoney" value="1500" step="100" min="500" max="5000">
+                        <div id="lobbySettings" class="lobby-card-pro settings-section-pro" style="display: none;">
+                            <div class="card-header-pro">
+                                <h3>⚙️ Oyun Ayarları</h3>
                             </div>
-                            <div class="setting-item">
-                                <label>Pass GO Money:</label>
-                                <input type="number" id="passGoMoney" value="200" step="50" min="100" max="500">
+                            <div class="card-content-pro">
+                                <div class="settings-grid-pro">
+                                    <div class="setting-item-pro">
+                                        <label>💰 Başlangıç Parası:</label>
+                                        <input type="number" id="startingMoney" value="1500" step="100" min="500" max="5000">
+                                    </div>
+                                    <div class="setting-item-pro">
+                                        <label>🎯 Pass GO Parası:</label>
+                                        <input type="number" id="passGoMoney" value="200" step="50" min="100" max="500">
+                                    </div>
+                                    <div class="setting-item-pro">
+                                        <label>⛓️ Hapiste Kalma Süresi:</label>
+                                        <input type="number" id="jailTurns" value="3" min="1" max="5">
+                                    </div>
+                                    <div class="setting-item-pro">
+                                        <label>💵 Hapisten Çıkış Cezası:</label>
+                                        <input type="number" id="jailFine" value="50" step="10" min="0" max="200">
+                                    </div>
+                                </div>
+                                <button class="btn-save-settings-pro" onclick="saveSettings()">
+                                    ✅ Ayarları Kaydet
+                                </button>
                             </div>
-                            <div class="setting-item">
-                                <label>Jail Turns:</label>
-                                <input type="number" id="jailTurns" value="3" min="1" max="5">
-                            </div>
-                            <div class="setting-item">
-                                <label>Jail Fine:</label>
-                                <input type="number" id="jailFine" value="50" step="10" min="0" max="200">
-                            </div>
-                            <button class="btn btn-small btn-primary" onclick="saveSettings()">Save Settings</button>
                         </div>
                     </div>
                     
-                    <div class="lobby-chat">
-                        <h3>💬 Chat</h3>
-                        <div id="lobbyChatMessages"></div>
-                        <div class="chat-input">
-                            <input type="text" id="lobbyChatInput" placeholder="Mesaj yaz..." maxlength="200">
-                            <button class="btn btn-small" onclick="sendLobbyMessage()">Send</button>
+                    <div class="lobby-right-pro">
+                        <div class="lobby-card-pro chat-section-pro">
+                            <div class="card-header-pro">
+                                <h3>💬 Sohbet</h3>
+                            </div>
+                            <div class="card-content-pro">
+                                <div id="lobbyChatMessages" class="chat-messages-pro"></div>
+                                <div class="chat-input-pro">
+                                    <input type="text" id="lobbyChatInput" placeholder="Mesaj yazın..." maxlength="200">
+                                    <button class="btn-send-chat-pro" onclick="sendLobbyMessage()">
+                                        📤
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="lobby-actions">
-                    <button id="startGameBtn" class="btn btn-primary" onclick="startGame()" style="display: none;">Oyunu Başlat</button>
-                    <button class="btn btn-back" onclick="leaveLobby()">Lobiden Çık</button>
+                <div class="lobby-footer-pro">
+                    <button id="startGameBtn" class="btn-start-game-pro" onclick="startGame()" style="display: none;">
+                        🎮 Oyunu Başlat
+                    </button>
+                    <button class="btn-leave-lobby-pro" onclick="leaveLobby()">
+                        🚪 Lobiden Çık
+                    </button>
                 </div>
             </div>
         </div>

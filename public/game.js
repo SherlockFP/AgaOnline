@@ -228,6 +228,12 @@ function showLobbies() {
 
 // Join lobby
 function joinLobby(lobbyId) {
+    // Prevent duplicate joins
+    if (currentLobbyId) {
+        console.log('Already in a lobby');
+        return;
+    }
+    
     const playerName = document.getElementById('playerNameInput').value.trim();
     if (!playerName) {
         alert('Lütfen isminizi girin!');
@@ -696,15 +702,27 @@ socket.on('settingsUpdated', (settings) => {
 
 function updateLobbyPlayers(players, hostId) {
     const list = document.getElementById('lobbyPlayersList');
-    list.innerHTML = '';
+    const playerCountBadge = document.getElementById('playerCount');
     
-    players.forEach(player => {
+    list.innerHTML = '';
+    if (playerCountBadge) {
+        playerCountBadge.textContent = `${players.length}/6`;
+    }
+    
+    const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    
+    players.forEach((player, index) => {
         const card = document.createElement('div');
-        card.className = 'lobby-player-card' + (player.id === hostId ? ' host' : '');
+        card.className = 'lobby-player-card-pro' + (player.id === hostId ? ' host-player' : '');
+        const playerColor = colors[index % colors.length];
+        
         card.innerHTML = `
-            <div class="player-appearance">${player.appearance || '👤'}</div>
-            <div class="player-name">${player.name}</div>
-            ${player.id === hostId ? '<span class="host-badge">HOST</span>' : ''}
+            <div class="player-color-indicator" style="background: ${playerColor}"></div>
+            <div class="player-appearance-lobby">${player.appearance || '👤'}</div>
+            <div class="player-info-lobby">
+                <div class="player-name-lobby">${player.name}</div>
+                ${player.id === hostId ? '<span class="host-badge-pro">👑 HOST</span>' : ''}
+            </div>
         `;
         list.appendChild(card);
     });
@@ -728,10 +746,10 @@ function addChatMessage(message) {
     if (!chatContainer) return;
     
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'chat-message' + (message.system ? ' system' : '');
+    msgDiv.className = 'chat-message-pro' + (message.system ? ' system' : '');
     msgDiv.innerHTML = `
-        ${message.system ? '' : `<div class="message-author">${message.playerName}</div>`}
-        <div class="message-text">${message.text}</div>
+        ${message.system ? '' : `<div class="chat-message-sender">${message.playerName}:</div>`}
+        <div class="chat-message-text">${message.text}</div>
     `;
     chatContainer.appendChild(msgDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;

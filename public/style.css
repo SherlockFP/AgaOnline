@@ -1907,3 +1907,394 @@ body::before {
         font-size: 1.5em;
     }
 }
+
+/* ===================================
+   PROFESSIONAL LOBBY SCREEN STYLES
+   =================================== */
+
+.lobby-container-pro {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.lobby-header-pro {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 25px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.lobby-header-pro h2 {
+    margin: 0 0 20px 0;
+    font-size: 2em;
+    color: #fff;
+    text-align: center;
+}
+
+.invite-section-pro {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.invite-label {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+}
+
+.invite-link-box {
+    display: flex;
+    gap: 10px;
+}
+
+.invite-link-box input {
+    flex: 1;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95em;
+    font-family: 'Courier New', monospace;
+}
+
+.btn-copy-pro {
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.btn-copy-pro:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+.lobby-layout-pro {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 25px;
+}
+
+.lobby-left-pro {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.lobby-card-pro {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.card-header-pro {
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-header-pro h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-count-badge {
+    background: linear-gradient(135deg, #10b981, #059669);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 800;
+}
+
+.card-content-pro {
+    padding: 20px;
+}
+
+.lobby-players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.lobby-player-card-pro {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.lobby-player-card-pro:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.lobby-player-card-pro.host-player {
+    border-color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.player-color-indicator {
+    width: 8px;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 12px 0 0 12px;
+}
+
+.player-appearance-lobby {
+    font-size: 2em;
+    margin-left: 8px;
+}
+
+.player-info-lobby {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.player-name-lobby {
+    font-weight: 700;
+    color: #fff;
+    font-size: 1.05em;
+}
+
+.host-badge-pro {
+    font-size: 0.75em;
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+/* Settings Section */
+.settings-grid-pro {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.setting-item-pro {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-item-pro label {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+}
+
+.setting-item-pro input {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.btn-save-settings-pro {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.btn-save-settings-pro:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+/* Chat Section */
+.chat-section-pro {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages-pro {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 5px;
+}
+
+.chat-messages-pro::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-messages-pro::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.chat-messages-pro::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.chat-message-pro {
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #6366f1;
+    animation: slide-in-chat 0.3s ease;
+}
+
+.chat-message-sender {
+    font-weight: 700;
+    color: #fbbf24;
+    margin-bottom: 4px;
+    font-size: 0.9em;
+}
+
+.chat-message-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95em;
+    word-wrap: break-word;
+}
+
+@keyframes slide-in-chat {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.chat-input-pro {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.chat-input-pro input {
+    flex: 1;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95em;
+}
+
+.chat-input-pro input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.btn-send-chat-pro {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.btn-send-chat-pro:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+}
+
+/* Footer Actions */
+.lobby-footer-pro {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-start-game-pro {
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.2em;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-start-game-pro:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.6);
+}
+
+.btn-leave-lobby-pro {
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.btn-leave-lobby-pro:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+}
+
+@media (max-width: 1200px) {
+    .lobby-layout-pro {
+        grid-template-columns: 1fr;
+    }
+    
+    .settings-grid-pro {
+        grid-template-columns: 1fr;
+    }
+}

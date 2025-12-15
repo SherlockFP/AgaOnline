@@ -407,7 +407,7 @@ io.on('connection', (socket) => {
     }
 
     currentPlayer.position = newPosition;
-    const landedSpace = lobby.properties[newPosition];
+    let landedSpace = lobby.properties[newPosition];
     if (!landedSpace) {
       console.warn('⚠️ landedSpace undefined at position', newPosition);
     }

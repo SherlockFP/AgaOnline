@@ -1077,26 +1077,26 @@ function initializeBoard() {
 function arrangeBoardSpaces() {
     const spaces = document.querySelectorAll('.board-space');
     const positions = [
-        // Bottom row (0-9)
-        { col: 11, row: 11 }, // 0 - GO
-        { col: 10, row: 11 }, { col: 9, row: 11 }, { col: 8, row: 11 },
-        { col: 7, row: 11 }, { col: 6, row: 11 }, { col: 5, row: 11 },
-        { col: 4, row: 11 }, { col: 3, row: 11 }, { col: 2, row: 11 },
-        // Left column (10-19)
-        { col: 1, row: 11 }, // 10 - Jail
-        { col: 1, row: 10 }, { col: 1, row: 9 }, { col: 1, row: 8 },
-        { col: 1, row: 7 }, { col: 1, row: 6 }, { col: 1, row: 5 },
-        { col: 1, row: 4 }, { col: 1, row: 3 }, { col: 1, row: 2 },
-        // Top row (20-29)
-        { col: 1, row: 1 }, // 20 - Free Parking
+        // Top row (0-9) - START moves to top-left
+        { col: 1, row: 1 }, // 0 - GO (now top-left)
         { col: 2, row: 1 }, { col: 3, row: 1 }, { col: 4, row: 1 },
         { col: 5, row: 1 }, { col: 6, row: 1 }, { col: 7, row: 1 },
         { col: 8, row: 1 }, { col: 9, row: 1 }, { col: 10, row: 1 },
-        // Right column (30-39)
-        { col: 11, row: 1 }, // 30 - Go to Jail
+        // Right column (10-19)
+        { col: 11, row: 1 }, // 10 - Jail (now top-right)
         { col: 11, row: 2 }, { col: 11, row: 3 }, { col: 11, row: 4 },
         { col: 11, row: 5 }, { col: 11, row: 6 }, { col: 11, row: 7 },
-        { col: 11, row: 8 }, { col: 11, row: 9 }, { col: 11, row: 10 }
+        { col: 11, row: 8 }, { col: 11, row: 9 }, { col: 11, row: 10 },
+        // Bottom row (20-29)
+        { col: 11, row: 11 }, // 20 - Free Parking (now bottom-right)
+        { col: 10, row: 11 }, { col: 9, row: 11 }, { col: 8, row: 11 },
+        { col: 7, row: 11 }, { col: 6, row: 11 }, { col: 5, row: 11 },
+        { col: 4, row: 11 }, { col: 3, row: 11 }, { col: 2, row: 11 },
+        // Left column (30-39)
+        { col: 1, row: 11 }, // 30 - Go to Jail (now bottom-left)
+        { col: 1, row: 10 }, { col: 1, row: 9 }, { col: 1, row: 8 },
+        { col: 1, row: 7 }, { col: 1, row: 6 }, { col: 1, row: 5 },
+        { col: 1, row: 4 }, { col: 1, row: 3 }, { col: 1, row: 2 }
     ];
 
     spaces.forEach((space, i) => {

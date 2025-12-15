@@ -2029,3 +2029,66 @@ body {
         transform: scale(0.95) !important;
     }
 }
+
+/* START BUTTON MOBILE FIX */
+@media screen and (max-width: 768px) {
+    #startBtn {
+        position: relative !important;
+        width: 90% !important;
+        max-width: 300px !important;
+        margin: 20px auto !important;
+        display: block !important;
+        font-size: 1.2em !important;
+        padding: 16px 24px !important;
+        z-index: 100 !important;
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6) !important;
+    }
+
+    .board-center {
+        position: relative !important;
+        z-index: 10 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 15px !important;
+    }
+
+    #colorPickerPanel {
+        width: 95% !important;
+        max-width: 400px !important;
+        margin: 10px auto !important;
+        padding: 15px !important;
+    }
+
+    #colorPickerPanel > div[style*="grid"] {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    #colorPickerPanel button {
+        width: 60px !important;
+        height: 60px !important;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #startBtn {
+        font-size: 1.1em !important;
+        padding: 14px 20px !important;
+        width: 95% !important;
+    }
+
+    #colorPickerPanel {
+        padding: 12px !important;
+    }
+
+    #colorPickerPanel h3 {
+        font-size: 1.1em !important;
+        margin-bottom: 12px !important;
+    }
+
+    #colorPickerPanel button {
+        width: 50px !important;
+        height: 50px !important;
+    }
+}

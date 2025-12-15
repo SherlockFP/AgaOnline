@@ -295,12 +295,6 @@ socket.on('diceRolled', (data) => {
         dice1El.classList.remove('rolling');
     }, 600);
 
-    // Show end turn button to current player after rolling dice
-    const isMyTurn = gameState.players[gameState.currentTurn].id === socket.id;
-    if (endTurnBtn && isMyTurn) {
-        endTurnBtn.style.display = 'block';
-    }
-
     // Hide roll button after rolling
     const rollBtn = document.getElementById('rollBtn');
     if (rollBtn) {
@@ -361,9 +355,18 @@ socket.on('diceRolled', (data) => {
         setTimeout(() => {
             showPropertyPopup(data.landedSpace);
         }, 1400);
+        
+        // If property not bought within 10 seconds, auto-advance turn
+        setTimeout(() => {
+            const popup = document.getElementById('propertyPopup');
+            if (popup && popup.style.display !== 'none' && gameState.players[gameState.currentTurn]?.id === socket.id) {
+                closePopup();
+                // Server will handle turn advancement
+            }
+        }, 10000);
     }
     
-    // No more auto-end turn - player must manually end turn after dice roll
+    // Auto-end turn handled by server for special spaces
 });
 
 socket.on('propertyBought', (data) => {
@@ -384,6 +387,8 @@ socket.on('propertyBought', (data) => {
     updateOwnedProperties();
     updateGamePlayersPanel();
     closePopup();
+    
+    // Note: Server handles auto turn advancement
 });
 
 socket.on('houseBuilt', (data) => {
@@ -457,10 +462,6 @@ socket.on('turnEnded', (data) => {
         rollBtn.style.display = 'none';
         rollBtn.disabled = true;
     }
-
-    // Hide end turn button since turn just changed
-    const endTurnBtn = document.getElementById('endTurnBtn');
-    endTurnBtn.style.display = 'none';
 
     const diceResult = document.getElementById('diceResult');
     if (diceResult) diceResult.textContent = 'Zarı at';
@@ -732,8 +733,7 @@ function updateLobbyUI() {
         const rollBtn = document.getElementById('rollBtn');
         if (rollBtn) rollBtn.style.display = 'none';
 
-        const endTurnBtn = document.getElementById('endTurnBtn');
-        if (endTurnBtn) endTurnBtn.style.display = 'none';
+        // Roll button will be hidden since player is in jail
 
         const gameMusicControl = document.querySelector('.game-music-control');
         if (gameMusicControl) gameMusicControl.style.display = 'none';
@@ -862,11 +862,9 @@ function showGameBoard() {
     const diceDisplay = document.querySelector('.dice-display');
     if (diceDisplay) diceDisplay.style.display = 'block';
 
-    // Show roll button and hide end turn button (auto-end turn now)
+    // Show roll button (auto-turn advancement handled by server)
     const rollBtn = document.getElementById('rollBtn');
-    const endTurnBtn = document.getElementById('endTurnBtn');
     rollBtn.style.display = 'block';
-    endTurnBtn.style.display = 'none'; // Hidden since we auto-end turn
     rollBtn.disabled = gameState.players[gameState.currentTurn].id !== socket.id;
 
     // Show game music control
@@ -1212,11 +1210,7 @@ function rollDice() {
     }, 2000);
 }
 
-function endTurn() {
-    socket.emit('endTurn');
-    const endTurnBtn = document.getElementById('endTurnBtn');
-    endTurnBtn.style.display = 'none';
-}
+// endTurn function removed - auto-advancement handled by server
 
 function showPropertyPopup(property) {
     selectedProperty = property;

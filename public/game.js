@@ -1,1477 +1,436 @@
-// Global variables - MUST be declared first
-var selectedCountry = 'usa';
-var selectedAppearance = '🎩';
-var selectedColor = '#ef4444';
-var usedColors = [];
-var currentLobbyId = null;
-var currentPlayerId = null;
-var gameState = null;
-var currentTrade = null;
-var isHost = false;
-var soundEnabled = false;
-var socket;
-var isJoiningLobby = false;
+// Game State
+let socket;
+let currentLobby = null;
+let gameState = null;
+let selectedAppearance = '👤';
+let selectedColor = '#ef4444';
+let selectedProperty = null;
 
-// Currency symbols by country
-var currencySymbols = {
-    usa: '$',
-    turkey: '₺',
-    germany: '€',
-    japan: '¥',
-    china: '¥',
-    russia: '₽',
-    world: '$'
-};
-
-// Custom Notification System
-function showNotification(message, type = 'info') {
-    const container = document.getElementById('notificationContainer');
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-    
-    notification.innerHTML = `
-        <span class="notification-icon">${icons[type] || icons.info}</span>
-        <span class="notification-message">${message}</span>
-    `;
-    
-    container.appendChild(notification);
-    
-    // Auto remove after 4 seconds
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    }, 4000);
-}
-
-// Replace all alerts with notifications
-window.alert = function(message) {
-    showNotification(message, 'info');
-};
-
-// Get currency symbol based on selected country
-function getCurrencySymbol() {
-    return currencySymbols[selectedCountry] || '$';
-}
-
-// Format money with currency
-function formatMoney(amount) {
-    return getCurrencySymbol() + amount.toLocaleString();
-}
-
-// Show property popup
-function showPropertyPopup(property) {
-    // Remove existing popup if any
-    const existingPopup = document.querySelector('.property-popup');
-    const existingOverlay = document.querySelector('.popup-overlay');
-    if (existingPopup) existingPopup.remove();
-    if (existingOverlay) existingOverlay.remove();
-    
-    // Create overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'popup-overlay';
-    overlay.onclick = closePropertyPopup;
-    
-    // Create popup
-    const popup = document.createElement('div');
-    popup.className = 'property-popup';
-    
-    const currency = getCurrencySymbol();
-    var myPlayer = gameState.players.find(function(p) { return p.id === socket.id; });
-    var canBuy = !property.owner && myPlayer && myPlayer.money >= property.price;
-    
-    popup.innerHTML = `
-        <div class="property-popup-header">
-            ${property.color ? `<div class="property-popup-color-bar" style="background: ${getColorCode(property.color)}"></div>` : ''}
-            <div class="property-popup-name">${property.name}</div>
-            <div class="property-popup-price">Fiyat: ${formatMoney(property.price)}</div>
-            ${myPlayer ? `<div class="property-popup-balance">Paran: ${formatMoney(myPlayer.money)}</div>` : ''}
-        </div>
-        <div class="property-popup-details">
-            ${property.rent ? `<div class="property-detail-row">
-                <span class="property-detail-label">🏠 Kira:</span>
-                <span class="property-detail-value">${formatMoney(property.rent[0])}</span>
-            </div>` : ''}
-            ${property.rent && property.rent[1] ? `<div class="property-detail-row">
-                <span class="property-detail-label">🏘️ 1 Ev ile:</span>
-                <span class="property-detail-value">${formatMoney(property.rent[1])}</span>
-            </div>` : ''}
-            ${property.rent && property.rent[2] ? `<div class="property-detail-row">
-                <span class="property-detail-label">🏘️ 2 Ev ile:</span>
-                <span class="property-detail-value">${formatMoney(property.rent[2])}</span>
-            </div>` : ''}
-            ${property.rent && property.rent[3] ? `<div class="property-detail-row">
-                <span class="property-detail-label">🏘️ 3 Ev ile:</span>
-                <span class="property-detail-value">${formatMoney(property.rent[3])}</span>
-            </div>` : ''}
-            ${property.rent && property.rent[4] ? `<div class="property-detail-row">
-                <span class="property-detail-label">🏘️ 4 Ev ile:</span>
-                <span class="property-detail-value">${formatMoney(property.rent[4])}</span>
-            </div>` : ''}
-            ${property.rent && property.rent[5] ? `<div class="property-detail-row">
-                <span class="property-detail-label">🏨 Otel ile:</span>
-                <span class="property-detail-value">${formatMoney(property.rent[5])}</span>
-            </div>` : ''}
-            ${property.houseCost ? `<div class="property-detail-row">
-                <span class="property-detail-label">🔨 Ev Fiyatı:</span>
-                <span class="property-detail-value">${formatMoney(property.houseCost)}</span>
-            </div>` : ''}
-            ${property.owner ? `<div class="property-detail-row">
-                <span class="property-detail-label">👤 Sahibi:</span>
-                <span class="property-detail-value">${(function() {
-                    var owner = gameState.players.find(function(p) { return p.id === property.owner; });
-                    return owner ? owner.name : 'Bilinmeyen';
-                })()}</span>
-            </div>` : ''}
-        </div>
-        <div class="property-popup-actions">
-            ${canBuy ? `<button class="btn-popup-action btn-popup-buy" onclick="buyProperty()">
-                💰 Satın Al (${formatMoney(property.price)})
-            </button>` : ''}
-            <button class="btn-popup-action btn-popup-close" onclick="closePropertyPopup()">
-                ${canBuy ? 'İptal' : 'Kapat'}
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(overlay);
-    document.body.appendChild(popup);
-}
-
-function closePropertyPopup() {
-    const popup = document.querySelector('.property-popup');
-    const overlay = document.querySelector('.popup-overlay');
-    if (popup) popup.remove();
-    if (overlay) overlay.remove();
-}
-
-// Initialize socket immediately - socket.io is already loaded
-console.log('🔌 Initializing socket...');
+// Initialize Socket.IO
 socket = io();
-console.log('✅ Socket initialized');
 
-// Socket connection event handlers
-socket.on('connect', function() {
-    console.log('✅ Socket connected:', socket.id);
+// Socket Events
+socket.on('lobbyCreated', (lobby) => {
+    currentLobby = lobby;
+    showScreen('gameScreen');
+    updateLobbyUI();
+    console.log('✅ Lobby created:', lobby.id);
 });
 
-socket.on('disconnect', function() {
-    console.log('❌ Socket disconnected');
+// Update player info in header when lobby updates
+socket.on('lobbyUpdated', (lobby) => {
+    currentLobby = lobby;
+    updateLobbyUI();
+    
+    const playerCount = document.getElementById('playerCount');
+    playerCount.textContent = `Players: ${lobby.players.length}/6`;
+    
+    console.log('👥 Lobby updated');
 });
 
-socket.on('error', function(error) {
-    console.error('❌ Socket error:', error);
+socket.on('gameStarted', (lobby) => {
+    currentLobby = lobby;
+    gameState = lobby;
+    showGameBoard();
+    console.log('🎮 Game started!');
 });
 
-// Simple global functions for onclick - MUST be after variable declarations
-function selectAppearance(element) {
-    console.log('✨ Appearance clicked via onclick');
-    document.querySelectorAll('.appearance-card').forEach(function(c) {
-        c.classList.remove('selected');
-    });
-    element.classList.add('selected');
-    selectedAppearance = element.getAttribute('data-appearance');
-    console.log('✅ Selected appearance:', selectedAppearance);
-}
+socket.on('diceRolled', (data) => {
+    const dice1El = document.getElementById('dice1');
+    const dice2El = document.getElementById('dice2');
+    const resultEl = document.getElementById('diceResult');
 
-function selectCountry(element) {
-    console.log('🌍 Country clicked via onclick');
-    document.querySelectorAll('.country-card').forEach(function(c) {
-        c.classList.remove('selected');
-    });
-    element.classList.add('selected');
-    selectedCountry = element.getAttribute('data-country');
-    console.log('✅ Selected country:', selectedCountry);
-}
+    // Animate dice
+    dice1El.classList.add('rolling');
+    dice2El.classList.add('rolling');
 
-// Initialize sound manager after user interaction
-document.addEventListener('click', function() {
-    if (!soundEnabled && window.soundManager) {
-        soundEnabled = true;
-        window.soundManager.audioContext.resume();
+    setTimeout(() => {
+        dice1El.textContent = data.dice1;
+        dice2El.textContent = data.dice2;
+        resultEl.textContent = `Total: ${data.total}`;
+        dice1El.classList.remove('rolling');
+        dice2El.classList.remove('rolling');
+    }, 600);
+
+    addEvent(`${data.player.name} rolled ${data.dice1} + ${data.dice2} = ${data.total}`);
+
+    // Show property popup if landed on buyable property
+    if (data.landedSpace && ['property', 'railroad', 'utility'].includes(data.landedSpace.type) && !data.landedSpace.owner) {
+        setTimeout(() => {
+            showPropertyPopup(data.landedSpace);
+        }, 800);
     }
-}, { once: true });
-
-// Initialize selectors when page loads
-window.addEventListener('load', () => {
-    console.log('Initializing selectors...');
-    initializeAppearanceSelector();
-    initializeCountrySelector();
 });
 
-function initializeAppearanceSelector() {
-    const appearanceCards = document.querySelectorAll('.appearance-card');
-    console.log('Found appearance cards:', appearanceCards.length);
+socket.on('propertyBought', (data) => {
+    addEvent(`${data.player.name} bought ${data.property.name}`);
+    updateGameBoard();
+    closePopup();
+});
+
+socket.on('turnEnded', (data) => {
+    gameState.currentTurn = data.currentTurn;
+    const currentPlayer = gameState.players[gameState.currentTurn];
+    const gameStatus = document.getElementById('gameStatus');
+    gameStatus.textContent = `${currentPlayer.name}'s Turn`;
+    updateGameBoard();
     
-    appearanceCards.forEach((card, index) => {
-        card.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Appearance clicked:', this.getAttribute('data-appearance'));
-            
-            appearanceCards.forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
-            selectedAppearance = this.getAttribute('data-appearance');
-            
-            if (window.soundManager) {
-                try {
-                    window.soundManager.buttonClick();
-                } catch(e) {}
-            }
-        });
-        
-        // Add hover effect
-        card.style.cursor = 'pointer';
-    });
-    
-    // Select first appearance by default
-    if (appearanceCards.length > 0) {
-        appearanceCards[0].classList.add('selected');
-        console.log('Default appearance selected:', selectedAppearance);
-    }
+    // Enable roll button for current player
+    const rollBtn = document.getElementById('rollBtn');
+    rollBtn.disabled = gameState.players[gameState.currentTurn].id !== socket.id;
+});
+
+socket.on('messageReceived', (data) => {
+    const chatDiv = document.getElementById('chatMessages');
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-message';
+    msgEl.innerHTML = `
+        <div class="chat-message-author">${data.appearance} ${data.playerName}</div>
+        <div>${data.message}</div>
+    `;
+    chatDiv.appendChild(msgEl);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+});
+
+socket.on('error', (message) => {
+    alert('Error: ' + message);
+});
+
+// UI Functions
+function showScreen(screenName) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenName).classList.add('active');
 }
 
-function initializeCountrySelector() {
-    const countryCards = document.querySelectorAll('.country-card');
-    console.log('Found country cards:', countryCards.length);
-    
-    countryCards.forEach((card, index) => {
-        card.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Country clicked:', this.getAttribute('data-country'));
-            
-            countryCards.forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
-            selectedCountry = this.getAttribute('data-country');
-            
-            if (window.soundManager) {
-                try {
-                    window.soundManager.buttonClick();
-                } catch(e) {}
-            }
-        });
-        
-        // Add hover effect
-        card.style.cursor = 'pointer';
-    });
-    
-    // Select USA by default
-    const usaCard = document.querySelector('.country-card[data-country="usa"]');
-    if (usaCard) {
-        usaCard.classList.add('selected');
-        console.log('Default country selected:', selectedCountry);
-    }
-}
-
-// Board spaces data
-const boardSpaces = [
-  { id: 0, name: 'GO', type: 'go', color: null },
-  { id: 1, name: 'Mediterranean Avenue', type: 'property', color: 'brown', price: 60 },
-  { id: 2, name: 'Community Chest', type: 'chest', color: null },
-  { id: 3, name: 'Baltic Avenue', type: 'property', color: 'brown', price: 60 },
-  { id: 4, name: 'Income Tax', type: 'tax', color: null },
-  { id: 5, name: 'Reading Railroad', type: 'railroad', color: null, price: 200 },
-  { id: 6, name: 'Oriental Avenue', type: 'property', color: 'lightblue', price: 100 },
-  { id: 7, name: 'Chance', type: 'chance', color: null },
-  { id: 8, name: 'Vermont Avenue', type: 'property', color: 'lightblue', price: 100 },
-  { id: 9, name: 'Connecticut Avenue', type: 'property', color: 'lightblue', price: 120 },
-  { id: 10, name: 'Jail', type: 'jail', color: null },
-  { id: 11, name: 'St. Charles Place', type: 'property', color: 'pink', price: 140 },
-  { id: 12, name: 'Electric Company', type: 'utility', color: null, price: 150 },
-  { id: 13, name: 'States Avenue', type: 'property', color: 'pink', price: 140 },
-  { id: 14, name: 'Virginia Avenue', type: 'property', color: 'pink', price: 160 },
-  { id: 15, name: 'Pennsylvania Railroad', type: 'railroad', color: null, price: 200 },
-  { id: 16, name: 'St. James Place', type: 'property', color: 'orange', price: 180 },
-  { id: 17, name: 'Community Chest', type: 'chest', color: null },
-  { id: 18, name: 'Tennessee Avenue', type: 'property', color: 'orange', price: 180 },
-  { id: 19, name: 'New York Avenue', type: 'property', color: 'orange', price: 200 },
-  { id: 20, name: 'Free Parking', type: 'parking', color: null },
-  { id: 21, name: 'Kentucky Avenue', type: 'property', color: 'red', price: 220 },
-  { id: 22, name: 'Chance', type: 'chance', color: null },
-  { id: 23, name: 'Indiana Avenue', type: 'property', color: 'red', price: 220 },
-  { id: 24, name: 'Illinois Avenue', type: 'property', color: 'red', price: 240 },
-  { id: 25, name: 'B&O Railroad', type: 'railroad', color: null, price: 200 },
-  { id: 26, name: 'Atlantic Avenue', type: 'property', color: 'yellow', price: 260 },
-  { id: 27, name: 'Ventnor Avenue', type: 'property', color: 'yellow', price: 260 },
-  { id: 28, name: 'Water Works', type: 'utility', color: null, price: 150 },
-  { id: 29, name: 'Marvin Gardens', type: 'property', color: 'yellow', price: 280 },
-  { id: 30, name: 'Go To Jail', type: 'gotojail', color: null },
-  { id: 31, name: 'Pacific Avenue', type: 'property', color: 'green', price: 300 },
-  { id: 32, name: 'North Carolina Avenue', type: 'property', color: 'green', price: 300 },
-  { id: 33, name: 'Community Chest', type: 'chest', color: null },
-  { id: 34, name: 'Pennsylvania Avenue', type: 'property', color: 'green', price: 320 },
-  { id: 35, name: 'Short Line', type: 'railroad', color: null, price: 200 },
-  { id: 36, name: 'Chance', type: 'chance', color: null },
-  { id: 37, name: 'Park Place', type: 'property', color: 'darkblue', price: 350 },
-  { id: 38, name: 'Luxury Tax', type: 'tax', color: null },
-  { id: 39, name: 'Boardwalk', type: 'property', color: 'darkblue', price: 400 }
-];
-
-// Screen navigation
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
-    document.getElementById(screenId).classList.add('active');
-}
-
-// Create lobby
-function createLobby() {
-    const playerName = document.getElementById('playerNameInput').value.trim();
-    if (!playerName) {
-        alert('Lütfen isminizi girin!');
-        return;
-    }
-    
-    if (!socket || !socket.connected) {
-        alert('Sunucu bağlantısı henüz hazır değil! Lütfen birkaç saniye bekleyin.');
-        console.error('❌ Socket not ready:', {socket: !!socket, connected: socket ? socket.connected : false});
-        return;
-    }
-    
-    console.log('🎮 Creating lobby with:', {
-        playerName,
-        country: selectedCountry,
-        appearance: selectedAppearance,
-        socketConnected: socket.connected
-    });
-    
-    if (!socket.connected) {
-        alert('Sunucuya bağlanılamadı! Lütfen sayfayı yenileyin.');
-        return;
-    }
-    
-    if (soundEnabled && window.soundManager) {
-        try {
-            window.soundManager.buttonClick();
-        } catch(e) {}
-    }
-    
-    isHost = true;
-    socket.emit('createLobby', { playerName, country: selectedCountry, appearance: selectedAppearance });
-    console.log('📤 Lobby creation request sent');
-}
-
-// Show lobbies
-function showLobbies() {
-    const playerName = document.getElementById('playerNameInput').value.trim();
-    if (!playerName) {
-        alert('Lütfen isminizi girin!');
-        return;
-    }
-    socket.emit('getLobbies');
-    showScreen('lobbiesScreen');
-}
-
-// Join lobby
-function joinLobby(lobbyId) {
-    // Prevent duplicate joins
-    if (currentLobbyId || isJoiningLobby) {
-        console.log('Already in a lobby or joining');
-        showNotification('Zaten bir lobiye katılıyorsunuz!', 'warning');
-        return;
-    }
-    
-    const playerName = document.getElementById('playerNameInput').value.trim();
-    if (!playerName) {
-        showNotification('Lütfen isminizi girin!', 'warning');
-        return;
-    }
-    isJoiningLobby = true;
-    console.log('🚪 Joining lobby:', { lobbyId, playerName, appearance: selectedAppearance, color: selectedColor });
-    socket.emit('joinLobby', { lobbyId, playerName, appearance: selectedAppearance, color: selectedColor });
-    
-    // Reset flag after 2 seconds if no response
-    setTimeout(function() {
-        if (!currentLobbyId) {
-            isJoiningLobby = false;
-        }
-    }, 2000);
-}
-
-// Character selection
-function selectCharacter(element) {
-    document.querySelectorAll('.character-option').forEach(function(el) {
-        el.classList.remove('selected');
-    });
-    element.classList.add('selected');
-    selectedAppearance = element.getAttribute('data-char');
-    console.log('✅ Selected character:', selectedAppearance);
-}
-
-// Color selection
-function selectColor(element) {
-    if (element.classList.contains('taken')) {
-        showNotification('Bu renk başka bir oyuncu tarafından kullanılıyor!', 'warning');
-        return;
-    }
-    
-    document.querySelectorAll('.color-option').forEach(function(el) {
-        el.classList.remove('selected');
-    });
-    element.classList.add('selected');
-    selectedColor = element.getAttribute('data-color');
-    console.log('✅ Selected color:', selectedColor);
-}
-
-// Update available colors based on lobby players
-function updateAvailableColors(players) {
-    usedColors = players.map(function(p) { return p.color; }).filter(Boolean);
-    
-    document.querySelectorAll('.color-option').forEach(function(el) {
-        var color = el.getAttribute('data-color');
-        if (usedColors.includes(color)) {
-            el.classList.add('taken');
-        } else {
-            el.classList.remove('taken');
-        }
+function selectAppearance(appearance) {
+    selectedAppearance = appearance;
+    document.querySelectorAll('.avatar-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.appearance === appearance);
     });
 }
 
-// Back to menu
-function backToMenu() {
+function selectColor(color) {
+    selectedColor = color;
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.color === color);
+    });
+}
+
+function showMenu() {
     showScreen('mainMenu');
 }
 
-// Leave lobby
-function leaveLobby() {
+function showJoinScreen() {
+    showScreen('joinScreen');
+}
+
+function createLobby() {
+    const playerName = document.getElementById('playerNameInput').value.trim();
+    if (!playerName) {
+        alert('Please enter your name');
+        return;
+    }
+    socket.emit('createLobby', {
+        playerName,
+        appearance: selectedAppearance,
+        color: selectedColor
+    });
+}
+
+function joinLobby() {
+    const lobbyId = document.getElementById('lobbyIdInput').value.trim();
+    const playerName = document.getElementById('playerNameInput').value.trim();
+    if (!playerName || !lobbyId) {
+        alert('Please enter name and lobby ID');
+        return;
+    }
+    socket.emit('joinLobby', {
+        lobbyId,
+        playerName,
+        appearance: selectedAppearance,
+        color: selectedColor
+    });
+    showScreen('gameScreen');
+}
+
+function leaveGame() {
     location.reload();
 }
 
-// Copy invite link
-function copyInviteLink() {
-    const inviteLink = document.getElementById('inviteLinkText').textContent;
-    navigator.clipboard.writeText(inviteLink);
-    alert('Davet linki kopyalandı!');
-}
+function updateLobbyUI() {
+    const playersList = document.getElementById('playersList');
+    playersList.innerHTML = '';
 
-// Send lobby message
-function sendLobbyMessage() {
-    const input = document.getElementById('lobbyChatInput');
-    const message = input.value.trim();
-    if (message) {
-        socket.emit('sendMessage', { message });
-        input.value = '';
-        if (soundEnabled && window.soundManager) {
-            window.soundManager.buttonClick();
-        }
+    currentLobby.players.forEach(player => {
+        const div = document.createElement('div');
+        div.className = 'player-item';
+        const isHost = player.id === currentLobby.host;
+        const isMe = player.id === socket.id;
+        div.innerHTML = `
+            <div class="player-appearance">${player.appearance}</div>
+            <div class="player-info">
+                <div class="player-name">${player.name}${isHost ? ' 👑' : ''}${isMe ? ' (You)' : ''}</div>
+                <div class="player-money">💰 $${player.money}</div>
+            </div>
+            <div style="width: 14px; height: 14px; background: ${player.color}; border-radius: 50%; border: 2px solid white;"></div>
+        `;
+        playersList.appendChild(div);
+    });
+
+    const playerCount = document.getElementById('playerCount');
+    playerCount.textContent = `Players: ${currentLobby.players.length}/6`;
+
+    const startBtn = document.getElementById('startBtn');
+    if (currentLobby.host === socket.id && !currentLobby.started) {
+        startBtn.style.display = 'block';
+        startBtn.disabled = currentLobby.players.length < 2;
     }
 }
 
-// Save settings (host only)
-function saveSettings() {
-    if (!isHost) return;
-    
-    const settings = {
-        startingMoney: parseInt(document.getElementById('startingMoney').value),
-        passGoMoney: parseInt(document.getElementById('passGoMoney').value),
-        jailTurns: parseInt(document.getElementById('jailTurns').value),
-        jailFine: parseInt(document.getElementById('jailFine').value)
-    };
-    
-    socket.emit('updateSettings', settings);
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.buttonClick();
-    }
-    alert('Settings saved!');
-}
-
-// Enter key for chat - will be attached when lobby screen shows
-function attachChatListeners() {
-    const chatInput = document.getElementById('lobbyChatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendLobbyMessage();
-            }
-        });
-    }
-}
-
-// Start game
 function startGame() {
-    // Check minimum players
-    const lobbyPlayersList = document.getElementById('lobbyPlayersList');
-    const playerCount = lobbyPlayersList ? lobbyPlayersList.children.length : 0;
-    
-    if (playerCount < 2) {
-        alert('Oyunu başlatmak için en az 2 oyuncu gerekli!');
-        return;
-    }
-    
-    socket.emit('startGame');
+    const rules = {
+        initialMoney: 1500,
+        taxFree: document.getElementById('ruleTaxFree')?.checked || false,
+        goMoney: 200
+    };
+    socket.emit('startGame', { rules });
 }
 
-// Roll dice
-function rollDice() {
-    socket.emit('rollDice');
-    document.getElementById('rollDiceBtn').disabled = true;
-    
-    // Add rolling animation to dice container
-    var diceContainer = document.querySelector('.dice-container');
-    if (diceContainer) {
-        diceContainer.classList.add('rolling');
-        
-        // Remove animation class after it completes
-        setTimeout(function() {
-            diceContainer.classList.remove('rolling');
-        }, 800);
-    }
-    
-    // Play dice roll sound
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.diceRoll();
-    }
-    
-    // Play purchase sound
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.propertyBuy();
-    }
-        
-        setTimeout(() => {
-            dice1.classList.remove('rolling');
-            dice2.classList.remove('rolling');
-        }, 800);
-    }
+function updateRules() {
+    // Update rules locally
 }
 
-// End turn
-function endTurn() {
-    socket.emit('endTurn');
-    document.getElementById('endTurnBtn').disabled = true;
-    document.getElementById('rollDiceBtn').disabled = false;
+function showGameBoard() {
+    // Hide setup panel
+    const setupPanel = document.getElementById('setupPanel');
+    if (setupPanel) setupPanel.style.display = 'none';
+
+    // Show trade panel
+    const tradePanel = document.getElementById('tradePanel');
+    if (tradePanel) tradePanel.style.display = 'block';
+
+    // Show roll button and end turn button
+    const rollBtn = document.getElementById('rollBtn');
+    const endTurnBtn = document.getElementById('endTurnBtn');
+    rollBtn.style.display = 'block';
+    endTurnBtn.style.display = 'block';
+
+    // Initialize board
+    initializeBoard();
+    updateGameBoard();
+
+    // Update game status
+    const gameStatus = document.getElementById('gameStatus');
+    const currentPlayer = gameState.players[gameState.currentTurn];
+    gameStatus.textContent = `${currentPlayer.name}'s Turn`;
+
+    // Add game started event
+    addEvent('🎮 Game Started!');
 }
 
-// Buy property
-function buyProperty() {
-    socket.emit('buyProperty');
-    closePropertyPopup();
-    showNotification('Mülk satın alındı!', 'success');
+function initializeBoard() {
+    const board = document.getElementById('monopolyBoard');
+    board.innerHTML = '';
+
+    gameState.properties.forEach((prop, index) => {
+        const space = document.createElement('div');
+        space.className = 'board-space';
+
+        // Add color class for properties
+        if (prop.color) {
+            space.classList.add(prop.color);
+        }
+
+        if (prop.type === 'go' || prop.type === 'jail' || prop.type === 'parking' || prop.type === 'gotojail') {
+            space.classList.add('corner');
+        } else if (prop.type === 'property') {
+            space.classList.add('property');
+        }
+
+        space.dataset.id = index;
+        space.innerHTML = `<div class="space-name">${prop.name}</div>${prop.price > 0 ? `<div class="space-price">$${prop.price}</div>` : ''}`;
+
+        space.onclick = () => showPropertyPopup(prop);
+        board.appendChild(space);
+    });
+
+    // Arrange spaces in board grid
+    arrangeBoardSpaces();
 }
 
-// Toggle trade panel
-function toggleTradePanel() {
-    const panel = document.getElementById('tradePanel');
-    if (panel.style.display === 'none' || !panel.style.display) {
-        panel.style.display = 'flex';
-        updateTradePanel();
-    } else {
-        panel.style.display = 'none';
-    }
+function arrangeBoardSpaces() {
+    const spaces = document.querySelectorAll('.board-space');
+    const positions = [
+        // Bottom row (0-9)
+        { col: 11, row: 11 }, // 0 - GO
+        { col: 10, row: 11 }, { col: 9, row: 11 }, { col: 8, row: 11 },
+        { col: 7, row: 11 }, { col: 6, row: 11 }, { col: 5, row: 11 },
+        { col: 4, row: 11 }, { col: 3, row: 11 }, { col: 2, row: 11 },
+        // Left column (10-19)
+        { col: 1, row: 11 }, // 10 - Jail
+        { col: 1, row: 10 }, { col: 1, row: 9 }, { col: 1, row: 8 },
+        { col: 1, row: 7 }, { col: 1, row: 6 }, { col: 1, row: 5 },
+        { col: 1, row: 4 }, { col: 1, row: 3 }, { col: 1, row: 2 },
+        // Top row (20-29)
+        { col: 1, row: 1 }, // 20 - Free Parking
+        { col: 2, row: 1 }, { col: 3, row: 1 }, { col: 4, row: 1 },
+        { col: 5, row: 1 }, { col: 6, row: 1 }, { col: 7, row: 1 },
+        { col: 8, row: 1 }, { col: 9, row: 1 }, { col: 10, row: 1 },
+        // Right column (30-39)
+        { col: 11, row: 1 }, // 30 - Go to Jail
+        { col: 11, row: 2 }, { col: 11, row: 3 }, { col: 11, row: 4 },
+        { col: 11, row: 5 }, { col: 11, row: 6 }, { col: 11, row: 7 },
+        { col: 11, row: 8 }, { col: 11, row: 9 }, { col: 11, row: 10 }
+    ];
+
+    spaces.forEach((space, i) => {
+        if (positions[i]) {
+            space.style.gridColumn = positions[i].col;
+            space.style.gridRow = positions[i].row;
+        }
+    });
 }
 
-// Update trade panel
-function updateTradePanel() {
-    if (!gameState) return;
+function updateGameBoard() {
+    // Update player positions on board
+    const spaces = document.querySelectorAll('.board-space');
+    spaces.forEach(space => {
+        const playerTokens = space.querySelectorAll('.player-token');
+        playerTokens.forEach(token => token.remove());
+    });
 
-    const playerSelect = document.getElementById('tradePlayerSelect');
-    playerSelect.innerHTML = '';
-    
+    gameState.players.forEach((player, index) => {
+        const space = document.querySelector(`.board-space[data-id="${player.position}"]`);
+        if (space) {
+            const token = document.createElement('div');
+            token.className = 'player-token';
+            token.style.background = player.color;
+            token.style.borderColor = player.color;
+            token.title = player.name;
+            space.appendChild(token);
+        }
+    });
+
+    // Update property ownership indicators
+    spaces.forEach(space => {
+        const propIndex = parseInt(space.dataset.id);
+        const prop = gameState.properties[propIndex];
+        if (prop.owner) {
+            const owner = gameState.players.find(p => p.id === prop.owner);
+            space.style.opacity = '0.8';
+            space.style.borderBottom = `3px solid ${owner.color}`;
+        } else {
+            space.style.opacity = '1';
+            space.style.borderBottom = 'none';
+        }
+    });
+
+    // Update current player highlight
+    const currentPlayer = gameState.players[gameState.currentTurn];
+    const playersList = document.getElementById('playersList');
+    const playerItems = playersList.querySelectorAll('.player-item');
+    playerItems.forEach((item, i) => {
+        item.classList.toggle('current-turn', i === gameState.currentTurn);
+    });
+
+    // Update trade dropdown
+    const tradeSelect = document.getElementById('tradeWithPlayer');
+    tradeSelect.innerHTML = '<option>Select player...</option>';
     gameState.players.forEach(player => {
         if (player.id !== socket.id) {
             const option = document.createElement('option');
             option.value = player.id;
-            option.textContent = player.name;
-            playerSelect.appendChild(option);
-        }
-    });
-
-    updateTradeProperties();
-}
-
-// Update trade properties
-function updateTradeProperties() {
-    if (!gameState) return;
-
-    const myPlayer = gameState.players.find(p => p.id === socket.id);
-    const selectedPlayerId = document.getElementById('tradePlayerSelect').value;
-    const selectedPlayer = gameState.players.find(p => p.id === selectedPlayerId);
-
-    // My properties
-    const offerList = document.getElementById('offerPropertiesList');
-    offerList.innerHTML = '';
-    myPlayer.properties.forEach(propId => {
-        const prop = gameState.properties[propId];
-        const div = document.createElement('div');
-        div.className = 'trade-property-item';
-        div.innerHTML = `
-            <input type="checkbox" id="offer-${propId}" value="${propId}">
-            <label for="offer-${propId}">${prop.name} ($${prop.price})</label>
-        `;
-        offerList.appendChild(div);
-    });
-
-    // Their properties
-    const requestList = document.getElementById('requestPropertiesList');
-    requestList.innerHTML = '';
-    if (selectedPlayer) {
-        selectedPlayer.properties.forEach(propId => {
-            const prop = gameState.properties[propId];
-            const div = document.createElement('div');
-            div.className = 'trade-property-item';
-            div.innerHTML = `
-                <input type="checkbox" id="request-${propId}" value="${propId}">
-                <label for="request-${propId}">${prop.name} ($${prop.price})</label>
-            `;
-            requestList.appendChild(div);
-        });
-    }
-}
-
-// Propose trade
-function proposeTrade() {
-    const targetPlayerId = document.getElementById('tradePlayerSelect').value;
-    
-    const offeredProperties = Array.from(document.querySelectorAll('#offerPropertiesList input:checked'))
-        .map(input => parseInt(input.value));
-    
-    const requestedProperties = Array.from(document.querySelectorAll('#requestPropertiesList input:checked'))
-        .map(input => parseInt(input.value));
-    
-    const offeredMoney = parseInt(document.getElementById('offerMoney').value) || 0;
-    const requestedMoney = parseInt(document.getElementById('requestMoney').value) || 0;
-
-    if (offeredProperties.length === 0 && requestedProperties.length === 0 && 
-        offeredMoney === 0 && requestedMoney === 0) {
-        alert('Lütfen en az bir şey teklif edin veya isteyin!');
-        return;
-    }
-
-    socket.emit('proposeTrade', {
-        targetPlayerId,
-        offeredProperties,
-        offeredMoney,
-        requestedProperties,
-        requestedMoney
-    });
-
-    toggleTradePanel();
-    addMessage('Trade teklifi gönderildi!');
-}
-
-// Accept trade
-function acceptTrade() {
-    if (currentTrade) {
-        socket.emit('respondTrade', { tradeId: currentTrade.id, accept: true });
-        document.getElementById('tradeNotification').style.display = 'none';
-        currentTrade = null;
-    }
-}
-
-// Reject trade
-function rejectTrade() {
-    if (currentTrade) {
-        socket.emit('respondTrade', { tradeId: currentTrade.id, accept: false });
-        document.getElementById('tradeNotification').style.display = 'none';
-        currentTrade = null;
-    }
-}
-
-// Add message to board
-function addMessage(text, type = 'default') {
-    // Add to activity log
-    const activityLog = document.getElementById('activityLog');
-    if (activityLog) {
-        const item = document.createElement('div');
-        item.className = `activity-item ${type}`;
-        const timestamp = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-        item.innerHTML = `<span style="opacity: 0.6; font-size: 0.85em;">[${timestamp}]</span> ${text}`;
-        activityLog.insertBefore(item, activityLog.firstChild);
-        
-        // Keep only last 50 messages
-        while (activityLog.children.length > 50) {
-            activityLog.removeChild(activityLog.lastChild);
-        }
-    }
-}
-
-// Initialize board
-function initializeBoard(properties) {
-    const board = document.getElementById('monopolyBoard');
-    board.innerHTML = '';
-    
-    properties.forEach(space => {
-        const spaceDiv = document.createElement('div');
-        spaceDiv.className = `space ${space.color || ''} ${space.type === 'go' || space.type === 'jail' || space.type === 'parking' || space.type === 'gotojail' ? 'corner' : ''}`;
-        spaceDiv.setAttribute('data-id', space.id);
-        spaceDiv.id = `space-${space.id}`;
-        
-        const nameSpan = document.createElement('div');
-        nameSpan.className = 'space-name';
-        nameSpan.textContent = space.name;
-        spaceDiv.appendChild(nameSpan);
-        
-        if (space.price > 0) {
-            const priceSpan = document.createElement('div');
-            priceSpan.className = 'space-price';
-            priceSpan.textContent = `$${space.price}`;
-            spaceDiv.appendChild(priceSpan);
-        }
-        
-        board.appendChild(spaceDiv);
-    });
-}
-
-// Update player positions
-function updatePlayerPositions(players) {
-    // Remove all existing tokens
-    document.querySelectorAll('.player-token-pro').forEach(function(token) { 
-        token.remove(); 
-    });
-    
-    // Add tokens for each player
-    players.forEach(function(player, index) {
-        const space = document.getElementById('space-' + player.position);
-        if (space) {
-            const token = document.createElement('div');
-            token.className = 'player-token-pro';
-            token.setAttribute('data-player-id', player.id);
-            // Use player's selected color
-            const playerColor = player.color || '#94a3b8';
-            token.style.backgroundColor = playerColor;
-            token.style.borderColor = playerColor;
-            token.style.left = ((index % 3) * 18 + 2) + 'px';
-            token.style.top = (Math.floor(index / 3) * 18 + 2) + 'px';
-            
-            // Add player name inside token
-            token.innerHTML = `
-                <div class="token-appearance">${player.appearance || '👤'}</div>
-                <div class="token-name">${player.name}</div>
-            `;
-            token.title = player.name + ' - ' + formatMoney(player.money);
-            
-            space.appendChild(token);
+            option.textContent = `${player.appearance} ${player.name}`;
+            tradeSelect.appendChild(option);
         }
     });
 }
 
-// Animate token movement
-function animateTokenMovement(player, newPosition, callback) {
-    var token = document.querySelector('.player-token-pro[data-player-id="' + player.id + '"]');
-    if (!token) {
-        // If no token, just update positions and callback
-        if (gameState) {
-            updatePlayerPositions(gameState.players);
-        }
-        if (callback) callback();
-        return;
-    }
-    
-    // Add jump animation
-    token.classList.add('token-jumping');
-    
-    setTimeout(function() {
-        token.classList.remove('token-jumping');
-        // Update all positions
-        if (gameState) {
-            updatePlayerPositions(gameState.players);
-        }
-        if (callback) callback();
-    }, 600);
+function rollDice() {
+    const rollBtn = document.getElementById('rollBtn');
+    rollBtn.disabled = true;
+    socket.emit('rollDice');
+    setTimeout(() => {
+        rollBtn.disabled = false;
+    }, 2000);
 }
 
-// Update players info
-function updatePlayersInfo(players, currentPlayerId) {
-    const playersDiv = document.getElementById('playersInfo');
-    playersDiv.innerHTML = '';
-    
-    players.forEach(player => {
-        const card = document.createElement('div');
-        card.className = `player-item-pro ${player.id === currentPlayerId ? 'active-turn' : ''}`;
-        
-        card.innerHTML = `
-            <div class="player-header">
-                <div class="player-appearance">${player.appearance || '👤'}</div>
-                <div class="player-name">${player.name}</div>
-            </div>
-            <div class="player-money">💰 ${formatMoney(player.money)}</div>
-            <div class="player-properties-count">🏠 ${player.properties.length} Mülk</div>
-            ${player.inJail ? '<div style="color: #ef4444; font-weight: 700; margin-top: 5px;">⛓️ HAPİSTE</div>' : ''}
-        `;
-        
-        playersDiv.appendChild(card);
-    });
+function endTurn() {
+    socket.emit('endTurn');
+    const endTurnBtn = document.getElementById('endTurnBtn');
+    endTurnBtn.style.display = 'none';
 }
 
-// Update my properties
-function updateMyProperties(properties, myPlayer) {
-    const propertiesDiv = document.getElementById('myProperties');
-    propertiesDiv.innerHTML = '';
-    
-    if (myPlayer.properties.length === 0) {
-        propertiesDiv.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center;">Henüz mülkünüz yok</p>';
-        return;
+function showPropertyPopup(property) {
+    selectedProperty = property;
+    const popup = document.getElementById('propertyPopup');
+    const nameEl = document.getElementById('propName');
+    const detailsEl = document.getElementById('propDetails');
+    const buyBtn = document.getElementById('buyBtn');
+
+    nameEl.textContent = property.name;
+
+    let detailsHTML = '';
+    if (property.color) {
+        detailsHTML += `<div class="property-detail"><span>Property Group:</span><span style="color: ${property.color}; font-weight: 700;">●●●</span></div>`;
     }
-    
-    myPlayer.properties.forEach(propId => {
-        const prop = properties[propId];
-        const card = document.createElement('div');
-        card.className = 'property-item-pro';
-        card.style.borderLeftColor = getColorCode(prop.color);
-        
-        card.innerHTML = `
-            <div class="property-name">${prop.name}</div>
-            <div class="property-details">
-                <span>💵 $${prop.price}</span>
-                <span>🏘️ ${prop.houses || 0}</span>
-            </div>
-        `;
-        
-        propertiesDiv.appendChild(card);
-    });
+    if (property.price) {
+        detailsHTML += `<div class="property-detail"><span>Price:</span><span style="color: #fbbf24; font-weight: 700;">$${property.price}</span></div>`;
+    }
+    if (property.rent && property.rent.length > 0) {
+        detailsHTML += `<div class="property-detail"><span>Base Rent:</span><span>$${property.rent[0]}</span></div>`;
+        if (property.rent[1]) detailsHTML += `<div class="property-detail"><span>With 1 House:</span><span>$${property.rent[1]}</span></div>`;
+        if (property.rent[2]) detailsHTML += `<div class="property-detail"><span>With 2 Houses:</span><span>$${property.rent[2]}</span></div>`;
+        if (property.rent[3]) detailsHTML += `<div class="property-detail"><span>With 3 Houses:</span><span>$${property.rent[3]}</span></div>`;
+        if (property.rent[4]) detailsHTML += `<div class="property-detail"><span>With 4 Houses:</span><span>$${property.rent[4]}</span></div>`;
+        if (property.rent[5]) detailsHTML += `<div class="property-detail"><span>With Hotel:</span><span style="color: #10b981; font-weight: 700;">$${property.rent[5]}</span></div>`;
+    }
+    if (property.owner) {
+        const owner = gameState.players.find(p => p.id === property.owner);
+        detailsHTML += `<div class="property-detail" style="border-top: 2px solid rgba(96, 165, 250, 0.2); padding-top: 10px; margin-top: 10px;"><span>Owner:</span><span>${owner.appearance} ${owner.name}</span></div>`;
+        buyBtn.style.display = 'none';
+    } else {
+        buyBtn.style.display = 'block';
+        const myMoney = gameState.players.find(p => p.id === socket.id)?.money || 0;
+        buyBtn.disabled = myMoney < property.price;
+    }
+
+    detailsEl.innerHTML = detailsHTML;
+    popup.style.display = 'flex';
 }
 
-// Get color code
-function getColorCode(color) {
-    const colors = {
-        brown: '#8B4513',
-        lightblue: '#87CEEB',
-        pink: '#FF69B4',
-        orange: '#FFA500',
-        red: '#FF0000',
-        yellow: '#FFFF00',
-        green: '#00FF00',
-        darkblue: '#0000FF'
-    };
-    return colors[color] || '#333';
+function closePopup() {
+    document.getElementById('propertyPopup').style.display = 'none';
 }
 
-    // Socket event listeners
-    socket.on('lobbyCreated', ({ lobbyId, lobby }) => {
-    console.log('✅ Lobby created successfully!', { lobbyId, lobby });
-    
-    currentLobbyId = lobbyId;
-    currentPlayerId = socket.id;
-    isHost = lobby.hostId === socket.id;
-    
-    document.getElementById('inviteLinkText').textContent = 
-        `${window.location.origin}?lobby=${lobbyId}`;
-    
-    updateLobbyPlayers(lobby.players, lobby.hostId);
-    updateLobbyChat(lobby.chatMessages);
-    updateLobbySettings(lobby.settings);
-    updateAvailableColors(lobby.players);
-    
-    // Set default selections
-    var defaultChar = document.querySelector('.character-option[data-char="🎩"]');
-    if (defaultChar) defaultChar.classList.add('selected');
-    var defaultColor = document.querySelector('.color-option[data-color="#ef4444"]');
-    if (defaultColor && !defaultColor.classList.contains('taken')) {
-        defaultColor.classList.add('selected');
+function buyProperty() {
+    if (selectedProperty) {
+        socket.emit('buyProperty', { propertyId: gameState.properties.indexOf(selectedProperty) });
     }
-    
-    console.log('🔄 Switching to lobby screen...');
-    showScreen('lobbyScreen');
-    attachChatListeners();
-    
-    if (isHost) {
-        document.getElementById('startGameBtn').style.display = 'block';
-        document.getElementById('lobbySettings').style.display = 'block';
-        console.log('👑 You are the host!');
-    }
-    
-    console.log('✅ Lobby screen loaded');
-});
-
-socket.on('lobbiesUpdate', (lobbies) => {
-    const list = document.getElementById('lobbiesList');
-    list.innerHTML = '';
-    
-    lobbies.filter(l => !l.started).forEach(lobby => {
-        const item = document.createElement('div');
-        item.className = 'lobby-item';
-        item.innerHTML = `
-            <div class="lobby-info-item">
-                <h3>Lobi #${lobby.id.substring(0, 8)}</h3>
-                <p>Oyuncular: ${lobby.playerCount}/6</p>
-            </div>
-            <button class="btn btn-primary" onclick="joinLobby('${lobby.id}')">Katıl</button>
-        `;
-        list.appendChild(item);
-    });
-    
-    if (lobbies.filter(l => !l.started).length === 0) {
-        list.innerHTML = '<p style="text-align: center; color: #718096;">Henüz lobi yok</p>';
-    }
-});
-
-socket.on('lobbyJoined', ({ lobbyId, lobby }) => {
-    console.log('✅ Joined lobby successfully!', { lobbyId, lobby });
-    
-    isJoiningLobby = false;
-    currentLobbyId = lobbyId;
-    currentPlayerId = socket.id;
-    isHost = lobby.hostId === socket.id;
-    
-    document.getElementById('inviteLinkText').textContent = 
-        `${window.location.origin}?lobby=${lobbyId}`;
-    
-    updateLobbyPlayers(lobby.players, lobby.hostId);
-    updateLobbyChat(lobby.chatMessages);
-    updateLobbySettings(lobby.settings);
-    
-    showScreen('lobbyScreen');
-    attachChatListeners();
-});
-
-socket.on('lobbyUpdate', (lobby) => {
-    console.log('🔄 Lobby updated:', lobby);
-    updateLobbyPlayers(lobby.players, lobby.hostId);
-    updateLobbyChat(lobby.chatMessages);
-    updateAvailableColors(lobby.players);
-    
-    if (lobby.hostId === socket.id) {
-        document.getElementById('startGameBtn').style.display = 'block';
-        document.getElementById('lobbySettings').style.display = 'block';
-    }
-});
-
-socket.on('chatMessage', (message) => {
-    console.log('💬 Chat message received:', message);
-    addChatMessage(message);
-});
-
-socket.on('settingsUpdated', (settings) => {
-    updateLobbySettings(settings);
-});
-
-function updateLobbyPlayers(players, hostId) {
-    const list = document.getElementById('lobbyPlayersList');
-    const playerCountBadge = document.getElementById('playerCount');
-    
-    list.innerHTML = '';
-    if (playerCountBadge) {
-        playerCountBadge.textContent = `${players.length}/6`;
-    }
-    
-    const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-    
-    players.forEach((player, index) => {
-        const card = document.createElement('div');
-        card.className = 'lobby-player-card-pro' + (player.id === hostId ? ' host-player' : '');
-        const playerColor = colors[index % colors.length];
-        
-        card.innerHTML = `
-            <div class="player-color-indicator" style="background: ${playerColor}"></div>
-            <div class="player-appearance-lobby">${player.appearance || '👤'}</div>
-            <div class="player-info-lobby">
-                <div class="player-name-lobby">${player.name}</div>
-                ${player.id === hostId ? '<span class="host-badge-pro">👑 HOST</span>' : ''}
-            </div>
-        `;
-        list.appendChild(card);
-    });
 }
 
-function updateLobbyChat(messages) {
-    const chatContainer = document.getElementById('lobbyChatMessages');
-    if (!chatContainer) return;
-    
-    chatContainer.innerHTML = '';
-    if (messages && Array.isArray(messages)) {
-        messages.forEach(msg => {
-            addChatMessage(msg);
-        });
-    }
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-function addChatMessage(message) {
-    const chatContainer = document.getElementById('lobbyChatMessages');
-    if (!chatContainer) return;
-    
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'chat-message-pro' + (message.system ? ' system' : '');
-    msgDiv.innerHTML = `
-        ${message.system ? '' : `<div class="chat-message-sender">${message.playerName}:</div>`}
-        <div class="chat-message-text">${message.text}</div>
-    `;
-    chatContainer.appendChild(msgDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-function updateLobbySettings(settings) {
-    if (!settings) return;
-    
-    const startingMoney = document.getElementById('startingMoney');
-    const passGoMoney = document.getElementById('passGoMoney');
-    const jailTurns = document.getElementById('jailTurns');
-    const jailFine = document.getElementById('jailFine');
-    
-    if (startingMoney) startingMoney.value = settings.startingMoney;
-    if (passGoMoney) passGoMoney.value = settings.passGoMoney;
-    if (jailTurns) jailTurns.value = settings.jailTurns;
-    if (jailFine) jailFine.value = settings.jailFine;
-}
-
-socket.on('gameStarted', ({ lobby, properties, currentPlayer }) => {
-    gameState = {
-        players: lobby.players,
-        properties: properties,
-        currentTurn: lobby.currentTurn
-    };
-    
-    // Play game start sound
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.gameStart();
-    }
-    
-    showScreen('gameScreen');
-    initializeBoard(properties);
-    updatePlayerPositions(lobby.players);
-    updatePlayersInfo(lobby.players, currentPlayer.id);
-    
-    const myPlayer = lobby.players.find(p => p.id === socket.id);
-    updateMyProperties(properties, myPlayer);
-    
-    // Update current player display
-    document.getElementById('currentPlayerName').textContent = currentPlayer.name;
-    const appearanceEl = document.getElementById('currentPlayerAppearance');
-    if (appearanceEl) appearanceEl.textContent = currentPlayer.appearance || '👤';
-    
-    // Initialize dice result message
-    const diceResult = document.getElementById('diceResult');
-    if (diceResult) {
-        if (currentPlayer.id === socket.id) {
-            diceResult.textContent = '🎲 Sıra sizde! Zar atmak için butona tıklayın';
-        } else {
-            diceResult.textContent = `⏳ ${currentPlayer.name} oynuyor...`;
-        }
-    }
-    
-    // Set initial button state
-    var rollDiceBtn = document.getElementById('rollDiceBtn');
-    if (rollDiceBtn) {
-        if (currentPlayer.id === socket.id) {
-            rollDiceBtn.disabled = false;
-            rollDiceBtn.style.opacity = '1';
-            rollDiceBtn.style.cursor = 'pointer';
-        } else {
-            rollDiceBtn.disabled = true;
-            rollDiceBtn.style.opacity = '0.5';
-            rollDiceBtn.style.cursor = 'not-allowed';
-        }
-    }
-    
-    // Initialize chat targets
-    updateChatTargets(lobby.players);
-});
-
-socket.on('diceRolled', function(data) {
-    var dice1 = data.dice1;
-    var dice2 = data.dice2;
-    var player = data.player;
-    var landedSpace = data.landedSpace;
-    var message = data.message;
-    var newPosition = data.newPosition;
-    
-    // Disable dice button immediately
-    document.getElementById('rollDiceBtn').disabled = true;
-    
-    // Update dice display with animation
-    const dice1El = document.getElementById('dice1');
-    const dice2El = document.getElementById('dice2');
-    const diceResult = document.getElementById('diceResult');
-    
-    if (dice1El) dice1El.querySelector('.dice-dot').textContent = dice1;
-    if (dice2El) dice2El.querySelector('.dice-dot').textContent = dice2;
-    if (diceResult) diceResult.textContent = `🎲 Toplam: ${dice1 + dice2}`;
-    
-    // Add to activity log with type
-    addMessage(`🎲 <strong>${player.appearance || '👤'} ${player.name}</strong> zar attı: ${dice1} + ${dice2} = ${dice1 + dice2}`, 'dice-roll');
-    
+function sendMessage() {
+    const chatInput = document.getElementById('chatInput');
+    const message = chatInput.value.trim();
     if (message) {
-        addMessage(message, 'default');
+        socket.emit('sendMessage', { message });
+        chatInput.value = '';
     }
-    
-    // Animate token movement
-    if (newPosition !== undefined) {
-        animateTokenMovement(player, newPosition, function() {
-            // After animation, show popup
-            if (landedSpace) {
-                addMessage(`📍 <strong>${player.name}</strong> ${landedSpace.name} karesine geldi`, 'default');
-                
-                // Show property popup if available and it's my turn
-                if ((landedSpace.type === 'property' || landedSpace.type === 'railroad' || landedSpace.type === 'utility') 
-                    && player.id === socket.id && !landedSpace.owner) {
-                    setTimeout(function() {
-                        showPropertyPopup(landedSpace);
-                    }, 300);
-                }
-            }
-        });
-    }
-    
-    // Play dice sound
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.diceRoll();
-    }
-});
-
-socket.on('propertyBought', function(data) {
-    var player = data.player;
-    var property = data.property;
-    
-    addMessage(`🏠 <strong>${player.name}</strong> ${property.name} satın aldı! (${formatMoney(property.price)})`, 'property-buy');
-    updatePropertyColors();
-});
-
-socket.on('rentDue', ({ player, owner, amount, property }) => {
-    addMessage(`💰 <strong>${player.name}</strong> ${owner.name}'e $${amount} kira ödemeli (${property.name})`, 'rent-paid');
-    
-    if (player.id === socket.id) {
-        socket.emit('payRent', { amount, toPlayerId: owner.id });
-    }
-});
-
-socket.on('rentPaid', ({ fromPlayer, toPlayer, amount }) => {
-    addMessage(`💸 <strong>${fromPlayer.name}</strong> ${toPlayer.name}'e $${amount} kira ödedi`, 'rent-paid');
-    
-    // Play money sound
-    if (soundEnabled && window.soundManager) {
-        if (fromPlayer.id === socket.id) {
-            window.soundManager.moneyPaid();
-        } else if (toPlayer.id === socket.id) {
-            window.soundManager.moneyReceived();
-        }
-    }
-});
-
-socket.on('taxPaid', ({ player, amount }) => {
-    addMessage(`💵 <strong>${player.name}</strong> $${amount} vergi ödedi`, 'default');
-});
-
-socket.on('playerJailed', function(player) {
-    addMessage(`⛓️ <strong>${player.name}</strong> hapse gönderildi!`, 'default');
-    
-    // Play jail sound
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.jailSound();
-    }
-});
-
-socket.on('cardDrawn', function(data) {
-    var player = data.player;
-    var card = data.card;
-    var cardType = data.cardType;
-    
-    // Show card with animation
-    showNotification(`🎴 ${cardType}: ${card.text}`, card.amount >= 0 ? 'success' : 'warning');
-    addMessage(`🎴 <strong>${player.name}</strong> ${cardType} kartı çekti: ${card.text}`, 'dice-roll');
-});
-
-// Play turn change sound
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.turnChange();
-    }
-    
-    
-socket.on('gameUpdate', function(data) {
-    var players = data.players;
-    var properties = data.properties;
-    
-    if (gameState) {
-        gameState.players = players;
-        if (properties) gameState.properties = properties;
-        
-        updatePlayerPositions(players);
-        var currentPlayer = players[gameState.currentTurn];
-        updatePlayersInfo(players, currentPlayer.id);
-        updateChatTargets(players);
-        updatePropertyColors();
-        
-        var myPlayer = players.find(function(p) { return p.id === socket.id; });
-        if (myPlayer) {
-            updateMyProperties(gameState.properties, myPlayer);
-        }
-    }
-});
-
-socket.on('turnChanged', function(currentPlayer) {
-    // Update top bar
-    document.getElementById('currentPlayerName').textContent = currentPlayer.name;
-    var appearanceEl = document.getElementById('currentPlayerAppearance');
-    if (appearanceEl) appearanceEl.textContent = currentPlayer.appearance || '👤';
-    
-    // Add to activity log
-    addMessage(`🔄 Sıra değişti: <strong>${currentPlayer.appearance || '👤'} ${currentPlayer.name}</strong>`, 'turn-change');
-    
-    // Update dice result
-    var diceResult = document.getElementById('diceResult');
-    if (diceResult) {
-        if (currentPlayer.id === socket.id) {
-            diceResult.textContent = '🎲 Sıra sizde! Zar atmak için butona tıklayın';
-        } else {
-            diceResult.textContent = `⏳ ${currentPlayer.name} oynuyor...`;
-        }
-    }
-    
-    // Enable/disable dice button based on whose turn it is
-    var rollDiceBtn = document.getElementById('rollDiceBtn');
-    if (rollDiceBtn) {
-        if (currentPlayer.id === socket.id) {
-            rollDiceBtn.disabled = false;
-            rollDiceBtn.style.opacity = '1';
-            rollDiceBtn.style.cursor = 'pointer';
-        } else {
-            rollDiceBtn.disabled = true;
-            rollDiceBtn.style.opacity = '0.5';
-            rollDiceBtn.style.cursor = 'not-allowed';
-        }
-    }
-    
-    if (gameState) {
-        gameState.currentTurn = gameState.players.findIndex(function(p) { return p.id === currentPlayer.id; });
-        updatePlayersInfo(gameState.players, currentPlayer.id);
-    }
-});
-
-socket.on('tradeProposed', (trade) => {
-    if (trade.toPlayer === socket.id) {
-        currentTrade = trade;
-        
-        const fromPlayer = gameState.players.find(p => p.id === trade.fromPlayer);
-        
-        let details = `<p><strong>${fromPlayer.name}</strong> size bir trade teklif etti:</p>`;
-        details += '<div style="margin: 10px 0;"><strong>Size veriyor:</strong><ul>';
-        
-    // Play trade completed sound
-    if (soundEnabled && window.soundManager) {
-        window.soundManager.tradeCompleted();
-    }
-    
-        trade.offeredProperties.forEach(propId => {
-            const prop = gameState.properties[propId];
-            details += `<li>${prop.name} ($${prop.price})</li>`;
-        });
-        if (trade.offeredMoney > 0) {
-            details += `<li>$${trade.offeredMoney}</li>`;
-        }
-        details += '</ul></div>';
-        
-        details += '<div style="margin: 10px 0;"><strong>Sizden istiyor:</strong><ul>';
-        trade.requestedProperties.forEach(propId => {
-            const prop = gameState.properties[propId];
-            details += `<li>${prop.name} ($${prop.price})</li>`;
-        });
-        if (trade.requestedMoney > 0) {
-            details += `<li>$${trade.requestedMoney}</li>`;
-        }
-        details += '</ul></div>';
-        
-        document.getElementById('tradeDetails').innerHTML = details;
-        document.getElementById('tradeNotification').style.display = 'block';
-    } else {
-        addMessage('Trade teklifi gönderildi...');
-    }
-});
-
-socket.on('tradeCompleted', ({ trade, players, properties }) => {
-    addMessage('Trade tamamlandı!');
-    
-    if (gameState) {
-        gameState.players = players;
-        gameState.properties = properties;
-        
-        updatePlayerPositions(players);
-        const currentPlayer = players[gameState.currentTurn];
-        updatePlayersInfo(players, currentPlayer.id);
-        
-        const myPlayer = players.find(p => p.id === socket.id);
-        updateMyProperties(properties, myPlayer);
-    }
-});
-
-socket.on('tradeRejected', (trade) => {
-    addMessage('Trade teklifi reddedildi');
-});
-
-socket.on('error', (message) => {
-    alert(message);
-});
-
-// Country selection
-document.addEventListener('DOMContentLoaded', () => {
-    // Country card selection
-    const countryCards = document.querySelectorAll('.country-card');
-    countryCards.forEach(card => {
-        card.addEventListener('click', () => {
-            if (soundEnabled && window.soundManager) {
-                window.soundManager.hoverSound();
-            }
-            
-            countryCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedCountry = card.dataset.country;
-        });
-    });
-    
-    // Select USA by default
-    const usaCard = document.querySelector('.country-card[data-country="usa"]');
-    if (usaCard) {
-        usaCard.classList.add('selected');
-    }
-    
-    // Hover sound effects
-    document.querySelectorAll('.btn, .country-card, .lobby-item').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            if (soundEnabled && window.soundManager) {
-                window.soundManager.hoverSound();
-            }
-        });
-    });
-    
-    // Button click sounds
-    document.querySelectorAll('.btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (soundEnabled && window.soundManager) {
-                window.soundManager.buttonClick();
-            }
-        });
-    });
-    
-    const playerSelect = document.getElementById('tradePlayerSelect');
-    if (playerSelect) {
-        playerSelect.addEventListener('change', updateTradeProperties);
-    }
-});
-
-// Check for lobby in URL
-window.addEventListener('load', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const lobbyId = urlParams.get('lobby');
-    
-    if (lobbyId) {
-        document.getElementById('playerNameInput').focus();
-        // Auto-show join dialog
-        setTimeout(() => {
-            const playerName = prompt('İsminizi girin:');
-            if (playerName) {
-                document.getElementById('playerNameInput').value = playerName;
-                joinLobby(lobbyId);
-            }
-        }, 500);
-    }
-});
-
-// Game chat functions
-function sendGameMessage() {
-    var input = document.getElementById('gameChatInput');
-    var target = document.getElementById('chatTarget').value;
-    var message = input.value.trim();
-    
-    if (!message) return;
-    
-    if (target === 'all') {
-        socket.emit('gameChat', { message: message, type: 'all' });
-    } else {
-        socket.emit('gameChat', { message: message, type: 'private', targetId: target });
-    }
-    
-    input.value = '';
 }
 
-// Listen for Enter key in game chat
-document.addEventListener('DOMContentLoaded', function() {
-    var gameChatInput = document.getElementById('gameChatInput');
-    if (gameChatInput) {
-        gameChatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendGameMessage();
-            }
-        });
+function handleChatKeypress(event) {
+    if (event.key === 'Enter') {
+        sendMessage();
     }
-});
-
-socket.on('gameChatMessage', function(data) {
-    addGameChatMessage(data);
-});
-
-function addGameChatMessage(data) {
-    var chatContainer = document.getElementById('gameChatMessages');
-    if (!chatContainer) return;
-    
-    var msgDiv = document.createElement('div');
-    msgDiv.className = 'game-chat-msg';
-    
-    if (data.type === 'private') {
-        msgDiv.classList.add('private-msg');
-        msgDiv.innerHTML = `
-            <div class="chat-msg-header">
-                <span class="chat-sender">${data.senderName}</span>
-                <span class="private-label">🔒 Özel</span>
-            </div>
-            <div class="chat-msg-text">${data.message}</div>
-        `;
-    } else {
-        msgDiv.innerHTML = `
-            <div class="chat-msg-header">
-                <span class="chat-sender">${data.senderName}:</span>
-            </div>
-            <div class="chat-msg-text">${data.message}</div>
-        `;
-    }
-    
-    chatContainer.appendChild(msgDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// Update chat target select with current players
-function updateChatTargets(players) {
-    var select = document.getElementById('chatTarget');
-    if (!select) return;
-    
-    var currentValue = select.value;
-    select.innerHTML = '<option value="all">📢 Herkese</option>';
-    
-    players.forEach(function(player) {
-        if (player.id !== socket.id) {
-            var option = document.createElement('option');
-            option.value = player.id;
-            option.textContent = '🔒 ' + player.name;
-            select.appendChild(option);
-        }
-    });
-    
-    select.value = currentValue;
+function addEvent(message) {
+    const eventLog = document.getElementById('eventLog');
+    const item = document.createElement('div');
+    item.className = 'event-item';
+    item.textContent = message;
+    eventLog.appendChild(item);
+    eventLog.scrollTop = eventLog.scrollHeight;
 }
 
-// Update property colors based on owner
-function updatePropertyColors() {
-    if (!gameState || !gameState.properties) return;
-    
-    gameState.properties.forEach(function(property) {
-        var spaceEl = document.getElementById('space-' + property.id);
-        if (!spaceEl) return;
-        
-        if (property.owner) {
-            var owner = gameState.players.find(function(p) { return p.id === property.owner; });
-            if (owner && owner.color) {
-                // Full background color with transparency
-                var rgbaColor = hexToRgba(owner.color, 0.4);
-                spaceEl.style.background = 'linear-gradient(145deg, ' + rgbaColor + ', ' + hexToRgba(owner.color, 0.2) + ')';
-                spaceEl.style.boxShadow = '0 0 0 4px ' + owner.color + ', 0 6px 12px rgba(0,0,0,0.4), inset 0 0 20px ' + rgbaColor;
-                spaceEl.style.borderColor = owner.color;
-                spaceEl.style.borderWidth = '3px';
-            }
-        } else {
-            spaceEl.style.background = 'linear-gradient(145deg, #ffffff, #f7fafc)';
-            spaceEl.style.boxShadow = '';
-            spaceEl.style.borderColor = '#2d3748';
-            spaceEl.style.borderWidth = '2px';
-        }
-    });
-}
-
-// Helper function to convert hex to rgba
-function hexToRgba(hex, alpha) {
-    var r = parseInt(hex.slice(1, 3), 16);
-    var g = parseInt(hex.slice(3, 5), 16);
-    var b = parseInt(hex.slice(5, 7), 16);
-    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
-}
+console.log('🎮 Game loaded and ready!');

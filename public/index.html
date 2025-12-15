@@ -1,349 +1,156 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgaOnline - Global Monopoly</title>
+    <title>Monopoly Online - Play with Friends</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <!-- Main Menu -->
+        <!-- Main Menu Screen -->
         <div id="mainMenu" class="screen active">
             <div class="menu-container">
-                <h1 class="game-title">� AGA ONLINE 🌍</h1>
-                <div class="subtitle">Global Monopoly Experience</div>
-                <div class="player-name-input">
-                    <input type="text" id="playerNameInput" placeholder="İsminizi girin" maxlength="15">
+                <div class="menu-header">
+                    <h1 class="game-title">🏠 MONOPOLY</h1>
+                    <p class="game-subtitle">Play Online with Friends</p>
                 </div>
                 
-                <div class="appearance-selector">
-                    <h3>Appearance Seçin:</h3>
-                    <div class="appearance-grid">
-                        <div class="appearance-card selected" data-appearance="👤" onclick="selectAppearance(this)">👤</div>
-                        <div class="appearance-card" data-appearance="😎" onclick="selectAppearance(this)">😎</div>
-                        <div class="appearance-card" data-appearance="🤠" onclick="selectAppearance(this)">🤠</div>
-                        <div class="appearance-card" data-appearance="🎩" onclick="selectAppearance(this)">🎩</div>
-                        <div class="appearance-card" data-appearance="👑" onclick="selectAppearance(this)">👑</div>
-                        <div class="appearance-card" data-appearance="🎯" onclick="selectAppearance(this)">🎯</div>
-                        <div class="appearance-card" data-appearance="🚀" onclick="selectAppearance(this)">🚀</div>
-                        <div class="appearance-card" data-appearance="⚡" onclick="selectAppearance(this)">⚡</div>
-                        <div class="appearance-card" data-appearance="🔥" onclick="selectAppearance(this)">🔥</div>
-                        <div class="appearance-card" data-appearance="💎" onclick="selectAppearance(this)">💎</div>
-                    </div>
-                </div>
-                
-                <div class="country-selector">
-                    <h3>Board Seçin:</h3>
-                    <div class="country-grid">
-                        <div class="country-card" data-country="world" onclick="selectCountry(this)">
-                            <div class="country-flag">🌍</div>
-                            <div class="country-name">World</div>
-                        </div>
-                        <div class="country-card selected" data-country="usa" onclick="selectCountry(this)">
-                            <div class="country-flag">🇺🇸</div>
-                            <div class="country-name">USA</div>
-                        </div>
-                        <div class="country-card" data-country="turkey" onclick="selectCountry(this)">
-                            <div class="country-flag">🇹🇷</div>
-                            <div class="country-name">Türkiye</div>
-                        </div>
-                        <div class="country-card" data-country="germany" onclick="selectCountry(this)">
-                            <div class="country-flag">🇩🇪</div>
-                            <div class="country-name">Deutschland</div>
-                        </div>
-                        <div class="country-card" data-country="japan" onclick="selectCountry(this)">
-                            <div class="country-flag">🇯🇵</div>
-                            <div class="country-name">Japan</div>
-                        </div>
-                        <div class="country-card" data-country="china" onclick="selectCountry(this)">
-                            <div class="country-flag">🇨🇳</div>
-                            <div class="country-name">China</div>
-                        </div>
-                        <div class="country-card" data-country="russia" onclick="selectCountry(this)">
-                            <div class="country-flag">🇷🇺</div>
-                            <div class="country-name">Russia</div>
+                <div class="menu-form">
+                    <input type="text" id="playerNameInput" placeholder="Enter Your Name" maxlength="20" class="input-field">
+                    
+                    <div class="appearance-selector">
+                        <label>Choose Avatar</label>
+                        <div class="avatar-grid">
+                            <button class="avatar-btn selected" data-appearance="👤" onclick="selectAppearance('👤')">👤</button>
+                            <button class="avatar-btn" data-appearance="🎩" onclick="selectAppearance('🎩')">🎩</button>
+                            <button class="avatar-btn" data-appearance="🚗" onclick="selectAppearance('🚗')">🚗</button>
+                            <button class="avatar-btn" data-appearance="🐕" onclick="selectAppearance('🐕')">🐕</button>
+                            <button class="avatar-btn" data-appearance="🎸" onclick="selectAppearance('🎸')">🎸</button>
+                            <button class="avatar-btn" data-appearance="👑" onclick="selectAppearance('👑')">👑</button>
                         </div>
                     </div>
+
+                    <div class="color-selector">
+                        <label>Choose Color</label>
+                        <div class="color-grid">
+                            <button class="color-btn selected" data-color="#ef4444" style="background: #ef4444;" onclick="selectColor('#ef4444')"></button>
+                            <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="selectColor('#f97316')"></button>
+                            <button class="color-btn" data-color="#eab308" style="background: #eab308;" onclick="selectColor('#eab308')"></button>
+                            <button class="color-btn" data-color="#22c55e" style="background: #22c55e;" onclick="selectColor('#22c55e')"></button>
+                            <button class="color-btn" data-color="#3b82f6" style="background: #3b82f6;" onclick="selectColor('#3b82f6')"></button>
+                            <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="selectColor('#8b5cf6')"></button>
+                        </div>
+                    </div>
+
+                    <div class="menu-buttons">
+                        <button onclick="createLobby()" class="btn-primary">Create Game</button>
+                        <button onclick="showJoinScreen()" class="btn-secondary">Join Game</button>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Join Screen -->
+        <div id="joinScreen" class="screen">
+            <div class="join-container">
+                <h2>Join Lobby</h2>
+                <input type="text" id="lobbyIdInput" placeholder="Enter Lobby ID" class="input-field">
                 <div class="menu-buttons">
-                    <button class="btn btn-primary" onclick="createLobby()">Yeni Lobi Oluştur</button>
-                    <button class="btn btn-secondary" onclick="showLobbies()">Lobiler</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Lobbies List -->
-        <div id="lobbiesScreen" class="screen">
-            <div class="lobbies-container">
-                <h2>Mevcut Lobiler</h2>
-                <div id="lobbiesList"></div>
-                <button class="btn btn-back" onclick="backToMenu()">Geri</button>
-            </div>
-        </div>
-
-        <!-- Lobby Screen -->
-        <div id="lobbyScreen" class="screen">
-            <div class="lobby-container-pro">
-                <div class="lobby-header-pro">
-                    <h2>🎮 Oyun Lobisi</h2>
-                    <div class="invite-section-pro">
-                        <div class="invite-label">Davet Linki:</div>
-                        <div class="invite-link-box">
-                            <input type="text" id="inviteLinkText" readonly>
-                            <button class="btn-copy-pro" onclick="copyInviteLink()">
-                                📋 Kopyala
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="lobby-layout-pro">
-                    <div class="lobby-left-pro">
-                        <!-- Character & Color Selection -->
-                        <div class="lobby-card-pro customization-section">
-                            <div class="card-header-pro">
-                                <h3>🎨 Özelleştirme</h3>
-                            </div>
-                            <div class="card-content-pro">
-                                <div class="customization-group">
-                                    <label class="custom-label">Karakter Seç:</label>
-                                    <div class="character-selector">
-                                        <div class="character-option" data-char="🎩" onclick="selectCharacter(this)">🎩</div>
-                                        <div class="character-option" data-char="🚗" onclick="selectCharacter(this)">🚗</div>
-                                        <div class="character-option" data-char="🐶" onclick="selectCharacter(this)">🐶</div>
-                                        <div class="character-option" data-char="🐱" onclick="selectCharacter(this)">🐱</div>
-                                        <div class="character-option" data-char="🎸" onclick="selectCharacter(this)">🎸</div>
-                                        <div class="character-option" data-char="⚽" onclick="selectCharacter(this)">⚽</div>
-                                        <div class="character-option" data-char="🎮" onclick="selectCharacter(this)">🎮</div>
-                                        <div class="character-option" data-char="🚀" onclick="selectCharacter(this)">🚀</div>
-                                    </div>
-                                </div>
-                                <div class="customization-group">
-                                    <label class="custom-label">Renk Seç:</label>
-                                    <div class="color-selector" id="colorSelector">
-                                        <div class="color-option" data-color="#ef4444" style="background: #ef4444;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#f59e0b" style="background: #f59e0b;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#10b981" style="background: #10b981;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#3b82f6" style="background: #3b82f6;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#ec4899" style="background: #ec4899;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#14b8a6" style="background: #14b8a6;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#f97316" style="background: #f97316;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#84cc16" style="background: #84cc16;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#06b6d4" style="background: #06b6d4;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#a855f7" style="background: #a855f7;" onclick="selectColor(this)"></div>
-                                        <div class="color-option" data-color="#f43f5e" style="background: #f43f5e;" onclick="selectColor(this)"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    
-                        <div class="lobby-card-pro players-section-pro">
-                            <div class="card-header-pro">
-                                <h3>👥 Oyuncular <span id="playerCount" class="player-count-badge">0/6</span></h3>
-                            </div>
-                            <div class="card-content-pro">
-                                <div id="lobbyPlayersList" class="lobby-players-grid"></div>
-                            </div>
-                        </div>
-                        
-                        <div id="lobbySettings" class="lobby-card-pro settings-section-pro" style="display: none;">
-                            <div class="card-header-pro">
-                                <h3>⚙️ Oyun Ayarları</h3>
-                            </div>
-                            <div class="card-content-pro">
-                                <div class="settings-grid-pro">
-                                    <div class="setting-item-pro">
-                                        <label>💰 Başlangıç Parası:</label>
-                                        <input type="number" id="startingMoney" value="2000" step="100" min="500" max="5000">
-                                    </div>
-                                    <div class="setting-item-pro">
-                                        <label>🎯 Pass GO Parası:</label>
-                                        <input type="number" id="passGoMoney" value="200" step="50" min="100" max="500">
-                                    </div>
-                                    <div class="setting-item-pro">
-                                        <label>⛓️ Hapiste Kalma Süresi:</label>
-                                        <input type="number" id="jailTurns" value="3" min="1" max="5">
-                                    </div>
-                                    <div class="setting-item-pro">
-                                        <label>💵 Hapisten Çıkış Cezası:</label>
-                                        <input type="number" id="jailFine" value="50" step="10" min="0" max="200">
-                                    </div>
-                                </div>
-                                <button class="btn-save-settings-pro" onclick="saveSettings()">
-                                    ✅ Ayarları Kaydet
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="lobby-right-pro">
-                        <div class="lobby-card-pro chat-section-pro">
-                            <div class="card-header-pro">
-                                <h3>💬 Sohbet</h3>
-                            </div>
-                            <div class="card-content-pro">
-                                <div id="lobbyChatMessages" class="chat-messages-pro"></div>
-                                <div class="chat-input-pro">
-                                    <input type="text" id="lobbyChatInput" placeholder="Mesaj yazın..." maxlength="200">
-                                    <button class="btn-send-chat-pro" onclick="sendLobbyMessage()">
-                                        📤
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="lobby-footer-pro">
-                    <button id="startGameBtn" class="btn-start-game-pro" onclick="startGame()" style="display: none;">
-                        🎮 Oyunu Başlat
-                    </button>
-                    <button class="btn-leave-lobby-pro" onclick="leaveLobby()">
-                        🚪 Lobiden Çık
-                    </button>
+                    <button onclick="joinLobby()" class="btn-primary">Join</button>
+                    <button onclick="showMenu()" class="btn-secondary">Back</button>
                 </div>
             </div>
         </div>
 
         <!-- Game Screen -->
         <div id="gameScreen" class="screen">
-            <div class="game-container-pro">
-                <!-- Top Bar with Gradient -->
-                <div class="top-bar-pro">
-                    <div class="game-logo">🎲🎲 AGA ONLINE 🎲🎲</div>
-                    <div class="current-turn-display">
-                        <div class="turn-label">Şu Anki Sıra</div>
-                        <div class="turn-player">
-                            <span id="currentPlayerAppearance">👤</span>
-                            <span id="currentPlayerName">-</span>
-                        </div>
+            <div class="game-container">
+                <!-- Top Header -->
+                <div class="game-header">
+                    <div class="header-left">
+                        <h2 id="lobbyStatus">Game Lobby</h2>
+                        <div id="playerCount" class="player-count">Players: 1/6</div>
                     </div>
-                    <div class="dice-controls">
-                        <button class="btn-trade-header" onclick="toggleTradePanel()">
-                            💰 TRADE
-                        </button>
+                    <div class="header-center">
+                        <button id="startBtn" class="btn-start" onclick="startGame()" style="display: none;">Start Game</button>
+                        <div id="gameStatus" class="game-status">Waiting to start...</div>
+                    </div>
+                    <div class="header-right">
+                        <button onclick="leaveGame()" class="btn-leave">Leave</button>
                     </div>
                 </div>
 
-                <!-- Main Game Layout -->
-                <div class="game-layout-pro">
-                    <!-- Left Sidebar - Players & Activity -->
-                    <div class="left-sidebar-pro">
-                        <!-- Players Card -->
-                        <div class="game-card players-card">
-                            <div class="card-header">
-                                <h3>👥 Oyuncular</h3>
-                            </div>
-                            <div class="card-content">
-                                <div id="playersInfo" class="players-list-pro"></div>
-                            </div>
+                <!-- Main Content -->
+                <div class="game-content">
+                    <!-- Left Panel - Players & Setup -->
+                    <div class="left-panel">
+                        <div class="panel-section players-section">
+                            <h3>👥 Players</h3>
+                            <div id="playersList" class="players-list"></div>
                         </div>
 
-                        <!-- Activity Log Card -->
-                        <div class="game-card activity-card">
-                            <div class="card-header">
-                                <h3>📜 Aktivite</h3>
-                            </div>
-                            <div class="card-content">
-                                <div id="activityLog" class="activity-log-pro"></div>
+                        <div class="panel-section setup-section" id="setupPanel">
+                            <h3>⚙️ Game Setup</h3>
+                            <div class="game-rules">
+                                <label>
+                                    <input type="checkbox" id="ruleTaxFree" onchange="updateRules()"> Tax Free Mode
+                                </label>
+                                <label>
+                                    Initial Money: $<span id="initialMoney">1500</span>
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Center - Board Area -->
-                    <div class="center-board-pro">
+                    <!-- Center - Board -->
+                    <div class="center-panel">
                         <div class="board-wrapper">
-                            <div id="monopolyBoard" class="monopoly-board-pro">
-                                <!-- Board spaces will be generated by JavaScript -->
+                            <div id="monopolyBoard" class="monopoly-board">
+                                <!-- Board generated by JS -->
                             </div>
-                            <div class="board-center-pro">
-                                <div class="dice-display-pro">
-                                    <div class="dice-container">
-                                        <div id="dice1" class="dice-pro">
-                                            <span class="dice-dot">?</span>
-                                        </div>
-                                        <div id="dice2" class="dice-pro">
-                                            <span class="dice-dot">?</span>
-                                        </div>
+                            
+                            <!-- Board Center (Dice & Controls) -->
+                            <div class="board-center">
+                                <div class="dice-display">
+                                    <div class="dice-box">
+                                        <div id="dice1" class="dice">?</div>
+                                        <div id="dice2" class="dice">?</div>
                                     </div>
-                                    <div id="diceResult" class="dice-result">Zar atmak için butona tıklayın</div>
+                                    <div id="diceResult" class="dice-result">Roll the dice</div>
                                 </div>
-                                <button id="rollDiceBtn" class="btn-dice-center" onclick="rollDice()">
-                                    <span class="dice-icon">🎲</span>
-                                    ZAR AT
-                                </button>
+                                <button id="rollBtn" class="btn-roll" onclick="rollDice()" style="display: none;">🎲 ROLL DICE</button>
+                                <button id="endTurnBtn" class="btn-end-turn" onclick="endTurn()" style="display: none;">End Turn</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right Sidebar - Properties & Chat -->
-                    <div class="right-sidebar-pro">
-                        <div class="game-card properties-card">
-                            <div class="card-header">
-                                <h3>🏠 Mülklerim</h3>
-                            </div>
-                            <div class="card-content">
-                                <div id="myProperties" class="properties-grid-pro"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="game-card chat-card">
-                            <div class="card-header">
-                                <h3>💬 Chat</h3>
-                            </div>
-                            <div class="card-content">
-                                <div id="gameChatMessages" class="game-chat-messages"></div>
-                                <div class="game-chat-input">
-                                    <select id="chatTarget" class="chat-target-select">
-                                        <option value="all">📢 Herkese</option>
-                                    </select>
-                                    <input type="text" id="gameChatInput" placeholder="Mesaj yaz..." maxlength="200">
-                                    <button class="btn-send-chat" onclick="sendGameMessage()">📤</button>
+                    <!-- Right Panel - Chat & Events -->
+                    <div class="right-panel">
+                        <div class="panel-section trade-section" id="tradePanel" style="display: none;">
+                            <h3>💰 Trade</h3>
+                            <div class="trade-content">
+                                <select id="tradeWithPlayer" class="input-field">
+                                    <option>Select player...</option>
+                                </select>
+                                <div style="font-size: 0.9em; color: rgba(255,255,255,0.7); margin-top: 10px;">
+                                    Coming soon: Trade properties and money
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Trade Panel (Hidden by default) -->
-                <div id="tradePanel" class="trade-panel">
-                    <div class="trade-content">
-                        <h3>Trade Yap</h3>
-                        <div class="trade-sections">
-                            <div class="trade-section">
-                                <h4>Oyuncu Seç</h4>
-                                <select id="tradePlayerSelect"></select>
-                            </div>
-                            <div class="trade-section">
-                                <h4>Vereceğin Mülkler</h4>
-                                <div id="offerPropertiesList"></div>
-                                <h4>Vereceğin Para</h4>
-                                <input type="number" id="offerMoney" min="0" value="0">
-                            </div>
-                            <div class="trade-section">
-                                <h4>İstediğin Mülkler</h4>
-                                <div id="requestPropertiesList"></div>
-                                <h4>İstediğin Para</h4>
-                                <input type="number" id="requestMoney" min="0" value="0">
+                        <div class="panel-section chat-section">
+                            <h3>💬 Chat</h3>
+                            <div id="chatMessages" class="chat-messages"></div>
+                            <div class="chat-input">
+                                <input type="text" id="chatInput" placeholder="Type message..." onkeypress="handleChatKeypress(event)">
+                                <button onclick="sendMessage()" class="btn-send">Send</button>
                             </div>
                         </div>
-                        <div class="trade-actions">
-                            <button class="btn btn-primary" onclick="proposeTrade()">Teklif Gönder</button>
-                            <button class="btn btn-back" onclick="toggleTradePanel()">İptal</button>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Trade Notification -->
-                <div id="tradeNotification" class="trade-notification" style="display: none;">
-                    <div class="trade-notification-content">
-                        <h3>Trade Teklifi</h3>
-                        <div id="tradeDetails"></div>
-                        <div class="trade-actions">
-                            <button class="btn btn-primary" onclick="acceptTrade()">Kabul Et</button>
-                            <button class="btn btn-secondary" onclick="rejectTrade()">Reddet</button>
+                        <div class="panel-section events-section">
+                            <h3>📜 Events</h3>
+                            <div id="eventLog" class="event-log"></div>
                         </div>
                     </div>
                 </div>
@@ -351,10 +158,18 @@
         </div>
     </div>
 
-    <!-- Custom Notification System -->
-    <div id="notificationContainer" class="notification-container"></div>
+    <!-- Property Popup -->
+    <div id="propertyPopup" class="property-popup" style="display: none;">
+        <div class="popup-content">
+            <h2 id="propName"></h2>
+            <div id="propDetails" class="property-details"></div>
+            <div class="popup-actions">
+                <button id="buyBtn" class="btn-buy" onclick="buyProperty()" style="display: none;">Buy Property</button>
+                <button onclick="closePopup()" class="btn-close">Close</button>
+            </div>
+        </div>
+    </div>
 
-    <script src="sounds.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="game.js"></script>
 </body>

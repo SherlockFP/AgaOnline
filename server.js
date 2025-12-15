@@ -426,11 +426,53 @@ io.on('connection', (socket) => {
         { msg: 'Hastane faturası! ₺100 öde.', money: -100 },
         { msg: 'Yatırımlarından kazandın! ₺50 al.', money: 50 },
         { msg: 'Trafik cezası! ₺15 öde.', money: -15 },
-        { msg: 'Hisse senetlerin değer kazandı! ₺120 al.', money: 120 }
+        { msg: 'Hisse senetlerin değer kazandı! ₺120 al.', money: 120 },
+        { msg: 'BAŞLA\'ya git ve ₺200 al!', money: 0, goToStart: true },
+        { msg: 'Hapishaneye git! Doğrudan geç! ₺200 alma!', money: 0, goToJail: true },
+        { msg: '3 kare ileri git!', money: 0, moveForward: 3 },
+        { msg: '5 kare geri git!', money: 0, moveBackward: 5 },
+        { msg: 'En yakın trene git!', money: 0, goToNearest: 'railroad' },
+        { msg: 'Bedava hapishane çıkış kartı kazandın!', money: 0, freeJailCard: true },
+        { msg: 'Tatil kazandın! ₺300 al.', money: 300 },
+        { msg: 'Gelir vergisi öde! ₺200 öde.', money: -200 },
+        { msg: 'Her ev için ₺25, her otel için ₺100 öde.', money: 0, repairCost: true },
+        { msg: 'Yıldırım turu! ₺500 kazan!', money: 500 }
       ];
       const card = cards[Math.floor(Math.random() * cards.length)];
-      currentPlayer.money += card.money;
-      cardMessage = `${cardType}: ${card.msg}`;
+      
+      // Handle special card effects
+      if (card.goToStart) {
+        currentPlayer.position = 0;
+        currentPlayer.money += lobby.gameRules.goMoney || 200;
+        cardMessage = `${cardType}: ${card.msg}`;
+      } else if (card.goToJail) {
+        currentPlayer.position = 10;
+        currentPlayer.inJail = true;
+        currentPlayer.jailTurns = 0;
+        cardMessage = `${cardType}: ${card.msg}`;
+      } else if (card.moveForward) {
+        currentPlayer.position = (currentPlayer.position + card.moveForward) % 40;
+        cardMessage = `${cardType}: ${card.msg}`;
+      } else if (card.moveBackward) {
+        currentPlayer.position = (currentPlayer.position - card.moveBackward + 40) % 40;
+        cardMessage = `${cardType}: ${card.msg}`;
+      } else if (card.freeJailCard) {
+        currentPlayer.freeJailCards = (currentPlayer.freeJailCards || 0) + 1;
+        cardMessage = `${cardType}: ${card.msg}`;
+      } else if (card.repairCost) {
+        let cost = 0;
+        lobby.properties.forEach(prop => {
+          if (prop.owner === currentPlayer.id && prop.houses) {
+            cost += prop.houses === 5 ? 100 : prop.houses * 25;
+          }
+        });
+        currentPlayer.money -= cost;
+        cardMessage = `${cardType}: ${card.msg} (Toplam: ₺${cost})`;
+      } else {
+        currentPlayer.money += card.money;
+        cardMessage = `${cardType}: ${card.msg}`;
+      }
+      
       lobby.events.push({ type: cardType.toLowerCase(), player: currentPlayer.name, message: card.msg });
     }
 

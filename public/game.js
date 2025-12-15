@@ -240,6 +240,12 @@ socket.on('lobbyUpdated', (lobby) => {
     // Update color selector based on used colors
     updateColorSelector(lobby.players);
     
+    // Show color picker in board center before game starts
+    const colorPickerPanel = document.getElementById('colorPickerPanel');
+    if (colorPickerPanel && !lobby.started) {
+        colorPickerPanel.style.display = 'block';
+    }
+    
     console.log('👥 Lobi güncellendi');
 });
 
@@ -264,8 +270,10 @@ socket.on('gameStarted', (lobby) => {
         // Hide color selector and setup panel
         const colorPanel = document.getElementById('colorSelectorPanel');
         const setupPanel = document.getElementById('setupPanel');
+        const colorPickerPanel = document.getElementById('colorPickerPanel');
         if (colorPanel) colorPanel.style.display = 'none';
         if (setupPanel) setupPanel.style.display = 'none';
+        if (colorPickerPanel) colorPickerPanel.style.display = 'none';
     const boardNameEl = document.getElementById('boardName');
     if (boardNameEl && lobby.boardName) {
         boardNameEl.textContent = `Tahta: ${lobby.boardName}`;
@@ -1957,5 +1965,20 @@ socket.on('playerBankrupt', (data) => {
     
     playSound('soundSell');
 });
+
+// Select player color from board center
+function selectPlayerColor(color) {
+    const preview = document.getElementById('selectedColorPreview');
+    if (preview) {
+        preview.style.background = `linear-gradient(135deg, ${color}44, ${color}22)`;
+        preview.style.color = color;
+        preview.style.borderLeft = `4px solid ${color}`;
+        preview.textContent = `✓ Renk seçildi`;
+    }
+    
+    // Update player color
+    socket.emit('updatePlayer', { color });
+    console.log('🎨 Renk seçildi:', color);
+}
 
 console.log('🎮 Oyun yüklendi ve hazır!');

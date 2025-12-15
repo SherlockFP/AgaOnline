@@ -1,21 +1,9 @@
-﻿fix: Critical turn system and event log fixes
+﻿fix: Board text size adjustment
 
-## Critical Bug Fixes:
-- **Turn Advancement**: Fixed turn not passing properly when landing on Community Chest in 2-player games
-- **Dice Result Text**: Removed unnecessary "Zar: X" text under dice display
-- **Event Log Messages**: Fixed card messages showing actual card content in player's color
-- **Event Log Ordering**: Ensured newest events stay on top, oldest are removed when limit reached
+## UI Improvements:
+- **Board Text Size**: Increased board text sizes slightly for better readability
+- Made property names, prices, and group labels more visible
+- Adjusted font sizes from 0.7em to 0.8em for board spaces
+- Improved text contrast and legibility
 
-## Game Flow Improvements:
-- **Turn Logic**: Enhanced turn advancement to work correctly for all special spaces
-- **Card Display**: Community Chest and Chance cards now show their actual messages
-- **Event Colors**: Events now display in the color of the player who triggered them
-- **Board Events**: Shortened board event messages for better readability
-
-## Technical Changes:
-- **Turn Checks**: Added proper validation before ending turns
-- **Message Formatting**: Improved event message extraction and coloring
-- **Dice Display**: Simplified dice display to show only the rolled number
-- **Event Management**: Better event log management with color coding
-
-Turn system now works like proper Monopoly - turns advance correctly after special space actions. Card messages display properly and event log is more readable.
+Board text is now more readable while maintaining the zoom-optimized layout.

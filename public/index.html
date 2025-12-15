@@ -37,68 +37,145 @@
     <div id="app">
         <!-- Main Menu Screen -->
         <div id="mainMenu" class="screen active">
+            <!-- Animated Background -->
+            <div class="animated-bg">
+                <div class="bg-circle bg-circle-1"></div>
+                <div class="bg-circle bg-circle-2"></div>
+                <div class="bg-circle bg-circle-3"></div>
+            </div>
+
             <div class="menu-wrapper">
                 <div class="menu-container">
-                    <div class="menu-header">
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                            <div>
-                                <h1 class="game-title">💰 AGAONLINE 🇹🇷</h1>
-                                <p class="game-subtitle">Arkadaşlarınla çevrim içi oyna</p>
-                            </div>
-                            <button id="darkModeToggle" class="btn-dark-mode" onclick="toggleDarkMode()" title="Tema değiştir">🌙</button>
+                    <!-- Hero Header -->
+                    <div class="menu-header-hero">
+                        <div class="hero-badge">
+                            <span class="badge-icon">🎯</span>
+                            <span class="badge-text">Türkiye'nin #1 Online Monopoly Oyunu</span>
                         </div>
+                        <h1 class="game-title-hero">
+                            <span class="title-icon">💰</span>
+                            AGAONLINE
+                            <span class="title-flag">🇹🇷</span>
+                        </h1>
+                        <p class="game-subtitle-hero">
+                            <span class="subtitle-highlight">Arkadaşlarınla</span> anlık stratejik mücadele
+                        </p>
+                        <button id="darkModeToggle" class="btn-dark-mode-hero" onclick="toggleDarkMode()" title="Tema değiştir">
+                            <span>🌙</span>
+                        </button>
                     </div>
                     
-                    <div class="menu-form">
-                        <input type="text" id="playerNameInput" placeholder="İsmini yaz" maxlength="20" class="input-field">
-
-                        <div class="appearance-selector">
-                            <label>Tahta seç</label>
-                            <select id="boardSelect" class="input-field">
-                                <option value="dunya" selected>Dünya (Varsayılan)</option>
-                                <option value="turkiye">Türkiye</option>
-                                <option value="amerika">Amerika</option>
-                                <option value="avrupa">Avrupa</option>
-                                <option value="japonya">Japonya</option>
-                                <option value="cin">Çin</option>
-                                <option value="kore">Kore</option>
-                                <option value="rusya">Rusya</option>
-                            </select>
+                    <!-- Game Setup Card -->
+                    <div class="game-setup-card">
+                        <div class="card-header">
+                            <h3>⚡ Hızlı Başlat</h3>
                         </div>
                         
-                        <div class="appearance-selector">
-                            <label>Avatar seç</label>
-                            <div class="avatar-grid">
-                                <button class="avatar-btn selected" data-appearance="👤" onclick="selectAppearance('👤')">👤</button>
-                                <button class="avatar-btn" data-appearance="🎩" onclick="selectAppearance('🎩')">🎩</button>
-                                <button class="avatar-btn" data-appearance="🚗" onclick="selectAppearance('🚗')">🚗</button>
-                                <button class="avatar-btn" data-appearance="🐕" onclick="selectAppearance('🐕')">🐕</button>
-                                <button class="avatar-btn" data-appearance="🎸" onclick="selectAppearance('🎸')">🎸</button>
-                                <button class="avatar-btn" data-appearance="👑" onclick="selectAppearance('👑')">👑</button>
-                                <button class="avatar-btn" data-appearance="🤓" onclick="selectAppearance('🤓')">🤓</button>
-                                <button class="avatar-btn" data-appearance="🧙" onclick="selectAppearance('🧙')">🧙</button>
-                                <button class="avatar-btn" data-appearance="🏇" onclick="selectAppearance('🏇')">🏇</button>
-                                <button class="avatar-btn" data-appearance="🧛" onclick="selectAppearance('🧛')">🧛</button>
-                                <button class="avatar-btn" data-appearance="👻" onclick="selectAppearance('👻')">👻</button>
-                                <button class="avatar-btn" data-appearance="🤖" onclick="selectAppearance('🤖')">🤖</button>
+                        <div class="menu-form">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="label-icon">👤</span>
+                                    <span>Oyuncu Adı</span>
+                                </label>
+                                <input type="text" id="playerNameInput" placeholder="Adını gir..." maxlength="20" class="input-field-modern">
                             </div>
-                        </div>
 
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="label-icon">🗺️</span>
+                                    <span>Oyun Tahtası</span>
+                                </label>
+                                <select id="boardSelect" class="input-field-modern">
+                                    <option value="dunya" selected>🌍 Dünya Haritası</option>
+                                    <option value="turkiye">🇹🇷 Türkiye</option>
+                                    <option value="amerika">🇺🇸 Amerika</option>
+                                    <option value="avrupa">🇪🇺 Avrupa</option>
+                                    <option value="japonya">🇯🇵 Japonya</option>
+                                    <option value="cin">🇨🇳 Çin</option>
+                                    <option value="kore">🇰🇷 Kore</option>
+                                    <option value="rusya">🇷🇺 Rusya</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <span class="label-icon">🎭</span>
+                                    <span>Avatar Seçimi</span>
+                                </label>
+                                <div class="avatar-grid-modern">
+                                    <button class="avatar-btn-modern selected" data-appearance="👤" onclick="selectAppearance('👤')">
+                                        <span class="avatar-emoji">👤</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🎩" onclick="selectAppearance('🎩')">
+                                        <span class="avatar-emoji">🎩</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🚗" onclick="selectAppearance('🚗')">
+                                        <span class="avatar-emoji">🚗</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🐕" onclick="selectAppearance('🐕')">
+                                        <span class="avatar-emoji">🐕</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🎸" onclick="selectAppearance('🎸')">
+                                        <span class="avatar-emoji">🎸</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="👑" onclick="selectAppearance('👑')">
+                                        <span class="avatar-emoji">👑</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🤓" onclick="selectAppearance('🤓')">
+                                        <span class="avatar-emoji">🤓</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🧙" onclick="selectAppearance('🧙')">
+                                        <span class="avatar-emoji">🧙</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🏇" onclick="selectAppearance('🏇')">
+                                        <span class="avatar-emoji">🏇</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🧛" onclick="selectAppearance('🧛')">
+                                        <span class="avatar-emoji">🧛</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="👻" onclick="selectAppearance('👻')">
+                                        <span class="avatar-emoji">👻</span>
+                                    </button>
+                                    <button class="avatar-btn-modern" data-appearance="🤖" onclick="selectAppearance('🤖')">
+                                        <span class="avatar-emoji">🤖</span>
+                                    </button>
+                                </div>
+                            </div>
 
-
-                        <div class="menu-buttons">
-                            <button onclick="createLobby()" class="btn-primary">Oyun Oluştur</button>
-                            <button onclick="joinRandomLobby()" class="btn-secondary">Oyuna Katıl</button>
+                            <div class="action-buttons-modern">
+                                <button onclick="createLobby()" class="btn-action-primary">
+                                    <span class="btn-icon">➕</span>
+                                    <div class="btn-content">
+                                        <span class="btn-title">Oda Oluştur</span>
+                                        <span class="btn-subtitle">Yeni oyun başlat</span>
+                                    </div>
+                                </button>
+                                <button onclick="joinRandomLobby()" class="btn-action-secondary">
+                                    <span class="btn-icon">🎲</span>
+                                    <div class="btn-content">
+                                        <span class="btn-title">Rastgele Katıl</span>
+                                        <span class="btn-subtitle">Hızlı oyun bul</span>
+                                    </div>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="lobbies-panel">
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-                        <h3 style="margin:0;">🎮 Aktif Oyunlar</h3>
-                        <button class="btn-ghost" onclick="refreshLobbies()" style="padding:6px 10px;">Yenile</button>
+                <!-- Active Games Panel -->
+                <div class="lobbies-panel-modern">
+                    <div class="panel-header-modern">
+                        <div class="panel-title">
+                            <span class="panel-icon">🎮</span>
+                            <h3>Aktif Oyunlar</h3>
+                            <span class="live-badge">● CANLI</span>
+                        </div>
+                        <button class="btn-refresh-modern" onclick="refreshLobbies()">
+                            <span>🔄</span>
+                            <span>Yenile</span>
+                        </button>
                     </div>
-                    <div id="lobbiesList" class="lobbies-list-large"></div>
+                    <div id="lobbiesList" class="lobbies-list-modern"></div>
                 </div>
             </div>
         </div>

@@ -567,7 +567,7 @@ function showScreen(screenName) {
 
 function selectAppearance(appearance) {
     selectedAppearance = appearance;
-    document.querySelectorAll('.avatar-btn').forEach(btn => {
+    document.querySelectorAll('.avatar-btn, .avatar-btn-modern').forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.appearance === appearance);
     });
 }

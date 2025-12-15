@@ -802,7 +802,7 @@ body {
     grid-template-rows: repeat(11, 1fr);
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95);
     position: relative;
-    gap: 1px;
+    gap: 0px; /* reduce center empty spacing */
     will-change: transform;
     transform: translateZ(0);
 }
@@ -816,8 +816,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 7px 6px;
-    font-size: 0.85em;
+    padding: 9px 8px; /* slightly bigger tiles */
+    font-size: 0.95em;
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;

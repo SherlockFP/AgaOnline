@@ -978,6 +978,10 @@ function showGameBoard() {
     const colorPanel = document.getElementById('colorSelectorPanel');
     if (colorPanel) colorPanel.style.display = 'none';
 
+    // Hide color picker panel in board center
+    const colorPickerPanel = document.getElementById('colorPickerPanel');
+    if (colorPickerPanel) colorPickerPanel.style.display = 'none';
+
     // Show trade panel
     const tradeSection = document.querySelector('.trade-section');
     if (tradeSection) tradeSection.style.display = 'block';

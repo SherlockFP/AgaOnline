@@ -317,7 +317,7 @@ socket.on('diceRolled', (data) => {
     // Show card message if chance/chest card
     if (data.cardMessage) {
         addEvent(`🎴 ${data.cardMessage}`);
-        addBoardEvent(`${data.player.name} kart çekti`);
+        addBoardEvent(`${data.player.name} ${data.cardMessage}`);
     }
 
     // Show tax message

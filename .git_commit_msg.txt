@@ -1,42 +1,18 @@
-﻿feat: Major UI and gameplay improvements
+﻿fix: Critical bugs and UI improvements
 
- Music System Enhancement:
-- Auto-play music with user interaction fallback
-- Higher volume for main menu (0.2 -> 0.5)
-- Improved initialization and error handling
+## Bug Fixes:
+- **Card Messages**: Fixed card messages not showing actual card text (was showing "kart çekti" instead of real messages like "Banka hatası! Sana ₺200 ödendi")
+- **Turn Advancement**: Fixed turn not advancing when landing on Community Chest in 2-player games
+- **Board Scaling**: Adjusted board text sizes to look good at 90% zoom level
 
- Event Log Redesign:
-- Moved event log to board center for better visibility
-- Max 8 messages with automatic cleanup
-- Player-colored messages (each player sees events in their color)
-- Messages persist for 60 seconds instead of 3 seconds
-- Better contrast and text shadows
+## UI Improvements:
+- **Event Log Design**: Enhanced event log styling with better borders, backgrounds, and hover effects
+- **Board Text**: Made board text slightly larger for better readability
+- **Dice Display**: Updated single die display (removed second die)
 
- Trade System Modal:
-- Converted trade panel to modal popup
-- Clean modal interface for trading
-- Green-themed modal design
-- Trade history display in panel
+## Technical Changes:
+- **Server Card Logic**: Updated server to send proper card message format
+- **Client Event Handling**: Fixed card message display in board events and main event log
+- **Turn Logic**: Ensured turn advancement works correctly after special space landings
 
- Jail System Implementation:
-- Full jail mechanics with 3 turn auto-release
-- Pay fine ($100) or roll doubles to escape
-- Jail modal with options for imprisoned players
-- Server-side jail state management
-
- Gameplay Improvements:
-- Auto-turn advancement after dice roll and actions
-- Removed manual 'End Turn' button
-- Better UI flow and user experience
-
- Visual Enhancements:
-- Trade modal border in dark green
-- Improved modal theming and consistency
-- Better event display styling
-- Enhanced accessibility and readability
-
- Technical Improvements:
-- Better error handling in music system
-- Improved modal overlay and animations
-- Enhanced event filtering and display logic
-- More robust jail state management
+All card messages now display properly, turn advancement works correctly, and board text is more readable at different zoom levels.

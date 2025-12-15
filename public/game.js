@@ -240,10 +240,14 @@ socket.on('lobbyUpdated', (lobby) => {
     // Update color selector based on used colors
     updateColorSelector(lobby.players);
     
-    // Show color picker in board center before game starts
+    // Show/hide color picker in board center based on game state
     const colorPickerPanel = document.getElementById('colorPickerPanel');
-    if (colorPickerPanel && !lobby.started) {
-        colorPickerPanel.style.display = 'block';
+    if (colorPickerPanel) {
+        if (lobby.started) {
+            colorPickerPanel.style.display = 'none';
+        } else {
+            colorPickerPanel.style.display = 'block';
+        }
     }
     
     console.log('👥 Lobi güncellendi');

@@ -1383,8 +1383,8 @@ body {
     flex-direction: column;
     min-height: 0;
     flex: 0 0 auto;
-    max-height: 45%;
-    overflow: hidden;
+    max-height: 40%;
+    overflow: visible;
 }
 
 .chat-section .panel-content {
@@ -1484,7 +1484,7 @@ body {
     margin-bottom: 10px;
     padding-right: 5px;
     min-height: 0;
-    max-height: 400px;
+    max-height: 300px;
     word-wrap: break-word;
 }
 
@@ -1722,12 +1722,14 @@ body {
 .popup-content {
     background: linear-gradient(135deg, rgba(30, 41, 59, 0.99), rgba(15, 23, 42, 0.99));
     border: 3px solid rgba(96, 165, 250, 0.5);
-    border-radius: 20px;
-    padding: 35px;
-    max-width: 500px;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 380px;
     width: 90%;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(96, 165, 250, 0.3);
-    animation: popupAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(96, 165, 250, 0.3);
+    animation: popupAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     backdrop-filter: blur(20px);
 }
 
@@ -1743,8 +1745,8 @@ body {
 }
 
 .popup-content h2 {
-    margin-bottom: 25px;
-    font-size: 2.2em;
+    margin-bottom: 15px;
+    font-size: 1.6em;
     color: #60a5fa;
     text-shadow: 0 2px 10px rgba(96, 165, 250, 0.3);
     font-weight: 900;
@@ -1752,20 +1754,21 @@ body {
 
 .property-details {
     background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(96, 165, 250, 0.05));
-    border-radius: 12px;
-    padding: 18px;
-    margin-bottom: 25px;
-    font-size: 0.98em;
-    border-left: 5px solid rgba(96, 165, 250, 0.6);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 15px;
+    font-size: 0.92em;
+    border-left: 4px solid rgba(96, 165, 250, 0.6);
     backdrop-filter: blur(10px);
 }
 
 .property-detail {
     display: flex;
     justify-content: space-between;
-    padding: 12px 0;
+    padding: 8px 0;
     border-bottom: 1px solid rgba(96, 165, 250, 0.15);
     align-items: center;
+    font-size: 0.95em;
 }
 
 .property-detail:last-child {

@@ -1795,3 +1795,237 @@ body {
     white-space: nowrap;
     font-family: 'Segoe UI', sans-serif;
 }
+
+/* ================================================
+   MOBILE RESPONSIVE DESIGN
+   ================================================ */
+
+/* Tablet and below (max-width: 768px) */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .left-panel, .right-panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 0 10px 0;
+    }
+
+    .main-content {
+        width: 100% !important;
+        padding: 10px;
+    }
+
+    /* Board adjustments */
+    .board {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .board-space {
+        font-size: 0.65em !important;
+        padding: 4px !important;
+    }
+
+    .board-center {
+        padding: 10px !important;
+    }
+
+    /* Hide less important panels on mobile */
+    .events-section {
+        display: none !important;
+    }
+
+    /* Stack buttons vertically */
+    .panel-section button {
+        width: 100% !important;
+        margin: 4px 0 !important;
+    }
+
+    /* Adjust modal sizes */
+    .trade-offer-content {
+        max-width: 95% !important;
+        padding: 15px !important;
+    }
+
+    /* Make dice display larger on mobile */
+    .dice-display {
+        font-size: 2em !important;
+    }
+
+    /* Chat improvements */
+    .chat-messages {
+        max-height: 150px !important;
+    }
+
+    .chat-message {
+        font-size: 0.85em !important;
+        padding: 6px !important;
+    }
+
+    /* Player items */
+    .player-item {
+        padding: 8px !important;
+    }
+
+    /* Property cards */
+    .property-card {
+        padding: 8px !important;
+        font-size: 0.85em !important;
+    }
+
+    /* Emoji panel */
+    #emojiPanel {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}
+
+/* Mobile phones (max-width: 480px) */
+@media screen and (max-width: 480px) {
+    body {
+        font-size: 12px;
+    }
+
+    h1, h2, h3 {
+        font-size: 1.2em !important;
+    }
+
+    .board {
+        max-width: 100% !important;
+    }
+
+    .board-space {
+        font-size: 0.5em !important;
+        padding: 2px !important;
+        min-height: 40px !important;
+    }
+
+    .board-center {
+        padding: 5px !important;
+        font-size: 0.8em !important;
+    }
+
+    /* Simplify board event messages */
+    .board-event {
+        font-size: 0.7em !important;
+        padding: 4px !important;
+    }
+
+    /* Stack everything */
+    .dice-display {
+        font-size: 1.5em !important;
+        gap: 8px !important;
+    }
+
+    /* Buttons */
+    button {
+        padding: 8px 12px !important;
+        font-size: 0.9em !important;
+    }
+
+    /* Modal adjustments */
+    .trade-offer-content {
+        padding: 10px !important;
+    }
+
+    .trade-offer-content h2 {
+        font-size: 1.1em !important;
+    }
+
+    /* Color picker */
+    #colorPickerPanel button {
+        width: 35px !important;
+        height: 35px !important;
+    }
+
+    /* Owned properties grid */
+    .owned-list {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Chat */
+    .chat-input input {
+        font-size: 0.9em !important;
+    }
+
+    .btn-send {
+        padding: 8px !important;
+        font-size: 0.85em !important;
+    }
+
+    /* Emoji effects */
+    .emoji-effect {
+        font-size: 2em !important;
+    }
+
+    /* Player count and lobby info */
+    .player-count {
+        font-size: 0.85em !important;
+    }
+}
+
+/* Landscape mode optimizations */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .container {
+        flex-direction: row !important;
+    }
+
+    .left-panel, .right-panel {
+        width: 25% !important;
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        width: 50% !important;
+    }
+
+    .board {
+        max-width: 100% !important;
+        max-height: 90vh !important;
+    }
+
+    .chat-messages {
+        max-height: 100px !important;
+    }
+}
+
+/* Touch-friendly improvements for all mobile devices */
+@media (hover: none) and (pointer: coarse) {
+    button, .btn-primary, .btn-secondary, .btn-ghost {
+        min-height: 44px !important;
+        min-width: 44px !important;
+        padding: 10px 16px !important;
+    }
+
+    .board-space {
+        min-height: 50px !important;
+    }
+
+    input[type="text"], input[type="range"] {
+        min-height: 44px !important;
+    }
+
+    /* Larger tap targets */
+    .emoji-btn {
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+
+    /* Remove hover effects on touch devices */
+    *:hover {
+        transform: none !important;
+    }
+
+    button:active, .btn-primary:active {
+        transform: scale(0.95) !important;
+    }
+}

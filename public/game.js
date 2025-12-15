@@ -2057,13 +2057,22 @@ function viewTradeOffer(tradeId) {
     // For now, just trigger the existing trade offer handler
 }
 
-// Bankruptcy function
+// Bankruptcy modal functions
 function declareBankruptcy() {
-    if (!confirm('⚠️ İflas etmek istediğinizden emin misiniz?\n\nTüm mülkleriniz sahipsiz kalacak ve paranız sıfırlanacak. Oyunu izleyici olarak sürdürebilirsiniz.')) {
-        return;
-    }
-    
+    const modal = document.getElementById('bankruptcyModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeBankruptcyModal() {
+    const modal = document.getElementById('bankruptcyModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function confirmBankruptcy() {
     socket.emit('declareBankruptcy');
+    
+    // Close modal
+    closeBankruptcyModal();
     
     // Hide bankruptcy button after declaring
     const bankruptBtn = document.getElementById('bankruptBtn');

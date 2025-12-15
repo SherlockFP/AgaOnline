@@ -149,13 +149,13 @@ const boards = {
     name: 'İstanbul',
     currency: '₺',
     properties: buildBoard([
-      '🕌 BAŞLA / MAAŞ', 'Kadıköy', 'Kamu Sandığı', 'Moda Caddesi', 'Gelir Vergisi', 'Marmaray',
-      'Bağdat Caddesi', 'Şans', 'Nişantaşı', 'Bebek', 'Hapishane (Ziyaret)', 'Ortaköy',
-      'İSKİ', 'Beşiktaş', 'Etiler', 'Metrobüs Hattı', 'Levent', 'Kamu Sandığı',
-      'Maslak', 'Şişli', 'Ücretsiz Park', 'Taksim Meydanı', 'Şans', 'İstiklal Caddesi',
-      'Beyoğlu', 'Füniküler', 'Karaköy', 'Galata', 'İGDAŞ', 'Eminönü',
-      'Hapishaneye Git', 'Fatih', 'Sultanahmet', 'Kamu Sandığı', 'Beyazıt', 'M1 Metro',
-      'Şans', 'Bakırköy', 'Lüks Vergisi', 'Florya Sahili'
+      '🕌 BAŞLA / MAAŞ', 'Esenyurt', 'Kamu Sandığı', 'Sultanbeyli', 'Gelir Vergisi', 'Marmaray',
+      'Esenler', 'Şans', 'Güngören', 'Bağcılar', 'Silivri (Ziyaret)', 'Gaziosmanpaşa',
+      'Vapur', 'Pendik', 'Küçükçekmece', 'Şehir Hatları', 'Kartal', 'Kamu Sandığı',
+      'Ümraniye', 'Maltepe', 'Ücretsiz Park', 'Kadıköy', 'Şans', 'Üsküdar',
+      'Fatih', 'Metro', 'Beyoğlu', 'Şişli', 'Vapur', 'Bakırköy',
+      'Silivri\'ye Git', 'Beykoz', 'Çekmeköy', 'Kamu Sandığı', 'Sarıyer', 'Metro',
+      'Şans', 'Beşiktaş', 'Lüks Vergisi', 'Etiler'
     ])
   },
   japonya: {

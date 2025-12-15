@@ -904,9 +904,67 @@ body {
 .board-space.green { border-top-color: #22c55e; }
 .board-space.darkblue { border-top-color: #1d4ed8; }
 
+/* Special space types - Community Chest (Kamu Sandığı) */
+.board-space[data-type="chest"]:not(.owned) {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%) !important;
+    border: 3px solid rgba(34, 197, 94, 0.8) !important;
+    box-shadow: 0 5px 20px rgba(34, 197, 94, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(34, 197, 94, 0.3) !important;
+    font-weight: 700;
+    color: white;
+}
+
+/* Special space types - Railroads (Demiryolu) */
+.board-space[data-type="railroad"]:not(.owned) {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%) !important;
+    border: 3px solid rgba(14, 165, 233, 0.8) !important;
+    box-shadow: 0 5px 20px rgba(14, 165, 233, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(14, 165, 233, 0.3) !important;
+    font-weight: 700;
+    color: white;
+}
+
+/* Special space types - Utilities (Elektrik/Su) */
+.board-space[data-type="utility"]:not(.owned) {
+    background: linear-gradient(135deg, #ca8a04 0%, #a16207 50%, #854d0e 100%) !important;
+    border: 3px solid rgba(250, 204, 21, 0.8) !important;
+    box-shadow: 0 5px 20px rgba(250, 204, 21, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2),
+                0 0 30px rgba(250, 204, 21, 0.3) !important;
+    font-weight: 700;
+    color: white;
+}
+
 .board-space.owned {
     opacity: 1;
     transform: translateZ(0);
+}
+
+/* Active player space - highlight where players are */
+.board-space.active-player-space {
+    transform: scale(1.08) translateZ(0) !important;
+    z-index: 15 !important;
+    box-shadow: 0 6px 25px rgba(96, 165, 250, 0.7),
+                0 0 40px rgba(139, 92, 246, 0.5),
+                inset 0 0 20px rgba(96, 165, 250, 0.2) !important;
+    animation: playerSpacePulse 2s ease-in-out infinite;
+}
+
+@keyframes playerSpacePulse {
+    0%, 100% {
+        transform: scale(1.08) translateZ(0);
+        box-shadow: 0 6px 25px rgba(96, 165, 250, 0.7),
+                    0 0 40px rgba(139, 92, 246, 0.5),
+                    inset 0 0 20px rgba(96, 165, 250, 0.2);
+    }
+    50% {
+        transform: scale(1.12) translateZ(0);
+        box-shadow: 0 8px 30px rgba(96, 165, 250, 0.9),
+                    0 0 50px rgba(139, 92, 246, 0.7),
+                    inset 0 0 25px rgba(96, 165, 250, 0.3);
+    }
 }
 
 .owner-badge {

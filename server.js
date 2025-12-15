@@ -97,13 +97,13 @@ const boards = {
     name: 'Türkiye',
     currency: '₺',
     properties: buildBoard([
-      '🇹🇷 BAŞLA / MAAŞ', 'Kars', 'Kamu Sandığı', 'Erzurum', 'Gelir Vergisi', 'Doğu Demiryolu',
-      'Trabzon', 'Şans', 'Samsun', 'Ordu', 'Hapishane (Ziyaret)', 'Ankara',
-      'Elektrik Şirketi', 'Konya', 'Eskişehir', 'İç Anadolu Demiryolu', 'Antalya', 'Kamu Sandığı',
-      'Mersin', 'Adana', 'Ücretsiz Park', 'Bursa', 'Şans', 'İzmir',
-      'Muğla', 'Ege Demiryolu', 'Tekirdağ', 'Çanakkale', 'Su İşleri', 'Balıkesir',
-      'Hapishaneye Git', 'Gaziantep', 'Şanlıurfa', 'Kamu Sandığı', 'Diyarbakır', 'Güney Demiryolu',
-      'Şans', 'İstanbul Kadıköy', 'Lüks Vergisi', 'İstanbul Beşiktaş'
+      '🇹🇷 BAŞLA / MAAŞ', 'Edirne', 'Kamu Sandığı', 'Kırklareli', 'Gelir Vergisi', 'Marmaray Hattı',
+      'Tekirdağ', 'Şans', 'Çanakkale', 'Bursa', 'Hapishane (Ziyaret)', 'Ankara Çankaya',
+      'Elektrik Şirketi', 'Ankara Kızılay', 'Konya', 'Yüksek Hızlı Tren', 'İzmir Alsancak', 'Kamu Sandığı',
+      'İzmir Karşıyaka', 'İzmir Bornova', 'Ücretsiz Park', 'Antalya Kaleiçi', 'Şans', 'Antalya Lara',
+      'Muğla Bodrum', 'Denizli Hattı', 'Muğla Marmaris', 'Aydın Kuşadası', 'Su İşleri', 'Muğla Fethiye',
+      'Hapishaneye Git', 'İstanbul Beşiktaş', 'İstanbul Şişli', 'Kamu Sandığı', 'İstanbul Beyoğlu', 'İstanbul Metro',
+      'Şans', 'İstanbul Nişantaşı', 'Lüks Vergisi', 'İstanbul Bebek'
     ])
   },
   amerika: {

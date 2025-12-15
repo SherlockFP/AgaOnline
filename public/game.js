@@ -1240,6 +1240,8 @@ function updateGameBoard() {
     spaces.forEach(space => {
         const playerTokens = space.querySelectorAll('.player-token');
         playerTokens.forEach(token => token.remove());
+        // Remove active player highlight from all spaces
+        space.classList.remove('active-player-space');
     });
 
     gameState.players.forEach((player, index) => {
@@ -1256,6 +1258,9 @@ function updateGameBoard() {
             token.textContent = player.appearance || '👤';
             token.style.fontSize = '1.3em';
             space.appendChild(token);
+            
+            // Add active-player-space class to highlight the space where a player is
+            space.classList.add('active-player-space');
         }
     });
 

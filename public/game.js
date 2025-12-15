@@ -1511,6 +1511,38 @@ function sendMessage() {
     const chatInput = document.getElementById('chatInput');
     const message = chatInput.value.trim();
     if (message) {
+        // Check for YouTube music commands
+        if (message.startsWith('!play ') || message.startsWith('!p ')) {
+            const link = message.replace(/^(!play|!p)\s+/, '').trim();
+            if (link) {
+                const videoId = extractYouTubeVideoId(link);
+                if (videoId) {
+                    socket.emit('playYoutubeMusic', { videoId, link });
+                    chatInput.value = '';
+                    return;
+                } else {
+                    // Show error in chat
+                    const chatDiv = document.getElementById('chatMessages');
+                    const msgEl = document.createElement('div');
+                    msgEl.className = 'chat-message';
+                    msgEl.innerHTML = `
+                        <div class="chat-message-author" style="color: #ef4444;">❌ Sistem</div>
+                        <div>Geçersiz YouTube linki!</div>
+                    `;
+                    chatDiv.appendChild(msgEl);
+                    setTimeout(() => {
+                        chatDiv.scrollTop = chatDiv.scrollHeight;
+                    }, 10);
+                    chatInput.value = '';
+                    return;
+                }
+            }
+        } else if (message === '!stop') {
+            stopYoutubeMusic();
+            chatInput.value = '';
+            return;
+        }
+        
         // Send public message
         socket.emit('sendMessage', { message });
         chatInput.value = '';
@@ -2242,25 +2274,7 @@ function extractYouTubeVideoId(url) {
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
-function playYoutubeMusic() {
-    const linkInput = document.getElementById('youtubeLink');
-    const link = linkInput.value.trim();
-    
-    if (!link) {
-        alert('Lütfen bir YouTube linki girin!');
-        return;
-    }
-    
-    const videoId = extractYouTubeVideoId(link);
-    if (!videoId) {
-        alert('Geçersiz YouTube linki!');
-        return;
-    }
-    
-    // Send to server to broadcast to all players
-    socket.emit('playYoutubeMusic', { videoId, link });
-    linkInput.value = '';
-}
+// YouTube music now controlled via chat commands (!play <link> or !p <link>)
 
 socket.on('youtubeMusicPlay', (data) => {
     const { videoId, playerName } = data;
@@ -2332,10 +2346,7 @@ socket.on('youtubeMusicPlay', (data) => {
 
 function showCurrentMusic(videoId) {
     const currentMusicDiv = document.getElementById('currentYoutubeMusic');
-    const titleSpan = document.getElementById('currentMusicTitle');
-    
-    if (currentMusicDiv && titleSpan) {
-        titleSpan.textContent = '🎵 Müzik çalıyor...';
+    if (currentMusicDiv) {
         currentMusicDiv.style.display = 'block';
     }
 }

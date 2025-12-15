@@ -1346,13 +1346,18 @@ function updateGameBoard() {
             const owner = gameState.players.find(p => p.id === prop.owner);
             space.classList.add('owned');
             space.style.opacity = '1';
-            // Use owner's color for the border instead of property color
+            // Kutuyu tamamen oyuncu rengiyle doldur
             space.style.borderBottom = `4px solid ${owner.color}`;
-            space.style.background = `linear-gradient(150deg, rgba(15, 23, 42, 0.9), ${owner.color}30)`;
-            space.style.boxShadow = `0 4px 14px ${owner.color}55, 0 0 0 2px ${owner.color}55 inset`;
+            space.style.background = `${owner.color}`;
+            space.style.boxShadow = `0 4px 14px ${owner.color}99, 0 0 0 3px ${owner.color} inset, 0 0 20px ${owner.color}66`;
+            
+            // Text'leri beyaz yap ki görünsün
+            const nameEl = space.querySelector('.space-name');
+            const priceEl = space.querySelector('.space-price');
+            if (nameEl) nameEl.style.color = '#ffffff';
+            if (priceEl) priceEl.style.color = '#ffffff';
             
             // Hide price when property is owned
-            const priceEl = space.querySelector('.space-price');
             if (priceEl) priceEl.style.display = 'none';
         } else {
             space.classList.remove('owned');
@@ -1361,8 +1366,13 @@ function updateGameBoard() {
             space.style.background = '';
             space.style.boxShadow = '';
             
-            // Show price when property is not owned
+            // Text renklerini sıfırla
+            const nameEl = space.querySelector('.space-name');
             const priceEl = space.querySelector('.space-price');
+            if (nameEl) nameEl.style.color = '';
+            if (priceEl) priceEl.style.color = '';
+            
+            // Show price when property is not owned
             if (priceEl) priceEl.style.display = 'block';
         }
     });

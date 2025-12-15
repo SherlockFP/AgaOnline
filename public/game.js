@@ -145,7 +145,7 @@ function playSound(soundType) {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const now = audioContext.currentTime;
         
-        if (soundType === 'soundDice') {
+        if (soundType === 'dice' || soundType === 'soundDice') {
             // Dice roll sound: ascending beeps
             for (let i = 0; i < 3; i++) {
                 const osc = audioContext.createOscillator();
@@ -159,7 +159,7 @@ function playSound(soundType) {
                 osc.start(now + i * 0.1);
                 osc.stop(now + i * 0.1 + 0.1);
             }
-        } else if (soundType === 'soundBuy') {
+        } else if (soundType === 'buy' || soundType === 'soundBuy') {
             // Buy sound: happy chime
             const osc = audioContext.createOscillator();
             const gain = audioContext.createGain();
@@ -172,6 +172,82 @@ function playSound(soundType) {
             gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
             osc.start(now);
             osc.stop(now + 0.3);
+        } else if (soundType === 'move') {
+            // Move sound: quick blip
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 600;
+            osc.type = 'square';
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        } else if (soundType === 'money') {
+            // Money sound: coin clink
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(1200, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+            osc.type = 'triangle';
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } else if (soundType === 'card') {
+            // Card draw sound
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 500;
+            osc.type = 'sawtooth';
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+            osc.start(now);
+            osc.stop(now + 0.12);
+        } else if (soundType === 'jail') {
+            // Jail sound: low ominous tone
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 200;
+            osc.type = 'sawtooth';
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        } else if (soundType === 'achievement') {
+            // Achievement unlock sound: ascending triumphant
+            const frequencies = [523, 659, 784, 1047]; // C, E, G, C (major chord)
+            frequencies.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2);
+                osc.start(now + i * 0.1);
+                osc.stop(now + i * 0.1 + 0.2);
+            });
+        } else if (soundType === 'auction') {
+            // Auction gavel sound
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = 150;
+            osc.type = 'square';
+            gain.gain.setValueAtTime(0.4, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now);
+            osc.stop(now + 0.05);
         }
     } catch (e) {
         console.log('Sound failed:', e);
@@ -328,9 +404,26 @@ socket.on('diceRolled', (data) => {
         showToast('🎲 Çift 6! Şanslı zar!', 'success');
     }
 
-    // Update gameState with new position
+    // Update gameState with new position - play step sounds
     const playerIdx = gameState.players.findIndex(p => p.id === data.player.id);
     if (playerIdx >= 0) {
+        const oldPosition = gameState.players[playerIdx].position;
+        const newPosition = data.newPosition;
+        
+        // Animate token movement with sound effects
+        if (oldPosition !== newPosition) {
+            const steps = data.total; // Number of steps to animate
+            let currentStep = 0;
+            const stepInterval = setInterval(() => {
+                if (currentStep < steps) {
+                    playSound('move'); // Play move sound for each step
+                    currentStep++;
+                } else {
+                    clearInterval(stepInterval);
+                }
+            }, 100); // Play sound every 100ms
+        }
+        
         gameState.players[playerIdx].position = data.newPosition;
         if (data.player.money !== undefined) {
             gameState.players[playerIdx].money = data.player.money;

@@ -509,15 +509,8 @@ socket.on('diceRolled', (data) => {
         setTimeout(() => {
             showPropertyPopup(data.landedSpace);
         }, 1400);
-        
-        // 15 saniye sonra otomatik kapat ve sırayı geçir
-        setTimeout(() => {
-            const popup = document.getElementById('propertyPopup');
-            if (popup && popup.style.display !== 'none') {
-                console.log('⏱️ Auto-closing property popup (15s timeout)');
-                closePopup();
-            }
-        }, 15000);
+
+        // Otomatik kapatma kaldırıldı: kullanıcı kararıyla kapanacak
     } else if (isSpecialSpace) {
         // Özel kare (vergi, şans, vs) - 3 saniye sonra otomatik sıra geçir
         console.log('⭐ Special space - auto advancing in 3s');
@@ -1442,29 +1435,29 @@ function updateGameBoard() {
             let defaultBg = '';
             let defaultShadow = '';
             if (prop.type === 'chance') {
-                defaultBg = '#fb923c';
-                defaultShadow = '0 0 0 3px #fb923c66 inset';
+                defaultBg = '#fb923c1a';
+                defaultShadow = '0 0 0 2px #fb923c33 inset';
             } else if (prop.type === 'chest') {
-                defaultBg = '#16a34a';
-                defaultShadow = '0 0 0 3px #16a34a66 inset';
+                defaultBg = '#16a34a1a';
+                defaultShadow = '0 0 0 2px #16a34a33 inset';
             } else if (prop.type === 'railroad') {
-                defaultBg = '#0284c7';
-                defaultShadow = '0 0 0 3px #0284c766 inset';
+                defaultBg = '#0284c71a';
+                defaultShadow = '0 0 0 2px #0284c733 inset';
             } else if (prop.type === 'utility') {
-                defaultBg = '#06b6d4';
-                defaultShadow = '0 0 0 3px #06b6d466 inset';
+                defaultBg = '#06b6d41a';
+                defaultShadow = '0 0 0 2px #06b6d433 inset';
             } else if (prop.type === 'tax') {
-                defaultBg = '#eab308';
-                defaultShadow = '0 0 0 3px #eab30866 inset';
+                defaultBg = '#eab3081a';
+                defaultShadow = '0 0 0 2px #eab30833 inset';
             } else if (prop.type === 'parking') {
-                defaultBg = '#a855f7';
-                defaultShadow = '0 0 0 3px #a855f766 inset';
+                defaultBg = '#a855f71a';
+                defaultShadow = '0 0 0 2px #a855f733 inset';
             } else if (prop.type === 'gotojail') {
-                defaultBg = '#ef4444';
-                defaultShadow = '0 0 0 3px #ef444466 inset';
+                defaultBg = '#ef44441a';
+                defaultShadow = '0 0 0 2px #ef444433 inset';
             } else if (prop.type === 'go') {
-                defaultBg = '#22c55e';
-                defaultShadow = '0 0 0 3px #22c55e66 inset';
+                defaultBg = '#22c55e1a';
+                defaultShadow = '0 0 0 2px #22c55e33 inset';
             }
             space.style.background = defaultBg;
             space.style.boxShadow = defaultShadow;
@@ -1751,8 +1744,7 @@ function closePopup() {
     const popup = document.getElementById('propertyPopup');
     const wasOpen = popup.style.display !== 'none';
     popup.style.display = 'none';
-    
-    // If popup was open and it's my turn, advance turn after closing
+    // Advance turn only if player didn't buy property and explicitly closed
     if (wasOpen && gameState && gameState.players[gameState.currentTurn]?.id === socket.id) {
         setTimeout(() => {
             socket.emit('advanceTurn');

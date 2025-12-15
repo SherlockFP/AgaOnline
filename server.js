@@ -18,7 +18,7 @@ const playerSockets = new Map();
 
 // Base template for board properties
 const baseTemplate = [
-  { color: null, type: 'go', price: 0, rent: [] },
+  { color: '#22c55e', type: 'go', price: 0, rent: [] },
   { color: 'brown', type: 'property', price: 60, rent: [2, 10, 30, 90, 160, 250] },
   { color: null, type: 'chest', price: 0, rent: [] },
   { color: 'brown', type: 'property', price: 60, rent: [4, 20, 60, 180, 320, 450] },
@@ -28,7 +28,7 @@ const baseTemplate = [
   { color: null, type: 'chance', price: 0, rent: [] },
   { color: 'lightblue', type: 'property', price: 100, rent: [6, 30, 90, 270, 400, 550] },
   { color: 'lightblue', type: 'property', price: 120, rent: [8, 40, 120, 360, 640, 900] },
-  { color: null, type: 'jail', price: 0, rent: [] },
+  { color: '#f97316', type: 'jail', price: 0, rent: [] },
   { color: 'pink', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750] },
   { color: null, type: 'utility', price: 150, rent: [] },
   { color: 'pink', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750] },
@@ -38,7 +38,7 @@ const baseTemplate = [
   { color: null, type: 'chest', price: 0, rent: [] },
   { color: 'orange', type: 'property', price: 180, rent: [14, 70, 200, 550, 750, 950] },
   { color: 'orange', type: 'property', price: 200, rent: [16, 80, 220, 600, 800, 1000] },
-  { color: null, type: 'parking', price: 0, rent: [] },
+  { color: '#a855f7', type: 'parking', price: 0, rent: [] },
   { color: 'red', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050] },
   { color: null, type: 'chance', price: 0, rent: [] },
   { color: 'red', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050] },
@@ -48,7 +48,7 @@ const baseTemplate = [
   { color: 'yellow', type: 'property', price: 260, rent: [22, 110, 330, 800, 975, 1150] },
   { color: null, type: 'utility', price: 150, rent: [] },
   { color: 'yellow', type: 'property', price: 280, rent: [24, 120, 360, 850, 1025, 1200] },
-  { color: null, type: 'gotojail', price: 0, rent: [] },
+  { color: '#ef4444', type: 'gotojail', price: 0, rent: [] },
   { color: 'green', type: 'property', price: 300, rent: [26, 130, 390, 900, 1100, 1275] },
   { color: 'green', type: 'property', price: 300, rent: [26, 130, 390, 900, 1100, 1275] },
   { color: null, type: 'chest', price: 0, rent: [] },
@@ -152,7 +152,7 @@ const boards = {
       '🕌 BAŞLA / MAAŞ', 'Esenyurt', 'Kamu Sandığı', 'Sultanbeyli', 'Gelir Vergisi', 'Marmaray',
       'Esenler', 'Şans', 'Güngören', 'Bağcılar', 'Silivri (Ziyaret)', 'Gaziosmanpaşa',
       'Vapur', 'Pendik', 'Küçükçekmece', 'Şehir Hatları', 'Kartal', 'Kamu Sandığı',
-      'Ümraniye', 'Maltepe', 'Ücretsiz Park', 'Kadıköy', 'Şans', 'Üsküdar',
+      'Ümraniye', 'Maltepe', '🅿️ İSPARK', 'Kadıköy', 'Şans', 'Üsküdar',
       'Fatih', 'Metro', 'Beyoğlu', 'Şişli', 'Vapur', 'Bakırköy',
       'Silivri\'ye Git', 'Beykoz', 'Çekmeköy', 'Kamu Sandığı', 'Sarıyer', 'Metro',
       'Şans', 'Beşiktaş', 'Lüks Vergisi', 'Etiler'

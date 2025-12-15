@@ -304,12 +304,12 @@ socket.on('diceRolled', (data) => {
     dice2El.style.display = 'flex'; // Show second die
 
     setTimeout(() => {
-        dice1El.textContent = data.dice1;
-        dice2El.textContent = data.dice2;
+        dice1El.setAttribute('data-value', data.dice1);
+        dice2El.setAttribute('data-value', data.dice2);
         resultEl.textContent = `Toplam: ${data.total}`;
         dice1El.classList.remove('rolling');
         dice2El.classList.remove('rolling');
-    }, 600);
+    }, 800);
 
     // Hide roll button after rolling
     const rollBtn = document.getElementById('rollBtn');
@@ -1935,6 +1935,26 @@ socket.on('jailReleased', (data) => {
 
 socket.on('jailRollFailed', (data) => {
     addEvent(`🎲 ${data.message}`);
+    
+    // Show dice result for failed jail roll
+    const dice1El = document.getElementById('dice1');
+    const dice2El = document.getElementById('dice2');
+    const resultEl = document.getElementById('diceResult');
+    
+    if (dice1El && dice2El && resultEl) {
+        // Animate both dice
+        dice1El.classList.add('rolling');
+        dice2El.classList.add('rolling');
+        dice2El.style.display = 'flex';
+        
+        setTimeout(() => {
+            dice1El.setAttribute('data-value', data.dice1);
+            dice2El.setAttribute('data-value', data.dice2);
+            resultEl.textContent = `Toplam: ${data.dice1 + data.dice2}`;
+            dice1El.classList.remove('rolling');
+            dice2El.classList.remove('rolling');
+        }, 800);
+    }
 });
 
 // Check if current player is in jail and show jail modal

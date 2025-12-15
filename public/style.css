@@ -1210,37 +1210,99 @@ body {
 }
 
 .dice {
-    width: 45px;
-    height: 45px;
-    background: linear-gradient(145deg, #ffffff, #f3f4f6);
-    border: 3px solid rgba(255, 255, 255, 0.9);
-    border-radius: 10px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(145deg, #ffffff, #e5e7eb);
+    border: 2px solid rgba(15, 23, 42, 0.2);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3em;
+    font-size: 1.5em;
     font-weight: 800;
-    color: #dc2626;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4), 0 0 20px rgba(220, 38, 38, 0.3);
-    animation: dicePulse 2s ease-in-out infinite;
+    color: #1f2937;
+    box-shadow: 
+        0 10px 25px rgba(0, 0, 0, 0.3),
+        0 6px 12px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.9),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+    animation: diceFloat 3s ease-in-out infinite;
     will-change: transform;
-    backface-visibility: hidden;
-    transform: translateZ(0);
+    position: relative;
+    perspective: 1000px;
+    transform-style: preserve-3d;
 }
 
-@keyframes dicePulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+/* 3D floating effect */
+@keyframes diceFloat {
+    0%, 100% { 
+        transform: translateY(0) rotateX(5deg) rotateY(5deg);
+        box-shadow: 
+            0 10px 25px rgba(0, 0, 0, 0.3),
+            0 6px 12px rgba(0, 0, 0, 0.2),
+            inset 0 2px 4px rgba(255, 255, 255, 0.9);
+    }
+    50% { 
+        transform: translateY(-5px) rotateX(-5deg) rotateY(-5deg);
+        box-shadow: 
+            0 15px 30px rgba(0, 0, 0, 0.4),
+            0 8px 16px rgba(0, 0, 0, 0.25),
+            inset 0 2px 4px rgba(255, 255, 255, 0.9);
+    }
 }
 
+/* Enhanced 3D rolling animation */
 .dice.rolling {
-    animation: diceRoll 0.6s ease-in-out;
+    animation: dice3DRoll 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-@keyframes diceRoll {
-    0% { transform: rotateX(0) rotateY(0); }
-    50% { transform: rotateX(360deg) rotateY(360deg); }
-    100% { transform: rotateX(720deg) rotateY(720deg); }
+@keyframes dice3DRoll {
+    0% { 
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+    }
+    25% { 
+        transform: rotateX(180deg) rotateY(180deg) rotateZ(90deg) scale(1.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    50% { 
+        transform: rotateX(360deg) rotateY(360deg) rotateZ(180deg) scale(1.15);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+    }
+    75% { 
+        transform: rotateX(540deg) rotateY(540deg) rotateZ(270deg) scale(1.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    100% { 
+        transform: rotateX(720deg) rotateY(720deg) rotateZ(360deg) scale(1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Dice dots container */
+.dice-dots {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 6px;
+    gap: 3px;
+}
+
+/* Use CSS content to show dice pips based on data-value */
+.dice[data-value="1"]::after { content: '⚀'; font-size: 2.5em; }
+.dice[data-value="2"]::after { content: '⚁'; font-size: 2.5em; }
+.dice[data-value="3"]::after { content: '⚂'; font-size: 2.5em; }
+.dice[data-value="4"]::after { content: '⚃'; font-size: 2.5em; }
+.dice[data-value="5"]::after { content: '⚄'; font-size: 2.5em; }
+.dice[data-value="6"]::after { content: '⚅'; font-size: 2.5em; }
+
+.dice::after {
+    position: absolute;
+    color: #1f2937;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes playerMove {

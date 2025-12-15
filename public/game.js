@@ -8,6 +8,7 @@ let colorsLocked = false;
 let selectedProperty = null;
 let availableLobbies = [];
 let lobbiesRefreshInterval = null;
+let isJoiningLobby = false;  // Prevent duplicate joins
 
 // Music State
 let backgroundAudio = null;
@@ -177,6 +178,7 @@ socket.on('connect', () => {
 
 // Socket Events
 socket.on('lobbyCreated', (lobby) => {
+    isJoiningLobby = false;  // Reset joining flag
     currentLobby = lobby;
     showScreen('gameScreen');
     updateLobbyUI();
@@ -196,13 +198,18 @@ socket.on('lobbiesList', (lobbies) => {
 });
 
 socket.on('errorMessage', (msg) => {
+    isJoiningLobby = false;  // Reset flag on error
     addEvent(`⚠️ ${msg}`);
     addBoardEvent(`⚠️ ${msg}`);
 });
 
 // Update player info in header when lobby updates
 socket.on('lobbyUpdated', (lobby) => {
+    isJoiningLobby = false;  // Reset joining flag
     currentLobby = lobby;
+    
+    // Show lobby screen if we just joined
+    showScreen('gameScreen');
     updateLobbyUI();
     
     const playerCount = document.getElementById('playerCount');
@@ -510,11 +517,19 @@ function copyCurrentLobbyId() {
 }
 
 function quickJoinLobby(lobbyId) {
+    // Prevent duplicate joins
+    if (isJoiningLobby) {
+        console.log('⏳ Zaten lobiye katılıyor, lütfen bekle...');
+        return;
+    }
+    
     const playerName = document.getElementById('playerNameInput').value.trim();
     if (!playerName) {
         alert('İsmini yazmalısın');
         return;
     }
+    
+    isJoiningLobby = true;
     socket.emit('joinLobby', {
         lobbyId,
         playerName,
@@ -524,6 +539,12 @@ function quickJoinLobby(lobbyId) {
 }
 
 function joinRandomLobby() {
+    // Prevent duplicate joins
+    if (isJoiningLobby) {
+        console.log('⏳ Zaten lobiye katılıyor, lütfen bekle...');
+        return;
+    }
+    
     const playerName = document.getElementById('playerNameInput').value.trim();
     if (!playerName) {
         alert('İsmini yazmalısın');
@@ -556,12 +577,19 @@ function createLobby() {
 }
 
 function joinLobby() {
+    if (isJoiningLobby) {
+        console.log('⏳ Zaten lobiye katılıyor, lütfen bekle...');
+        return;
+    }
+    
     const lobbyId = document.getElementById('lobbyIdInput').value.trim();
     const playerName = document.getElementById('playerNameInput').value.trim();
     if (!playerName || !lobbyId) {
         alert('İsim ve lobi ID yazmalısın');
         return;
     }
+    
+    isJoiningLobby = true;
     socket.emit('joinLobby', {
         lobbyId,
         playerName,

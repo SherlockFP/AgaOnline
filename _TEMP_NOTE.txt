@@ -1,0 +1,1 @@
+Update needed: change updateLobbyUI() to show full lobby id (remove truncation).

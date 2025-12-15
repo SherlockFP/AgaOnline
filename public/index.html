@@ -1,52 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monopoly Online - Play with Friends</title>
+    <title>Agaonline 🇹🇷 - Arkadaşlarınla Oyna</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="darkmode.css">
 </head>
 <body>
     <div id="app">
         <!-- Main Menu Screen -->
         <div id="mainMenu" class="screen active">
-            <div class="menu-container">
-                <div class="menu-header">
-                    <h1 class="game-title">🏠 MONOPOLY</h1>
-                    <p class="game-subtitle">Play Online with Friends</p>
-                </div>
-                
-                <div class="menu-form">
-                    <input type="text" id="playerNameInput" placeholder="Enter Your Name" maxlength="20" class="input-field">
+            <div class="menu-wrapper">
+                <div class="menu-container">
+                    <div class="menu-header">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                            <div>
+                                <h1 class="game-title">💰 AGAONLINE 🇹🇷</h1>
+                                <p class="game-subtitle">Arkadaşlarınla çevrim içi oyna</p>
+                            </div>
+                            <button id="darkModeToggle" class="btn-dark-mode" onclick="toggleDarkMode()" title="Tema değiştir">🌙</button>
+                        </div>
+                    </div>
                     
-                    <div class="appearance-selector">
-                        <label>Choose Avatar</label>
-                        <div class="avatar-grid">
-                            <button class="avatar-btn selected" data-appearance="👤" onclick="selectAppearance('👤')">👤</button>
-                            <button class="avatar-btn" data-appearance="🎩" onclick="selectAppearance('🎩')">🎩</button>
-                            <button class="avatar-btn" data-appearance="🚗" onclick="selectAppearance('🚗')">🚗</button>
-                            <button class="avatar-btn" data-appearance="🐕" onclick="selectAppearance('🐕')">🐕</button>
-                            <button class="avatar-btn" data-appearance="🎸" onclick="selectAppearance('🎸')">🎸</button>
-                            <button class="avatar-btn" data-appearance="👑" onclick="selectAppearance('👑')">👑</button>
+                    <div class="menu-form">
+                        <input type="text" id="playerNameInput" placeholder="İsmini yaz" maxlength="20" class="input-field">
+
+                        <div class="appearance-selector">
+                            <label>Tahta seç</label>
+                            <select id="boardSelect" class="input-field">
+                                <option value="dunya" selected>Dünya (Varsayılan)</option>
+                                <option value="turkiye">Türkiye</option>
+                                <option value="amerika">Amerika</option>
+                                <option value="avrupa">Avrupa</option>
+                                <option value="japonya">Japonya</option>
+                                <option value="cin">Çin</option>
+                                <option value="kore">Kore</option>
+                                <option value="rusya">Rusya</option>
+                            </select>
+                        </div>
+                        
+                        <div class="appearance-selector">
+                            <label>Avatar seç</label>
+                            <div class="avatar-grid">
+                                <button class="avatar-btn selected" data-appearance="👤" onclick="selectAppearance('👤')">👤</button>
+                                <button class="avatar-btn" data-appearance="🎩" onclick="selectAppearance('🎩')">🎩</button>
+                                <button class="avatar-btn" data-appearance="🚗" onclick="selectAppearance('🚗')">🚗</button>
+                                <button class="avatar-btn" data-appearance="🐕" onclick="selectAppearance('🐕')">🐕</button>
+                                <button class="avatar-btn" data-appearance="🎸" onclick="selectAppearance('🎸')">🎸</button>
+                                <button class="avatar-btn" data-appearance="👑" onclick="selectAppearance('👑')">👑</button>
+                                <button class="avatar-btn" data-appearance="🤓" onclick="selectAppearance('🤓')">🤓</button>
+                                <button class="avatar-btn" data-appearance="🧙" onclick="selectAppearance('🧙')">🧙</button>
+                                <button class="avatar-btn" data-appearance="🏇" onclick="selectAppearance('🏇')">🏇</button>
+                                <button class="avatar-btn" data-appearance="🧛" onclick="selectAppearance('🧛')">🧛</button>
+                                <button class="avatar-btn" data-appearance="👻" onclick="selectAppearance('👻')">👻</button>
+                                <button class="avatar-btn" data-appearance="🤖" onclick="selectAppearance('🤖')">🤖</button>
+                            </div>
+                        </div>
+
+                        <div class="music-control-section" style="background: rgba(96, 165, 250, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 5px solid rgba(96, 165, 250, 0.6);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <label style="flex: 1; font-weight: 600; margin: 0;">🎵 Müzik</label>
+                                <button id="musicToggleBtn" onclick="toggleBackgroundMusic()" class="btn-ghost" style="padding: 4px 8px; font-size: 0.85em;">▶ Çal</button>
+                            </div>
+                            <input type="range" id="musicVolume" class="music-slider" min="0" max="100" value="30" onchange="setMusicVolume(this.value)" style="width: 100%;">
+                            <div style="font-size: 0.75em; color: rgba(255,255,255,0.6); margin-top: 4px;">Ses: <span id="volumePercent">30</span>%</div>
+                        </div>
+
+                        <div class="menu-buttons">
+                            <button onclick="createLobby()" class="btn-primary">Oyun Oluştur</button>
+                            <button onclick="joinRandomLobby()" class="btn-secondary">Oyuna Katıl</button>
                         </div>
                     </div>
+                </div>
 
-                    <div class="color-selector">
-                        <label>Choose Color</label>
-                        <div class="color-grid">
-                            <button class="color-btn selected" data-color="#ef4444" style="background: #ef4444;" onclick="selectColor('#ef4444')"></button>
-                            <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="selectColor('#f97316')"></button>
-                            <button class="color-btn" data-color="#eab308" style="background: #eab308;" onclick="selectColor('#eab308')"></button>
-                            <button class="color-btn" data-color="#22c55e" style="background: #22c55e;" onclick="selectColor('#22c55e')"></button>
-                            <button class="color-btn" data-color="#3b82f6" style="background: #3b82f6;" onclick="selectColor('#3b82f6')"></button>
-                            <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="selectColor('#8b5cf6')"></button>
-                        </div>
+                <div class="lobbies-panel">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                        <h3 style="margin:0;">🎮 Aktif Oyunlar</h3>
+                        <button class="btn-ghost" onclick="refreshLobbies()" style="padding:6px 10px;">Yenile</button>
                     </div>
-
-                    <div class="menu-buttons">
-                        <button onclick="createLobby()" class="btn-primary">Create Game</button>
-                        <button onclick="showJoinScreen()" class="btn-secondary">Join Game</button>
-                    </div>
+                    <div id="lobbiesList" class="lobbies-list-large"></div>
                 </div>
             </div>
         </div>
@@ -54,11 +87,11 @@
         <!-- Join Screen -->
         <div id="joinScreen" class="screen">
             <div class="join-container">
-                <h2>Join Lobby</h2>
-                <input type="text" id="lobbyIdInput" placeholder="Enter Lobby ID" class="input-field">
+                <h2>Lobiye Katıl</h2>
+                <input type="text" id="lobbyIdInput" placeholder="Lobi ID yaz" class="input-field">
                 <div class="menu-buttons">
-                    <button onclick="joinLobby()" class="btn-primary">Join</button>
-                    <button onclick="showMenu()" class="btn-secondary">Back</button>
+                    <button onclick="joinLobby()" class="btn-primary">Katıl</button>
+                    <button onclick="showMenu()" class="btn-secondary">Geri</button>
                 </div>
             </div>
         </div>
@@ -66,38 +99,77 @@
         <!-- Game Screen -->
         <div id="gameScreen" class="screen">
             <div class="game-container">
-                <!-- Top Header -->
-                <div class="game-header">
-                    <div class="header-left">
-                        <h2 id="lobbyStatus">Game Lobby</h2>
-                        <div id="playerCount" class="player-count">Players: 1/6</div>
-                    </div>
-                    <div class="header-center">
-                        <button id="startBtn" class="btn-start" onclick="startGame()" style="display: none;">Start Game</button>
-                        <div id="gameStatus" class="game-status">Waiting to start...</div>
-                    </div>
-                    <div class="header-right">
-                        <button onclick="leaveGame()" class="btn-leave">Leave</button>
-                    </div>
-                </div>
-
                 <!-- Main Content -->
                 <div class="game-content">
                     <!-- Left Panel - Players & Setup -->
                     <div class="left-panel">
+                        <div class="panel-section" style="gap: 6px; padding-bottom: 6px;">
+                            <h2 id="lobbyStatus" style="margin-bottom: 4px; font-size: 1.2em;">Oyun Lobisi</h2>
+                            <div id="playerCount" class="player-count">Oyuncu: 1/12</div>
+                            <div id="boardName" class="player-count" style="font-size: 0.9em; opacity: 0.8;"></div>
+                            <div id="lobbyIdDisplay" class="player-count" style="font-size: 0.85em; opacity: 0.8;"></div>
+                            <button id="copyLobbyIdBtn" onclick="copyCurrentLobbyId()" class="btn-ghost" style="width:100%; display:none;">ID Kopyala</button>
+                            <button onclick="leaveGame()" class="btn-leave" style="width: 100%; margin-top: 6px;">Çıkış</button>
+                        </div>
+
                         <div class="panel-section players-section">
-                            <h3>👥 Players</h3>
+                            <h3>👥 Oyuncular</h3>
                             <div id="playersList" class="players-list"></div>
                         </div>
 
+                        <div class="panel-section events-section">
+                            <h3>📜 Olaylar</h3>
+                            <div id="eventLog" class="event-log"></div>
+                        </div>
+
+                        <div class="panel-section color-selector-lobby" id="colorSelectorPanel">
+                            <h3>🎨 Renk Seç</h3>
+                            <div class="color-grid">
+                                <button class="color-btn selected" data-color="#ef4444" style="background: #ef4444;" onclick="selectColorLobby('#ef4444')"></button>
+                                <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="selectColorLobby('#f97316')"></button>
+                                <button class="color-btn" data-color="#eab308" style="background: #eab308;" onclick="selectColorLobby('#eab308')"></button>
+                                <button class="color-btn" data-color="#22c55e" style="background: #22c55e;" onclick="selectColorLobby('#22c55e')"></button>
+                                <button class="color-btn" data-color="#3b82f6" style="background: #3b82f6;" onclick="selectColorLobby('#3b82f6')"></button>
+                                <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="selectColorLobby('#8b5cf6')"></button>
+                                <button class="color-btn" data-color="#ec4899" style="background: #ec4899;" onclick="selectColorLobby('#ec4899')"></button>
+                                <button class="color-btn" data-color="#06b6d4" style="background: #06b6d4;" onclick="selectColorLobby('#06b6d4')"></button>
+                                <button class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="selectColorLobby('#10b981')"></button>
+                                <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="selectColorLobby('#f59e0b')"></button>
+                                <button class="color-btn" data-color="#6366f1" style="background: #6366f1;" onclick="selectColorLobby('#6366f1')"></button>
+                                <button class="color-btn" data-color="#14b8a6" style="background: #14b8a6;" onclick="selectColorLobby('#14b8a6')"></button>
+                            </div>
+                        </div>
+                        
                         <div class="panel-section setup-section" id="setupPanel">
-                            <h3>⚙️ Game Setup</h3>
+                            <h3>⚙️ Host Ayarları</h3>
                             <div class="game-rules">
                                 <label>
-                                    <input type="checkbox" id="ruleTaxFree" onchange="updateRules()"> Tax Free Mode
+                                    <input type="checkbox" id="ruleTaxFree" onchange="updateRules()"> Vergi Muafiyeti
                                 </label>
                                 <label>
-                                    Initial Money: $<span id="initialMoney">1500</span>
+                                    <input type="checkbox" id="ruleFastMode" onchange="updateRules()"> Hızlı Mod (2x Para)
+                                </label>
+                                <label>
+                                    <input type="checkbox" id="ruleFreeParkingBonus" onchange="updateRules()"> Ücretsiz Park Bonusu
+                                </label>
+                                <label>
+                                    <input type="checkbox" id="ruleNoAuctions" onchange="updateRules()"> Müzayede Yok
+                                </label>
+                                <label style="margin-top: 10px;">
+                                    Başlangıç Parası: ₺<span id="initialMoney">2000</span>
+                                    <input type="range" id="initialMoneySlider" min="500" max="10000" step="100" value="2000" onchange="updateInitialMoney()" class="money-slider" style="margin-top: 8px; width: 100%;">
+                                </label>
+                                <label>
+                                    BAŞLA Parası: ₺<span id="goMoney">200</span>
+                                    <input type="range" id="goMoneySlider" min="100" max="1000" step="50" value="200" onchange="updateGoMoney()" class="money-slider" style="margin-top: 8px; width: 100%;">
+                                </label>
+                                <label>
+                                    Ev Fiyat Çarpanı: x<span id="houseMultiplier">0.5</span>
+                                    <input type="range" id="houseMultiplierSlider" min="0.25" max="1" step="0.25" value="0.5" onchange="updateHouseMultiplier()" class="money-slider" style="margin-top: 8px; width: 100%;">
+                                </label>
+                                <label>
+                                    Tur Süre Limiti: <span id="turnTimeLimit">60</span> saniye
+                                    <input type="range" id="turnTimeLimitSlider" min="30" max="180" step="10" value="60" onchange="updateTurnTimeLimit()" class="money-slider" style="margin-top: 8px; width: 100%;">
                                 </label>
                             </div>
                         </div>
@@ -112,45 +184,67 @@
                             
                             <!-- Board Center (Dice & Controls) -->
                             <div class="board-center">
+                                    <button id="startBtn" class="btn-start" onclick="startGame()" style="display: none;">Oyunu Başlat</button>
+                                <div id="currentTurnDisplay" class="current-turn-info"></div>
                                 <div class="dice-display">
                                     <div class="dice-box">
                                         <div id="dice1" class="dice">?</div>
                                         <div id="dice2" class="dice">?</div>
                                     </div>
-                                    <div id="diceResult" class="dice-result">Roll the dice</div>
+                                        <div id="diceResult" class="dice-result">Zarı at</div>
                                 </div>
-                                <button id="rollBtn" class="btn-roll" onclick="rollDice()" style="display: none;">🎲 ROLL DICE</button>
-                                <button id="endTurnBtn" class="btn-end-turn" onclick="endTurn()" style="display: none;">End Turn</button>
+                                    <button id="rollBtn" class="btn-roll" onclick="rollDice()" aria-label="Zar at" style="display: none;">🎲</button>
+                                    <button id="endTurnBtn" class="btn-end-turn" onclick="endTurn()" style="display: none;">Sırayı Bitir</button>
                             </div>
+                            
+                            <!-- Board Event Log (Overlay) -->
+                            <div id="boardEventLog" class="board-event-log"></div>
                         </div>
                     </div>
 
                     <!-- Right Panel - Chat & Events -->
                     <div class="right-panel">
+                        <div class="panel-section owned-section">
+                            <h3>🏠 Mülklerim</h3>
+                            <div id="ownedPropertiesList" class="owned-list"></div>
+                        </div>
+
                         <div class="panel-section trade-section" id="tradePanel" style="display: none;">
-                            <h3>💰 Trade</h3>
+                            <h3>💰 Takas Merkezi</h3>
                             <div class="trade-content">
-                                <select id="tradeWithPlayer" class="input-field">
-                                    <option>Select player...</option>
+                                <label style="color: rgba(255,255,255,0.8); font-size: 0.9em; margin-bottom: 5px; display: block;">Oyuncu Seç</label>
+                                <select id="tradeWithPlayer" class="input-field" style="margin-bottom: 10px;" onchange="refreshTradeLists()">
+                                    <option>Oyuncu seç...</option>
                                 </select>
-                                <div style="font-size: 0.9em; color: rgba(255,255,255,0.7); margin-top: 10px;">
-                                    Coming soon: Trade properties and money
+
+                                <div style="display:flex; gap:10px; margin:8px 0;">
+                                    <div style="flex:1;">
+                                        <div style="font-weight:700; margin-bottom:6px;">Benim Mülklerim</div>
+                                        <div id="myPropsForTrade" class="owned-list" style="max-height:110px; overflow:auto;"></div>
+                                        <label style="display:block; margin-top:6px; font-size:0.9em;">Benim Para: <input type="number" id="tradeMoneyOffer" class="input-field" style="margin-top:6px;" min="0" value="0"></label>
+                                    </div>
+                                    <div style="flex:1;">
+                                        <div style="font-weight:700; margin-bottom:6px;">Karşı Taraf</div>
+                                        <div id="theirPropsForTrade" class="owned-list" style="max-height:110px; overflow:auto;"></div>
+                                        <label style="display:block; margin-top:6px; font-size:0.9em;">Onların Para: <input type="number" id="tradeMoneyRequest" class="input-field" style="margin-top:6px;" min="0" value="0"></label>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 8px;">
+                                    <button id="btnProposeTrade" class="btn-trade" onclick="proposeTrade()" disabled>
+                                        <span style="font-size: 1.2em;">💱</span> Teklif Gönder
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
                         <div class="panel-section chat-section">
-                            <h3>💬 Chat</h3>
+                            <h3>💬 Sohbet</h3>
                             <div id="chatMessages" class="chat-messages"></div>
                             <div class="chat-input">
-                                <input type="text" id="chatInput" placeholder="Type message..." onkeypress="handleChatKeypress(event)">
-                                <button onclick="sendMessage()" class="btn-send">Send</button>
+                                <input type="text" id="chatInput" placeholder="Mesaj yaz..." onkeypress="handleChatKeypress(event)">
+                                <button onclick="sendMessage()" class="btn-send">Gönder</button>
                             </div>
-                        </div>
-
-                        <div class="panel-section events-section">
-                            <h3>📜 Events</h3>
-                            <div id="eventLog" class="event-log"></div>
                         </div>
                     </div>
                 </div>
@@ -163,9 +257,82 @@
         <div class="popup-content">
             <h2 id="propName"></h2>
             <div id="propDetails" class="property-details"></div>
+            <div id="buildSection" class="build-section" style="display: none;">
+                <button id="buildHouseBtn" class="btn-build" onclick="buildHouse()">🏠 Ev Dik</button>
+                <button id="sellHouseBtn" class="btn-sell" onclick="sellHouse()" style="display: none;">💸 Ev Sat</button>
+            </div>
             <div class="popup-actions">
-                <button id="buyBtn" class="btn-buy" onclick="buyProperty()" style="display: none;">Buy Property</button>
-                <button onclick="closePopup()" class="btn-close">Close</button>
+                <button id="buyBtn" class="btn-buy" onclick="buyProperty()" style="display: none;">Satın Al</button>
+                <button onclick="closePopup()" class="btn-close">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Readonly Property Popup -->
+    <div id="roPropertyPopup" class="property-popup" style="display: none;">
+        <div class="popup-content">
+            <h2 id="roPropName"></h2>
+            <div id="roPropDetails" class="property-details"></div>
+            <div class="popup-actions">
+                <button onclick="closeRoPopup()" class="btn-close">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Offer Modal -->
+    <div id="tradeOfferModal" class="trade-offer-modal" style="display: none;">
+        <div class="trade-offer-overlay"></div>
+        <div class="trade-offer-content">
+            <h2 style="margin-top: 0; text-align: center;">💱 Takas Teklifi</h2>
+            <div class="trade-offer-sender" id="tradeOfferSender"></div>
+            
+            <div style="display: flex; gap: 15px; margin: 15px 0; font-size: 0.9em;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; margin-bottom: 8px; color: #FFD700;">Onlar Talep Ediyor</div>
+                    <div id="tradeOfferTheirWant" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; min-height: 40px;"></div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; margin-bottom: 8px; color: #FFD700;">Bana Verecek</div>
+                    <div id="tradeOfferTheirGive" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; min-height: 40px;"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
+                <button id="btnAcceptTrade" class="btn-accept-trade" onclick="acceptTradeOffer()">✓ Kabul Et</button>
+                <button id="btnRejectTrade" class="btn-reject-trade" onclick="rejectTradeOffer()">✕ Reddet</button>
+                <button id="btnCounterOffer" class="btn-counter-trade" onclick="showCounterOfferPanel()">🔄 Karşı Teklif</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Counter Offer Panel -->
+    <div id="counterOfferPanel" class="counter-offer-panel" style="display: none;">
+        <div class="trade-offer-overlay" onclick="closeCounterOfferPanel()" style="cursor: pointer;"></div>
+        <div class="trade-offer-content">
+            <h2 style="margin-top: 0; text-align: center;">🔄 Karşı Teklif Gönder</h2>
+            <div class="trade-offer-sender" id="counterOfferTarget"></div>
+            
+            <div style="display: flex; gap: 15px; margin: 15px 0; font-size: 0.9em;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; margin-bottom: 8px; color: #FFD700;">Biz Talep Ediyoruz</div>
+                    <div id="counterMyWant" class="owned-list" style="max-height: 100px; overflow: auto; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;"></div>
+                    <label style="display: block; margin-top: 6px; font-size: 0.85em;">Para Talep: <input type="number" id="counterMyMoneyWant" class="input-field" style="margin-top: 3px; width: 60px;" min="0" value="0"></label>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; margin-bottom: 8px; color: #FFD700;">Onlara Vereceğiz</div>
+                    <div id="counterMyGive" class="owned-list" style="max-height: 100px; overflow: auto; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;"></div>
+                    <label style="display: block; margin-top: 6px; font-size: 0.85em;">Para Verilecek: <input type="number" id="counterMyMoneyGive" class="input-field" style="margin-top: 3px; width: 60px;" min="0" value="0"></label>
+                </div>
+            </div>
+
+            <div id="counterPropsFromPlayer" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 4px; margin: 10px 0; border-left: 5px solid rgba(96, 165, 250, 0.6);">
+                <div style="font-weight: 700; margin-bottom: 8px; color: #FFD700;">Onun Mülkleri (Seç)</div>
+                <div id="counterAvailableProps" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                <button class="btn-accept-trade" onclick="sendCounterOffer()">✓ Karşı Teklif Gönder</button>
+                <button class="btn-reject-trade" onclick="closeCounterOfferPanel()">✕ İptal</button>
             </div>
         </div>
     </div>

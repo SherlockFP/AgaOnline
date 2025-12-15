@@ -16,77 +16,231 @@ app.use(express.static('public'));
 const lobbies = new Map();
 const playerSockets = new Map();
 
-// Board properties data
-const boardData = {
-  properties: [
-    // GO
-    { id: 0, name: 'GO', type: 'go', price: 0 },
-    // Brown
-    { id: 1, name: 'Mediterranean Avenue', color: 'brown', type: 'property', price: 60, rent: [2, 10, 30, 90, 160, 250] },
-    { id: 2, name: 'Community Chest', type: 'chest', price: 0 },
-    { id: 3, name: 'Baltic Avenue', color: 'brown', type: 'property', price: 60, rent: [4, 20, 60, 180, 320, 450] },
-    { id: 4, name: 'Income Tax', type: 'tax', price: 0 },
-    // Railroads
-    { id: 5, name: 'Reading Railroad', type: 'railroad', price: 200 },
-    // Light Blue
-    { id: 6, name: 'Oriental Avenue', color: 'lightblue', type: 'property', price: 100, rent: [6, 30, 90, 270, 400, 550] },
-    { id: 7, name: 'Chance', type: 'chance', price: 0 },
-    { id: 8, name: 'Vermont Avenue', color: 'lightblue', type: 'property', price: 100, rent: [6, 30, 90, 270, 400, 550] },
-    { id: 9, name: 'Connecticut Avenue', color: 'lightblue', type: 'property', price: 120, rent: [8, 40, 120, 360, 640, 900] },
-    { id: 10, name: 'Just Visiting', type: 'jail', price: 0 },
-    // Pink
-    { id: 11, name: 'St. Charles Place', color: 'pink', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750] },
-    { id: 12, name: 'Electric Company', type: 'utility', price: 150 },
-    { id: 13, name: 'States Avenue', color: 'pink', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750] },
-    { id: 14, name: 'Virginia Avenue', color: 'pink', type: 'property', price: 160, rent: [12, 60, 180, 500, 1100, 1300] },
-    { id: 15, name: 'Pennsylvania Railroad', type: 'railroad', price: 200 },
-    // Orange
-    { id: 16, name: 'St. James Place', color: 'orange', type: 'property', price: 180, rent: [14, 70, 200, 550, 750, 950] },
-    { id: 17, name: 'Community Chest', type: 'chest', price: 0 },
-    { id: 18, name: 'Tennessee Avenue', color: 'orange', type: 'property', price: 180, rent: [14, 70, 200, 550, 750, 950] },
-    { id: 19, name: 'New York Avenue', color: 'orange', type: 'property', price: 200, rent: [16, 80, 220, 600, 800, 1000] },
-    { id: 20, name: 'Free Parking', type: 'parking', price: 0 },
-    // Red
-    { id: 21, name: 'Kentucky Avenue', color: 'red', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050] },
-    { id: 22, name: 'Chance', type: 'chance', price: 0 },
-    { id: 23, name: 'Indiana Avenue', color: 'red', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050] },
-    { id: 24, name: 'Illinois Avenue', color: 'red', type: 'property', price: 240, rent: [20, 100, 300, 750, 925, 1100] },
-    { id: 25, name: 'B&O Railroad', type: 'railroad', price: 200 },
-    // Yellow
-    { id: 26, name: 'Atlantic Avenue', color: 'yellow', type: 'property', price: 260, rent: [22, 110, 330, 800, 975, 1150] },
-    { id: 27, name: 'Ventnor Avenue', color: 'yellow', type: 'property', price: 260, rent: [22, 110, 330, 800, 975, 1150] },
-    { id: 28, name: 'Water Works', type: 'utility', price: 150 },
-    { id: 29, name: 'Marvin Gardens', color: 'yellow', type: 'property', price: 280, rent: [24, 120, 360, 850, 1025, 1200] },
-    { id: 30, name: 'Go To Jail', type: 'gotojail', price: 0 },
-    // Green
-    { id: 31, name: 'Pacific Avenue', color: 'green', type: 'property', price: 300, rent: [26, 130, 390, 900, 1100, 1275] },
-    { id: 32, name: 'North Carolina Avenue', color: 'green', type: 'property', price: 300, rent: [26, 130, 390, 900, 1100, 1275] },
-    { id: 33, name: 'Community Chest', type: 'chest', price: 0 },
-    { id: 34, name: 'Pennsylvania Avenue', color: 'green', type: 'property', price: 320, rent: [28, 150, 450, 1000, 1200, 1400] },
-    { id: 35, name: 'Short Line', type: 'railroad', price: 200 },
-    // Blue
-    { id: 36, name: 'Chance', type: 'chance', price: 0 },
-    { id: 37, name: 'Park Place', color: 'darkblue', type: 'property', price: 350, rent: [35, 175, 500, 1100, 1300, 1500] },
-    { id: 38, name: 'Luxury Tax', type: 'tax', price: 0 },
-    { id: 39, name: 'Boardwalk', color: 'darkblue', type: 'property', price: 400, rent: [50, 200, 600, 1400, 1700, 2000] }
-  ]
+// Base template for board properties
+const baseTemplate = [
+  { color: null, type: 'go', price: 0, rent: [] },
+  { color: 'brown', type: 'property', price: 60, rent: [2, 10, 30, 90, 160, 250] },
+  { color: null, type: 'chest', price: 0, rent: [] },
+  { color: 'brown', type: 'property', price: 60, rent: [4, 20, 60, 180, 320, 450] },
+  { color: null, type: 'tax', price: 0, rent: [] },
+  { color: null, type: 'railroad', price: 200, rent: [] },
+  { color: 'lightblue', type: 'property', price: 100, rent: [6, 30, 90, 270, 400, 550] },
+  { color: null, type: 'chance', price: 0, rent: [] },
+  { color: 'lightblue', type: 'property', price: 100, rent: [6, 30, 90, 270, 400, 550] },
+  { color: 'lightblue', type: 'property', price: 120, rent: [8, 40, 120, 360, 640, 900] },
+  { color: null, type: 'jail', price: 0, rent: [] },
+  { color: 'pink', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750] },
+  { color: null, type: 'utility', price: 150, rent: [] },
+  { color: 'pink', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750] },
+  { color: 'pink', type: 'property', price: 160, rent: [12, 60, 180, 500, 1100, 1300] },
+  { color: null, type: 'railroad', price: 200, rent: [] },
+  { color: 'orange', type: 'property', price: 180, rent: [14, 70, 200, 550, 750, 950] },
+  { color: null, type: 'chest', price: 0, rent: [] },
+  { color: 'orange', type: 'property', price: 180, rent: [14, 70, 200, 550, 750, 950] },
+  { color: 'orange', type: 'property', price: 200, rent: [16, 80, 220, 600, 800, 1000] },
+  { color: null, type: 'parking', price: 0, rent: [] },
+  { color: 'red', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050] },
+  { color: null, type: 'chance', price: 0, rent: [] },
+  { color: 'red', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050] },
+  { color: 'red', type: 'property', price: 240, rent: [20, 100, 300, 750, 925, 1100] },
+  { color: null, type: 'railroad', price: 200, rent: [] },
+  { color: 'yellow', type: 'property', price: 260, rent: [22, 110, 330, 800, 975, 1150] },
+  { color: 'yellow', type: 'property', price: 260, rent: [22, 110, 330, 800, 975, 1150] },
+  { color: null, type: 'utility', price: 150, rent: [] },
+  { color: 'yellow', type: 'property', price: 280, rent: [24, 120, 360, 850, 1025, 1200] },
+  { color: null, type: 'gotojail', price: 0, rent: [] },
+  { color: 'green', type: 'property', price: 300, rent: [26, 130, 390, 900, 1100, 1275] },
+  { color: 'green', type: 'property', price: 300, rent: [26, 130, 390, 900, 1100, 1275] },
+  { color: null, type: 'chest', price: 0, rent: [] },
+  { color: 'green', type: 'property', price: 320, rent: [28, 150, 450, 1000, 1200, 1400] },
+  { color: null, type: 'railroad', price: 200, rent: [] },
+  { color: null, type: 'chance', price: 0, rent: [] },
+  { color: 'darkblue', type: 'property', price: 350, rent: [35, 175, 500, 1100, 1300, 1500] },
+  { color: null, type: 'tax', price: 0, rent: [] },
+  { color: 'darkblue', type: 'property', price: 400, rent: [50, 200, 600, 1400, 1700, 2000] }
+];
+
+function buildBoard(names) {
+  return baseTemplate.map((tpl, idx) => ({
+    id: idx,
+    name: names[idx] || `Kare ${idx}`,
+    color: tpl.color,
+    type: tpl.type,
+    price: tpl.price,
+    rent: tpl.rent
+  }));
+}
+
+// Scale property prices and rents according to game economy
+function applyEconomyScale(lobby) {
+  if (lobby._pricesScaled) return;
+  const baseMoney = 2000;
+  const initial = lobby.gameRules?.initialMoney || baseMoney;
+  // Increase a bit even for 2000 base to make prices less cheap
+  const extraBoost = 1.4;
+  const scale = Math.max(1, (initial / baseMoney) * extraBoost);
+  lobby.properties = lobby.properties.map(p => {
+    const np = { ...p };
+    if (np.price && np.price > 0) {
+      np.price = Math.round((np.price * scale) / 10) * 10;
+    }
+    if (Array.isArray(np.rent) && np.rent.length) {
+      np.rent = np.rent.map(v => Math.round((v * scale) / 10) * 10);
+    }
+    return np;
+  });
+  lobby._pricesScaled = true;
+}
+
+const boards = {
+  turkiye: {
+    name: 'Türkiye',
+    currency: '₺',
+    properties: buildBoard([
+      '🇹🇷 BAŞLA / MAAŞ', 'Kars', 'Kamu Sandığı', 'Erzurum', 'Gelir Vergisi', 'Doğu Demiryolu',
+      'Trabzon', 'Şans', 'Samsun', 'Ordu', 'Hapishane (Ziyaret)', 'Ankara',
+      'Elektrik Şirketi', 'Konya', 'Eskişehir', 'İç Anadolu Demiryolu', 'Antalya', 'Kamu Sandığı',
+      'Mersin', 'Adana', 'Ücretsiz Park', 'Bursa', 'Şans', 'İzmir',
+      'Muğla', 'Ege Demiryolu', 'Tekirdağ', 'Çanakkale', 'Su İşleri', 'Balıkesir',
+      'Hapishaneye Git', 'Gaziantep', 'Şanlıurfa', 'Kamu Sandığı', 'Diyarbakır', 'Güney Demiryolu',
+      'Şans', 'İstanbul Kadıköy', 'Lüks Vergisi', 'İstanbul Beşiktaş'
+    ])
+  },
+  amerika: {
+    name: 'Amerika',
+    currency: '$',
+    properties: buildBoard([
+      '🇺🇸 GO / Salary', 'Mediterranean Ave', 'Community Chest', 'Baltic Ave', 'Income Tax', 'Reading Railroad',
+      'Oriental Ave', 'Chance', 'Vermont Ave', 'Connecticut Ave', 'Jail / Just Visiting', 'St. Charles Place',
+      'Electric Company', 'States Ave', 'Virginia Ave', 'Pennsylvania RR', 'St. James Place', 'Community Chest',
+      'Tennessee Ave', 'New York Ave', 'Free Parking', 'Kentucky Ave', 'Chance', 'Indiana Ave',
+      'Illinois Ave', 'B&O Railroad', 'Atlantic Ave', 'Ventnor Ave', 'Water Works', 'Marvin Gardens',
+      'Go To Jail', 'Pacific Ave', 'North Carolina Ave', 'Community Chest', 'Pennsylvania Ave', 'Short Line',
+      'Chance', 'Park Place', 'Luxury Tax', 'Boardwalk'
+    ])
+  },
+  avrupa: {
+    name: 'Avrupa',
+    currency: '€',
+    properties: buildBoard([
+      '🇪🇺 BAŞLA / MAAŞ', 'Lizbon', 'Topluluk Sandığı', 'Porto', 'Gelir Vergisi', 'TGV Hattı',
+      'Madrid', 'Şans', 'Barselona', 'Marsilya', 'Hapishane (Ziyaret)', 'Paris',
+      'Elektrik Şirketi', 'Brüksel', 'Amsterdam', 'Eurostar', 'Berlin', 'Topluluk Sandığı',
+      'Hamburg', 'Münih', 'Ücretsiz Park', 'Prag', 'Şans', 'Viyana',
+      'Budapeşte', 'Orient Ekspresi', 'Roma', 'Milano', 'Su İşleri', 'Venedik',
+      'Hapishaneye Git', 'Zürih', 'Cenevre', 'Topluluk Sandığı', 'Stockholm', 'Baltık Hattı',
+      'Şans', 'Oslo', 'Lüks Vergisi', 'Kopenhag'
+    ])
+  },
+  dunya: {
+    name: 'Dünya',
+    currency: '$',
+    properties: buildBoard([
+      '🌍 BAŞLA / MAAŞ', 'Kahire', 'Topluluk', 'İskenderiye', 'Gelir Vergisi', 'Afrika Hattı',
+      'İstanbul', 'Şans', 'Ankara', 'İzmir', 'Hapishane (Ziyaret)', 'Londra',
+      'Elektrik Şirketi', 'Manchester', 'Birmingham', 'Avrupa Hattı', 'Roma', 'Topluluk',
+      'Milano', 'Venedik', 'Ücretsiz Park', 'Berlin', 'Şans', 'Münih',
+      'Hamburg', 'Pasifik Hattı', 'Madrid', 'Barselona', 'Su İşleri', 'Valensiya',
+      'Hapishaneye Git', 'Şanghay', 'Pekin', 'Topluluk', 'Shenzhen', 'Kuzey Asya Hattı',
+      'Şans', 'New York', 'Lüks Vergisi', 'Los Angeles'
+    ])
+  },
+  japonya: {
+    name: 'Japonya',
+    currency: '¥',
+    properties: buildBoard([
+      '🇯🇵 BAŞLA / MAAŞ', 'Sapporo', 'Topluluk', 'Sendai', 'Gelir Vergisi', 'Shinkansen Hattı',
+      'Niigata', 'Şans', 'Nagano', 'Kanazawa', 'Hapishane (Ziyaret)', 'Nagoya',
+      'Elektrik Şirketi', 'Shizuoka', 'Yokohama', 'Tokaido Hattı', 'Kawasaki', 'Topluluk',
+      'Kyoto', 'Osaka', 'Ücretsiz Park', 'Kobe', 'Şans', 'Hiroshima',
+      'Fukuoka', 'Sanyo Hattı', 'Kagoshima', 'Kumamoto', 'Su İşleri', 'Naha',
+      'Hapishaneye Git', 'Hakodate', 'Aomori', 'Topluluk', 'Akita', 'Sanyo Shinkansen',
+      'Şans', 'Tokyo', 'Lüks Vergisi', 'Shibuya'
+    ])
+  },
+  cin: {
+    name: 'Çin',
+    currency: '¥',
+    properties: buildBoard([
+      '🇨🇳 BAŞLA / MAAŞ', 'Harbin', 'Topluluk', 'Shenyang', 'Gelir Vergisi', 'Doğu Demiryolu',
+      'Tianjin', 'Şans', 'Qingdao', 'Jinan', 'Hapishane (Ziyaret)', 'Nanjing',
+      'Elektrik Şirketi', 'Hangzhou', 'Suzhou', 'Pekin-Şangay Hattı', 'Wuhan', 'Topluluk',
+      'Changsha', 'Guangzhou', 'Ücretsiz Park', 'Shenzhen', 'Şans', 'Zhuhai',
+      'Macau', 'Güney Demiryolu', 'Chengdu', 'Chongqing', 'Su İşleri', 'Kunming',
+      'Hapishaneye Git', 'Xi’an', 'Lanzhou', 'Topluluk', 'Urumqi', 'Trans-Çin Hattı',
+      'Şans', 'Şangay', 'Lüks Vergisi', 'Hong Kong'
+    ])
+  },
+  kore: {
+    name: 'Kore',
+    currency: '₩',
+    properties: buildBoard([
+      '🇰🇷 BAŞLA / MAAŞ', 'Incheon', 'Topluluk', 'Suwon', 'Gelir Vergisi', 'KTX Hattı',
+      'Daejeon', 'Şans', 'Cheongju', 'Sejong', 'Hapishane (Ziyaret)', 'Daegu',
+      'Elektrik Şirketi', 'Gyeongju', 'Ulsan', 'Donghae Hattı', 'Busan', 'Topluluk',
+      'Jeonju', 'Gwangju', 'Ücretsiz Park', 'Mokpo', 'Şans', 'Yeosu',
+      'Suncheon', 'Honam Hattı', 'Wonju', 'Gangneung', 'Su İşleri', 'Sokcho',
+      'Hapishaneye Git', 'Jeju', 'Seogwipo', 'Topluluk', 'Pohang', 'SRT Hattı',
+      'Şans', 'Seul', 'Lüks Vergisi', 'Gangnam'
+    ])
+  },
+  rusya: {
+    name: 'Rusya',
+    currency: '₽',
+    properties: buildBoard([
+      '🇷🇺 BAŞLA / MAAŞ', 'Kaliningrad', 'Topluluk', 'St. Petersburg', 'Gelir Vergisi', 'Baltık Demiryolu',
+      'Novgorod', 'Şans', 'Pskov', 'Smolensk', 'Hapishane (Ziyaret)', 'Moskova',
+      'Elektrik Şirketi', 'Kazan', 'Nijniy Novgorod', 'Trans-Sibirya (Batı)', 'Perm', 'Topluluk',
+      'Yekaterinburg', 'Tyumen', 'Ücretsiz Park', 'Omsk', 'Şans', 'Novosibirsk',
+      'Krasnoyarsk', 'Trans-Sibirya (Orta)', 'Irkutsk', 'Ulan Ude', 'Su İşleri', 'Chita',
+      'Hapishaneye Git', 'Khabarovsk', 'Vladivostok', 'Topluluk', 'Magadan', 'Trans-Sibirya (Doğu)',
+      'Şans', 'Yakutsk', 'Lüks Vergisi', 'Murmansk'
+    ])
+  }
 };
+
+function cloneBoardProperties(board) {
+  return board.properties.map(p => ({ ...p }));
+}
+
+// Assign country groups for Dünya board so building checks can use groups
+// Base template color groups positions:
+// brown: [1,3], lightblue: [6,8,9], pink: [11,13,14], orange: [16,18,19],
+// red: [21,23,24], yellow: [26,27,29], green: [31,32,34], darkblue: [37,39]
+(function assignWorldGroups() {
+  const b = boards.dunya.properties;
+  if (!b) return;
+  const setGroup = (indexes, name) => indexes.forEach(i => { if (b[i] && b[i].type === 'property') b[i].group = name; });
+  setGroup([1,3], 'Mısır');
+  setGroup([6,8,9], 'Türkiye');
+  setGroup([11,13,14], 'Birleşik Krallık');
+  setGroup([16,18,19], 'İtalya');
+  setGroup([21,23,24], 'Almanya');
+  setGroup([26,27,29], 'İspanya');
+  setGroup([31,32,34], 'Çin');
+  setGroup([37,39], 'Amerika');
+})();
 
 io.on('connection', (socket) => {
   console.log('🎮 Player connected:', socket.id);
 
   socket.on('createLobby', (data) => {
+    const boardKey = data.boardKey && boards[data.boardKey] ? data.boardKey : 'dunya';
+    const board = boards[boardKey];
     const lobbyId = uuidv4();
     const lobby = {
       id: lobbyId,
       createdAt: Date.now(),
       host: socket.id,
+      boardKey,
+      boardName: board.name,
+      currency: board.currency || '₺',
       players: [{
         id: socket.id,
         name: data.playerName,
         appearance: data.appearance || '👤',
         color: data.color || '#ef4444',
-        money: 1500,
+        money: 2000,
         position: 0,
         properties: [],
         inJail: false,
@@ -95,9 +249,9 @@ io.on('connection', (socket) => {
       started: false,
       currentTurn: 0,
       diceHistory: [],
-      properties: boardData.properties,
+      properties: cloneBoardProperties(board),
       gameRules: {
-        initialMoney: 1500,
+        initialMoney: 2000,
         goMoney: 200,
         taxFree: false
       },
@@ -112,6 +266,17 @@ io.on('connection', (socket) => {
     console.log('✅ Lobby created:', lobbyId);
   });
 
+  socket.on('getLobbies', () => {
+    const availableLobbies = Array.from(lobbies.values()).map(lobby => ({
+      id: lobby.id,
+      hostName: lobby.players[0]?.name || 'Unknown',
+      playerCount: lobby.players.length,
+      started: lobby.started,
+      boardName: lobby.boardName
+    })).filter(l => !l.started && l.playerCount < 12);
+    socket.emit('lobbiesList', availableLobbies);
+  });
+
   socket.on('joinLobby', (data) => {
     const lobby = lobbies.get(data.lobbyId);
     if (!lobby) {
@@ -119,9 +284,19 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if (lobby.players.length >= 6) {
+    if (lobby.players.length >= 12) {
       socket.emit('error', 'Lobby is full');
       return;
+    }
+    
+    // Check if color is already taken
+    const colorTaken = lobby.players.some(p => p.color === data.color);
+    if (colorTaken) {
+      // Assign random available color
+      const availableColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4', '#10b981', '#f59e0b', '#6366f1', '#14b8a6'];
+      const usedColors = lobby.players.map(p => p.color);
+      const freeColors = availableColors.filter(c => !usedColors.includes(c));
+      data.color = freeColors[0] || '#ffffff';
     }
 
     lobby.players.push({
@@ -129,7 +304,7 @@ io.on('connection', (socket) => {
       name: data.playerName,
       appearance: data.appearance || '👤',
       color: data.color || '#3b82f6',
-      money: 1500,
+      money: 2000,
       position: 0,
       properties: [],
       inJail: false,
@@ -159,10 +334,19 @@ io.on('connection', (socket) => {
   socket.on('startGame', (data) => {
     const lobbyId = playerSockets.get(socket.id);
     const lobby = lobbies.get(lobbyId);
-    if (!lobby || lobby.host !== socket.id || lobby.players.length < 2) return;
+    if (!lobby || lobby.host !== socket.id || lobby.players.length < 1) return;
 
     lobby.started = true;
     lobby.gameRules = data.rules || lobby.gameRules;
+    // Apply price/rent scaling before game starts
+    applyEconomyScale(lobby);
+    
+    // Set initial money for all players based on game rules
+    const initialMoney = lobby.gameRules.initialMoney || 2000;
+    lobby.players.forEach(player => {
+      player.money = initialMoney;
+    });
+    
     io.to(lobbyId).emit('gameStarted', lobby);
     console.log('🎮 Game started in lobby:', lobbyId);
   });
@@ -178,15 +362,70 @@ io.on('connection', (socket) => {
     const dice1 = Math.floor(Math.random() * 6) + 1;
     const dice2 = Math.floor(Math.random() * 6) + 1;
     const total = dice1 + dice2;
+    const oldPosition = currentPlayer.position;
     let newPosition = (currentPlayer.position + total) % 40;
 
-    if (newPosition < currentPlayer.position) {
-      currentPlayer.money += lobby.gameRules.goMoney;
-      lobby.events.push({ type: 'pass-go', player: currentPlayer.name });
+    // Check if passed GO
+    let passedGo = false;
+    if (oldPosition + total >= 40) {
+      currentPlayer.money += lobby.gameRules.goMoney || 200;
+      passedGo = true;
+      lobby.events.push({ type: 'pass-go', player: currentPlayer.name, amount: lobby.gameRules.goMoney });
     }
 
     currentPlayer.position = newPosition;
     const landedSpace = lobby.properties[newPosition];
+
+    // Handle special spaces
+    let specialMessage = null;
+    
+    // Parking - get free parking money
+    if (landedSpace.type === 'parking') {
+      const parkingBonus = 100;
+      currentPlayer.money += parkingBonus;
+      specialMessage = `${currentPlayer.name} Ücretsiz Park'a geldi ve ${lobby.currency}${parkingBonus} kazandı!`;
+      lobby.events.push({ type: 'parking', player: currentPlayer.name });
+    }
+    
+    // Go to Jail
+    if (landedSpace.type === 'gotojail') {
+      currentPlayer.position = 10; // Jail position
+      currentPlayer.inJail = true;
+      currentPlayer.jailTurns = 0;
+      specialMessage = `${currentPlayer.name} hapishaneye gönderildi!`;
+      lobby.events.push({ type: 'gotojail', player: currentPlayer.name });
+    }
+    
+    // Tax spaces
+    let taxMessage = null;
+    if (landedSpace.type === 'tax') {
+      const taxAmount = newPosition === 4 ? 200 : 100;
+      currentPlayer.money -= taxAmount;
+      taxMessage = `${currentPlayer.name} vergi olarak ${lobby.currency}${taxAmount} ödedi`;
+      lobby.events.push({ type: 'tax-paid', player: currentPlayer.name, amount: taxAmount });
+    }
+
+    // Handle chance and community chest cards
+    let cardMessage = null;
+    if (landedSpace.type === 'chance' || landedSpace.type === 'chest') {
+      const cardType = landedSpace.type === 'chance' ? 'Şans' : 'Topluluk';
+      const cards = [
+        { msg: 'Banka hatası! Sana ₺200 ödendi.', money: 200 },
+        { msg: 'Doktor faturası ödeyeceksin. ₺50 öde.', money: -50 },
+        { msg: 'Doğum günün! Her oyuncudan ₺10 al.', money: 50 },
+        { msg: 'Okul ücretini öde. ₺150 öde.', money: -150 },
+        { msg: 'Güzellik yarışmasında ikinci oldun! ₺10 kazan.', money: 10 },
+        { msg: 'Vergi iadesi! ₺100 al.', money: 100 },
+        { msg: 'Hastane faturası! ₺100 öde.', money: -100 },
+        { msg: 'Yatırımlarından kazandın! ₺50 al.', money: 50 },
+        { msg: 'Trafik cezası! ₺15 öde.', money: -15 },
+        { msg: 'Hisse senetlerin değer kazandı! ₺120 al.', money: 120 }
+      ];
+      const card = cards[Math.floor(Math.random() * cards.length)];
+      currentPlayer.money += card.money;
+      cardMessage = `${cardType} Kartı: ${card.msg}`;
+      lobby.events.push({ type: cardType.toLowerCase(), player: currentPlayer.name, message: card.msg });
+    }
 
     io.to(lobbyId).emit('diceRolled', {
       player: currentPlayer,
@@ -195,31 +434,115 @@ io.on('connection', (socket) => {
       total,
       newPosition,
       landedSpace,
-      message: `${currentPlayer.name} rolled ${dice1} + ${dice2}`
+      cardMessage,
+      taxMessage,
+      specialMessage,
+      passedGo,
+      goMoney: lobby.gameRules.goMoney,
+      currency: lobby.currency,
+      message: `${currentPlayer.name} ${dice1} + ${dice2} attı`
     });
   });
 
   socket.on('buyProperty', (data) => {
     const lobbyId = playerSockets.get(socket.id);
     const lobby = lobbies.get(lobbyId);
-    if (!lobby) return;
+    if (!lobby || !lobby.started) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    const currentPlayer = lobby.players[lobby.currentTurn];
+    const property = lobby.properties[data.propertyId];
+
+    // Only current player can buy property
+    if (player.id !== currentPlayer.id) return;
+    // Can only buy property they just landed on
+    if (player.position !== data.propertyId) return;
+
+    if (!player || !property || property.owner) return;
+
+    if (player.money < property.price) {
+      socket.emit('errorMessage', `Yetersiz bakiye! (${player.money} < ${property.price})`);
+      return;
+    }
+
+    player.money -= property.price;
+    player.properties.push(data.propertyId);
+    property.owner = socket.id;
+    property.ownerColor = player.color;
+
+    io.to(lobbyId).emit('propertyBought', {
+      player,
+      property,
+      message: `${player.name} bought ${property.name}`
+    });
+
+    lobby.events.push({ type: 'property-bought', player: player.name, property: property.name });
+  });
+
+  socket.on('buildHouse', (data) => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby.started) return;
 
     const player = lobby.players.find(p => p.id === socket.id);
     const property = lobby.properties[data.propertyId];
+    
+    if (!property || property.owner !== socket.id) return;
+    if (!property.color || property.type !== 'property') return;
 
-    if (player && property && !property.owner && player.money >= property.price) {
-      player.money -= property.price;
-      player.properties.push(data.propertyId);
-      property.owner = socket.id;
+    // Check if player owns monopoly (use country group if available)
+    const groupKey = property.group || property.color;
+    const myProps = lobby.properties.filter(p => p.owner === socket.id && (p.group || p.color) === groupKey && p.type === 'property');
+    const groupSize = lobby.properties.filter(p => (p.group || p.color) === groupKey && p.type === 'property').length;
+    if (myProps.length !== groupSize) return;
 
-      io.to(lobbyId).emit('propertyBought', {
-        player,
-        property,
-        message: `${player.name} bought ${property.name}`
-      });
+    // Initialize houses if not exists
+    if (property.houses === undefined) property.houses = 0;
+    if (property.houses >= 5) return;
 
-      lobby.events.push({ type: 'property-bought', player: player.name, property: property.name });
-    }
+    const houseCost = Math.floor(property.price / 2);
+    if (player.money < houseCost) return;
+
+    player.money -= houseCost;
+    property.houses++;
+
+    const buildType = property.houses === 5 ? 'otel' : 'ev';
+    io.to(lobbyId).emit('houseBuilt', {
+      player,
+      property,
+      buildType,
+      message: `${player.name} ${property.name} üzerine ${buildType} dikti`
+    });
+
+    lobby.events.push({ type: 'house-built', player: player.name, property: property.name, buildType });
+  });
+
+  socket.on('sellHouse', (data) => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby.started) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    const property = lobby.properties[data.propertyId];
+    
+    if (!property || property.owner !== socket.id) return;
+    if (!property.houses || property.houses <= 0) return;
+
+    const houseCost = Math.floor(property.price / 2);
+    const sellPrice = Math.floor(houseCost / 2);
+    
+    player.money += sellPrice;
+    property.houses--;
+
+    const soldType = property.houses === 4 ? 'otel' : 'ev';
+    io.to(lobbyId).emit('houseSold', {
+      player,
+      property,
+      soldType,
+      message: `${player.name} ${property.name} üzerinden ${soldType} sattı`
+    });
+
+    lobby.events.push({ type: 'house-sold', player: player.name, property: property.name, soldType });
   });
 
   socket.on('endTurn', () => {
@@ -242,6 +565,103 @@ io.on('connection', (socket) => {
       appearance: player.appearance,
       message: data.message,
       timestamp: new Date()
+    });
+  });
+
+  // Simple trade relay + apply on accept
+  socket.on('proposeTrade', (data) => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby.started) return;
+    const from = lobby.players.find(p => p.id === socket.id);
+    const to = lobby.players.find(p => p.id === data.to);
+    if (!from || !to) return;
+    // Validate offered props belong to sender, requested belong to receiver
+    const validMyProps = (data.myPropIds || []).every(id => lobby.properties[id]?.owner === socket.id);
+    const validTheirProps = (data.theirPropIds || []).every(id => lobby.properties[id]?.owner === to.id);
+    if (!validMyProps || !validTheirProps) return;
+
+    const tradeId = uuidv4();
+    io.to(to.id).emit('tradeOffer', {
+      tradeId,
+      from: socket.id,
+      myPropIds: data.myPropIds || [],
+      theirPropIds: data.theirPropIds || [],
+      offerMoney: Math.max(0, data.offerMoney || 0),
+      requestMoney: Math.max(0, data.requestMoney || 0)
+    });
+
+    // Store trade in memory
+    lobby._pendingTrades = lobby._pendingTrades || new Map();
+    lobby._pendingTrades.set(tradeId, {
+      id: tradeId,
+      from: socket.id,
+      to: to.id,
+      myPropIds: data.myPropIds || [],
+      theirPropIds: data.theirPropIds || [],
+      offerMoney: Math.max(0, data.offerMoney || 0),
+      requestMoney: Math.max(0, data.requestMoney || 0)
+    });
+  });
+
+  socket.on('respondTrade', (payload) => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby._pendingTrades) return;
+    const tr = lobby._pendingTrades.get(payload.tradeId);
+    if (!tr) return;
+    // Only receiver can respond
+    if (tr.to !== socket.id) return;
+
+    if (!payload.accept) {
+      lobby._pendingTrades.delete(payload.tradeId);
+      return;
+    }
+
+    const from = lobby.players.find(p => p.id === tr.from);
+    const to = lobby.players.find(p => p.id === tr.to);
+    if (!from || !to) return;
+
+    // Money checks
+    if (from.money < tr.offerMoney) return;
+    if (to.money < tr.requestMoney) return;
+
+    from.money -= tr.offerMoney;
+    to.money += tr.offerMoney;
+    to.money -= tr.requestMoney;
+    from.money += tr.requestMoney;
+
+    // Transfer properties
+    const updatedProperties = [];
+    (tr.myPropIds || []).forEach(id => {
+      const prop = lobby.properties[id];
+      if (prop && prop.owner === from.id) {
+        prop.owner = to.id;
+        updatedProperties.push({ id: prop.id, owner: prop.owner });
+        // Update players' property arrays
+        from.properties = from.properties.filter(pid => pid !== id);
+        to.properties.push(id);
+      }
+    });
+    (tr.theirPropIds || []).forEach(id => {
+      const prop = lobby.properties[id];
+      if (prop && prop.owner === to.id) {
+        prop.owner = from.id;
+        updatedProperties.push({ id: prop.id, owner: prop.owner });
+        to.properties = to.properties.filter(pid => pid !== id);
+        from.properties.push(id);
+      }
+    });
+
+    lobby._pendingTrades.delete(payload.tradeId);
+
+    io.to(lobbyId).emit('tradeCompleted', {
+      updatedPlayers: [
+        { id: from.id, money: from.money, properties: from.properties },
+        { id: to.id, money: to.money, properties: to.properties }
+      ],
+      updatedProperties,
+      message: `${from.name} ⇄ ${to.name}`
     });
   });
 

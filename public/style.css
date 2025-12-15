@@ -784,7 +784,7 @@ body {
 }
 
 .board-wrapper {
-    width: min(96vh, 96vw);
+    width: min(90vh, 90vw);
     aspect-ratio: 1;
     position: relative;
     will-change: transform;
@@ -816,8 +816,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 22px 14px; /* larger tiles */
-    font-size: 1.15em;
+    padding: 20px 12px; /* slightly reduced tile padding */
+    font-size: 1.02em; /* slightly smaller text on tiles */
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -964,8 +964,8 @@ body {
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
     border: 2px solid;
     border-color: inherit;
@@ -987,7 +987,7 @@ body {
     margin-bottom: 2px;
     color: white;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(0, 0, 0, 1);
-    font-size: 0.85em;
+    font-size: 0.80em;
     letter-spacing: 0.3px;
     line-height: 1.2;
 }
@@ -1006,7 +1006,7 @@ body {
 }
 
 .space-price {
-    font-size: 0.7em;
+    font-size: 0.65em;
     color: #fbbf24;
     font-weight: 700;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
@@ -1032,7 +1032,7 @@ body {
     transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     color: #0f172a;
     font-weight: 800;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
     justify-content: center;

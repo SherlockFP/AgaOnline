@@ -1193,6 +1193,8 @@ function updateGameBoard() {
             token.style.background = player.color;
             token.style.borderColor = player.color;
             token.title = player.name;
+            token.dataset.playerId = player.id;
+            token.dataset.playerColor = player.color;
             // Show avatar instead of initial
             token.textContent = player.appearance || '👤';
             token.style.fontSize = '1.3em';
@@ -1217,12 +1219,20 @@ function updateGameBoard() {
             space.style.borderBottom = `4px solid ${owner.color}`;
             space.style.background = `linear-gradient(150deg, rgba(15, 23, 42, 0.9), ${owner.color}30)`;
             space.style.boxShadow = `0 4px 14px ${owner.color}55, 0 0 0 2px ${owner.color}55 inset`;
+            
+            // Hide price when property is owned
+            const priceEl = space.querySelector('.space-price');
+            if (priceEl) priceEl.style.display = 'none';
         } else {
             space.classList.remove('owned');
             space.style.opacity = '1';
             space.style.borderBottom = 'none';
             space.style.background = '';
             space.style.boxShadow = '';
+            
+            // Show price when property is not owned
+            const priceEl = space.querySelector('.space-price');
+            if (priceEl) priceEl.style.display = 'block';
         }
     });
 

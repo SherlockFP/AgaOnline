@@ -430,7 +430,7 @@ io.on('connection', (socket) => {
       const cards = [
         { msg: 'Banka hatası! Sana ₺200 ödendi.', money: 200 },
         { msg: 'Doktor faturası ödeyeceksin. ₺50 öde.', money: -50 },
-        { msg: 'Doğum günün! Her oyuncudan ₺10 al.', money: 50 },
+        { msg: 'Doğum günün! Her oyuncudan ₺10 al.', money: 0, collectFromPlayers: 10 },
         { msg: 'Okul ücretini öde. ₺150 öde.', money: -150 },
         { msg: 'Güzellik yarışmasında ikinci oldun! ₺10 kazan.', money: 10 },
         { msg: 'Vergi iadesi! ₺100 al.', money: 100 },
@@ -479,6 +479,17 @@ io.on('connection', (socket) => {
         });
         currentPlayer.money -= cost;
         cardMessage = `${cardType}: ${card.msg} (Toplam: ₺${cost})`;
+      } else if (card.collectFromPlayers) {
+        // Collect money from all other players
+        let totalCollected = 0;
+        lobby.players.forEach(p => {
+          if (p.id !== currentPlayer.id && !p.isBankrupt) {
+            p.money -= card.collectFromPlayers;
+            totalCollected += card.collectFromPlayers;
+          }
+        });
+        currentPlayer.money += totalCollected;
+        cardMessage = `${cardType}: ${card.msg} (Toplam: ₺${totalCollected})`;
       } else {
         currentPlayer.money += card.money;
         cardMessage = `${cardType}: ${card.msg}`;

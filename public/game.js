@@ -16,6 +16,17 @@ let isPlayingMusic = false;
 let currentTrackIndex = 0;
 let musicTracks = [];
 
+// Utility: convert hex color to rgba string
+function hexToRgba(hex, alpha) {
+    if (!hex) return `rgba(255,255,255,${alpha})`;
+    let c = hex.replace('#','');
+    if (c.length === 3) c = c.split('').map(ch => ch+ch).join('');
+    const r = parseInt(c.substring(0,2),16);
+    const g = parseInt(c.substring(2,4),16);
+    const b = parseInt(c.substring(4,6),16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 // Initialize background music
 function initializeBackgroundMusic() {
     if (backgroundAudio) return; // Prevent multiple initializations
@@ -1415,10 +1426,10 @@ function updateGameBoard() {
             space.classList.add('owned');
             space.style.opacity = '1';
             // Kutuyu tamamen oyuncu rengiyle doldur
-            space.style.borderBottom = `3px solid ${owner.color}88`;
-            // Subtle owner tint instead of full bright fill
-            space.style.background = `linear-gradient(135deg, ${owner.color}22, rgba(15,23,42,0.18))`;
-            space.style.boxShadow = `0 3px 8px ${owner.color}33, inset 0 0 0 2px rgba(0,0,0,0.12)`;
+            // More visible owner tint while keeping it elegant
+            space.style.borderBottom = `4px solid ${hexToRgba(owner.color, 0.95)}`;
+            space.style.background = `linear-gradient(135deg, ${hexToRgba(owner.color, 0.28)} 0%, ${hexToRgba(owner.color, 0.14)} 55%, rgba(15,23,42,0.12) 100%)`;
+            space.style.boxShadow = `0 6px 18px ${hexToRgba(owner.color, 0.18)}, inset 0 0 0 2px rgba(0,0,0,0.14)`;
             
             // Text'leri beyaz yap ki görünsün
             const nameEl = space.querySelector('.space-name');

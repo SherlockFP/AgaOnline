@@ -1084,6 +1084,42 @@ io.on('connection', (socket) => {
     console.log(`💸 ${player.name} declared bankruptcy in lobby ${lobbyId}`);
   });
 
+  // YouTube Music Events
+  socket.on('playYoutubeMusic', (data) => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    if (!player) return;
+
+    // Broadcast to all players in lobby
+    io.to(lobbyId).emit('youtubeMusicPlay', {
+      videoId: data.videoId,
+      playerName: player.name,
+      playerId: socket.id
+    });
+
+    console.log(`🎵 ${player.name} started YouTube music in lobby ${lobbyId}`);
+  });
+
+  socket.on('stopYoutubeMusic', () => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    if (!player) return;
+
+    // Broadcast to all players in lobby
+    io.to(lobbyId).emit('youtubeMusicStop', {
+      playerName: player.name,
+      playerId: socket.id
+    });
+
+    console.log(`🎵 ${player.name} stopped YouTube music in lobby ${lobbyId}`);
+  });
+
   socket.on('disconnect', () => {
     const lobbyId = playerSockets.get(socket.id);
     if (lobbyId) {

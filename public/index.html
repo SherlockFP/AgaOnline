@@ -350,6 +350,24 @@
                                 <input type="text" id="chatInput" placeholder="Mesaj yaz..." onkeypress="handleChatKeypress(event)">
                                 <button onclick="sendMessage()" class="btn-send">Gönder</button>
                             </div>
+                            
+                            <!-- YouTube Music Control -->
+                            <div class="youtube-music-control" style="margin-top: 10px; padding: 10px; background: rgba(255, 0, 0, 0.1); border-radius: 8px; border: 1px solid rgba(255, 0, 0, 0.3);">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <span style="font-size: 1.2em;">🎵</span>
+                                    <span style="font-weight: 700; color: #ff0000;">YouTube Müzik</span>
+                                </div>
+                                <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                                    <input type="text" id="youtubeLink" placeholder="YouTube link'i yapıştır..." style="flex: 1; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; font-size: 0.85em;">
+                                    <button onclick="playYoutubeMusic()" style="padding: 8px 15px; background: linear-gradient(135deg, #ff0000, #cc0000); border: none; border-radius: 6px; color: white; font-weight: 700; cursor: pointer; font-size: 0.85em;">▶️ Çal</button>
+                                </div>
+                                <div id="currentYoutubeMusic" style="display: none; font-size: 0.8em; color: rgba(255,255,255,0.8); padding: 5px; background: rgba(0,0,0,0.3); border-radius: 4px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span id="currentMusicTitle">Şu an çalıyor...</span>
+                                        <button onclick="stopYoutubeMusic()" style="padding: 4px 10px; background: rgba(239, 68, 68, 0.8); border: none; border-radius: 4px; color: white; font-size: 0.75em; cursor: pointer;">⏹️ Durdur</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

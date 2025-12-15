@@ -2218,4 +2218,161 @@ function showEmojiEffect(emoji, playerName, playerColor) {
     }, 4000);
 }
 
+// YouTube Music Functions
+let currentYoutubePlayer = null;
+let youtubePlayerReady = false;
+
+// Load YouTube IFrame API
+function loadYouTubeAPI() {
+    if (window.YT) return;
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+window.onYouTubeIframeAPIReady = function() {
+    youtubePlayerReady = true;
+    console.log('🎵 YouTube API Ready');
+};
+
+function extractYouTubeVideoId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function playYoutubeMusic() {
+    const linkInput = document.getElementById('youtubeLink');
+    const link = linkInput.value.trim();
+    
+    if (!link) {
+        alert('Lütfen bir YouTube linki girin!');
+        return;
+    }
+    
+    const videoId = extractYouTubeVideoId(link);
+    if (!videoId) {
+        alert('Geçersiz YouTube linki!');
+        return;
+    }
+    
+    // Send to server to broadcast to all players
+    socket.emit('playYoutubeMusic', { videoId, link });
+    linkInput.value = '';
+}
+
+socket.on('youtubeMusicPlay', (data) => {
+    const { videoId, playerName } = data;
+    
+    // Add chat message
+    const chatDiv = document.getElementById('chatMessages');
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-message';
+    msgEl.innerHTML = `
+        <div class="chat-message-author" style="color: #ff0000;">🎵 YouTube Müzik</div>
+        <div style="color: #60a5fa;">${playerName} bir müzik açtı!</div>
+    `;
+    chatDiv.appendChild(msgEl);
+    setTimeout(() => {
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    }, 10);
+    
+    // Initialize YouTube player if not exists
+    if (!currentYoutubePlayer) {
+        loadYouTubeAPI();
+        
+        // Wait for API to load
+        const checkAPI = setInterval(() => {
+            if (window.YT && window.YT.Player) {
+                clearInterval(checkAPI);
+                
+                // Create hidden player container
+                if (!document.getElementById('youtubePlayerContainer')) {
+                    const container = document.createElement('div');
+                    container.id = 'youtubePlayerContainer';
+                    container.style.display = 'none';
+                    document.body.appendChild(container);
+                }
+                
+                currentYoutubePlayer = new YT.Player('youtubePlayerContainer', {
+                    height: '0',
+                    width: '0',
+                    videoId: videoId,
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 0,
+                        'disablekb': 1,
+                        'fs': 0,
+                        'modestbranding': 1,
+                        'rel': 0
+                    },
+                    events: {
+                        'onReady': (event) => {
+                            event.target.setVolume(50);
+                            event.target.playVideo();
+                            showCurrentMusic(videoId);
+                        },
+                        'onStateChange': (event) => {
+                            if (event.data === YT.PlayerState.ENDED) {
+                                hideCurrentMusic();
+                            }
+                        }
+                    }
+                });
+            }
+        }, 100);
+    } else {
+        // Player exists, just load new video
+        currentYoutubePlayer.loadVideoById(videoId);
+        currentYoutubePlayer.setVolume(50);
+        showCurrentMusic(videoId);
+    }
+});
+
+function showCurrentMusic(videoId) {
+    const currentMusicDiv = document.getElementById('currentYoutubeMusic');
+    const titleSpan = document.getElementById('currentMusicTitle');
+    
+    if (currentMusicDiv && titleSpan) {
+        titleSpan.textContent = '🎵 Müzik çalıyor...';
+        currentMusicDiv.style.display = 'block';
+    }
+}
+
+function hideCurrentMusic() {
+    const currentMusicDiv = document.getElementById('currentYoutubeMusic');
+    if (currentMusicDiv) {
+        currentMusicDiv.style.display = 'none';
+    }
+}
+
+function stopYoutubeMusic() {
+    if (currentYoutubePlayer) {
+        currentYoutubePlayer.stopVideo();
+        hideCurrentMusic();
+        socket.emit('stopYoutubeMusic');
+    }
+}
+
+socket.on('youtubeMusicStop', (data) => {
+    if (currentYoutubePlayer) {
+        currentYoutubePlayer.stopVideo();
+        hideCurrentMusic();
+    }
+    
+    // Add chat message
+    const chatDiv = document.getElementById('chatMessages');
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-message';
+    msgEl.innerHTML = `
+        <div class="chat-message-author" style="color: #ff0000;">🎵 YouTube Müzik</div>
+        <div style="color: #ef4444;">${data.playerName} müziği durdurdu.</div>
+    `;
+    chatDiv.appendChild(msgEl);
+    setTimeout(() => {
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    }, 10);
+});
+
 console.log('🎮 Oyun yüklendi ve hazır!');

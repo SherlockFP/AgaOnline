@@ -98,7 +98,7 @@ const boards = {
     currency: '₺',
     properties: buildBoard([
       '🇹🇷 BAŞLA / MAAŞ', 'Edirne', 'Kamu Sandığı', 'Kırklareli', 'Gelir Vergisi', 'Marmaray Hattı',
-      'Tekirdağ', 'Şans', 'Çanakkale', 'Bursa', 'Hapishane (Ziyaret)', 'Ankara Çankaya',
+      'Trabzon', 'Şans', 'Çanakkale', 'Bursa', 'Hapishane (Ziyaret)', 'Ankara Çankaya',
       'Elektrik Şirketi', 'Ankara Kızılay', 'Konya', 'Yüksek Hızlı Tren', 'İzmir Alsancak', 'Kamu Sandığı',
       'İzmir Karşıyaka', 'İzmir Bornova', 'Ücretsiz Park', 'Antalya Kaleiçi', 'Şans', 'Antalya Lara',
       'Muğla Bodrum', 'Denizli Hattı', 'Muğla Marmaris', 'Aydın Kuşadası', 'Su İşleri', 'Muğla Fethiye',
@@ -325,7 +325,8 @@ io.on('connection', (socket) => {
       inJail: false,
       jailTurns: 0,
       hasRolled: false,
-      isBankrupt: false
+      isBankrupt: false,
+      freeJailCards: 0
     });
 
     playerSockets.set(socket.id, data.lobbyId);
@@ -456,7 +457,7 @@ io.on('connection', (socket) => {
         { msg: '3 kare ileri git!', money: 0, moveForward: 3 },
         { msg: '5 kare geri git!', money: 0, moveBackward: 5 },
         { msg: 'En yakın trene git!', money: 0, goToNearest: 'railroad' },
-        { msg: 'Bedava hapishane çıkış kartı kazandın!', money: 0, freeJailCard: true },
+        { msg: '🎫 PARDON KARTI kazandın! Hapishaneden bedava çıkabilirsin.', money: 0, freeJailCard: true },
         { msg: 'Tatil kazandın! ₺300 al.', money: 300 },
         { msg: 'Gelir vergisi öde! ₺200 öde.', money: -200 },
         { msg: 'Her ev için ₺25, her otel için ₺100 öde.', money: 0, repairCost: true },
@@ -1034,6 +1035,35 @@ io.on('connection', (socket) => {
     } else {
       socket.emit('jailRollFailed', { dice1, dice2, message: 'Çift zar atamadın, hapiste kalıyorsun.' });
     }
+  });
+
+  socket.on('useJailCard', () => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby.started) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    if (!player || !player.inJail) return;
+
+    // Check if player has jail cards
+    if (!player.freeJailCards || player.freeJailCards <= 0) {
+      socket.emit('error', 'Pardon kartın yok!');
+      return;
+    }
+
+    // Use the card
+    player.freeJailCards -= 1;
+    player.inJail = false;
+    player.jailTurns = 0;
+
+    lobby.events.push({ type: 'jail-released', player: player.name, reason: '🎫 Pardon Kartı kullandı' });
+    
+    io.to(lobbyId).emit('jailReleased', {
+      player,
+      reason: '🎫 Pardon Kartı kullandın ve hapishaneden çıktın!'
+    });
+    
+    io.to(lobbyId).emit('lobbyUpdated', lobby);
   });
 
   socket.on('declareBankruptcy', () => {

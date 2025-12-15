@@ -1913,6 +1913,11 @@ function rollForJail() {
     closeJailModal();
 }
 
+function useJailCard() {
+    socket.emit('useJailCard');
+    closeJailModal();
+}
+
 function closeJailModal() {
     const modal = document.getElementById('jailModal');
     if (modal) modal.style.display = 'none';
@@ -1968,9 +1973,20 @@ function checkJailStatus() {
 function showJailModal(player) {
     const modal = document.getElementById('jailModal');
     const turnsLeftEl = document.getElementById('jailTurnsLeft');
+    const useJailCardBtn = document.getElementById('useJailCardBtn');
+    const jailCardCount = document.getElementById('jailCardCount');
+    
     if (modal && turnsLeftEl) {
         const turnsLeft = Math.max(0, 3 - (player.jailTurns || 0));
         turnsLeftEl.textContent = `Kalan tur: ${turnsLeft}`;
+        
+        // Show/hide jail card button based on card count
+        if (useJailCardBtn && jailCardCount) {
+            const cardCount = player.freeJailCards || 0;
+            jailCardCount.textContent = cardCount;
+            useJailCardBtn.style.display = cardCount > 0 ? 'block' : 'none';
+        }
+        
         modal.style.display = 'flex';
     }
 }

@@ -1047,6 +1047,39 @@ io.on('connection', (socket) => {
     // Update game state
     io.to(lobbyId).emit('lobbyUpdated', lobby);
 
+    // Check if only one player remains (winner)
+    const activePlayers = lobby.players.filter(p => !p.isBankrupt);
+    if (activePlayers.length === 1 && lobby.players.length > 1) {
+      const winner = activePlayers[0];
+      
+      // Calculate stats for all players
+      const playerStats = lobby.players.map(p => ({
+        name: p.name,
+        color: p.color,
+        money: p.money,
+        properties: p.properties.length,
+        isWinner: p.id === winner.id,
+        isBankrupt: p.isBankrupt
+      })).sort((a, b) => {
+        if (a.isWinner) return -1;
+        if (b.isWinner) return 1;
+        return b.money - a.money;
+      });
+
+      // Notify all players about the winner
+      io.to(lobbyId).emit('gameWon', {
+        winner: {
+          name: winner.name,
+          color: winner.color,
+          money: winner.money,
+          properties: winner.properties.length
+        },
+        playerStats
+      });
+
+      console.log(`🏆 ${winner.name} won the game in lobby ${lobbyId}`);
+    }
+
     console.log(`💸 ${player.name} declared bankruptcy in lobby ${lobbyId}`);
   });
 

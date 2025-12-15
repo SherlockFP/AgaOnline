@@ -2046,6 +2046,80 @@ socket.on('playerBankrupt', (data) => {
     playSound('soundSell');
 });
 
+socket.on('gameWon', (data) => {
+    console.log('🏆 Game won:', data);
+    setTimeout(() => {
+        showVictoryModal(data.winner, data.playerStats);
+    }, 2000); // Wait 2 seconds to let players see the bankruptcy message
+});
+
+function showVictoryModal(winner, playerStats) {
+    const modal = document.getElementById('victoryModal');
+    const winnerInfo = document.getElementById('winnerInfo');
+    const statsContainer = document.getElementById('playerStatsContainer');
+
+    // Build winner info HTML
+    winnerInfo.innerHTML = `
+        <div class="winner-name" style="color: ${winner.color};">
+            ${winner.name}
+        </div>
+        <div class="winner-stats">
+            <div class="winner-stat-item">
+                <div class="winner-stat-label">💰 Para</div>
+                <div class="winner-stat-value">$${winner.money}</div>
+            </div>
+            <div class="winner-stat-item">
+                <div class="winner-stat-label">🏘️ Mülk</div>
+                <div class="winner-stat-value">${winner.properties}</div>
+            </div>
+        </div>
+    `;
+
+    // Build player stats HTML
+    statsContainer.innerHTML = playerStats.map((player, index) => {
+        const rankClass = player.isWinner ? 'winner-rank' : (player.isBankrupt ? 'bankrupt-rank' : '');
+        const statusText = player.isWinner ? '👑 Kazanan' : (player.isBankrupt ? '💸 İflas' : '🎮 Oyuncu');
+        
+        return `
+            <div class="player-stat-card ${rankClass}">
+                <div class="player-rank ${index === 0 ? 'rank-1' : ''}">
+                    ${index + 1}
+                </div>
+                <div class="player-stat-info">
+                    <div class="player-stat-name" style="color: ${player.color};">
+                        ${player.name}
+                    </div>
+                    <div class="player-stat-status">${statusText}</div>
+                </div>
+                <div class="player-stat-money">
+                    <div class="player-stat-label-small">Para</div>
+                    <div style="color: ${player.isBankrupt ? '#ef4444' : '#10b981'};">
+                        $${player.money}
+                    </div>
+                </div>
+                <div class="player-stat-properties">
+                    <div class="player-stat-label-small">Mülk</div>
+                    <div style="color: #60a5fa;">
+                        ${player.properties}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    modal.style.display = 'flex';
+    playSound('soundWin');
+}
+
+function closeVictoryModal() {
+    document.getElementById('victoryModal').style.display = 'none';
+}
+
+function returnToMainMenu() {
+    closeVictoryModal();
+    leaveLobby();
+}
+
 // Select player color from board center
 function selectPlayerColor(color) {
     // Check if color is already taken

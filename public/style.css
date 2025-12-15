@@ -2256,6 +2256,283 @@ body {
     background: rgba(96, 165, 250, 0.5);
 }
 
+/* ===== VICTORY MODAL ===== */
+.victory-modal-content {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
+    border: 2px solid rgba(251, 191, 36, 0.6);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(251, 191, 36, 0.4), 0 0 100px rgba(251, 191, 36, 0.2);
+    animation: victoryAppear 0.5s ease-out;
+    position: relative;
+}
+
+@keyframes victoryAppear {
+    from {
+        transform: scale(0.5) translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.victory-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.victory-crown {
+    font-size: 4em;
+    animation: crownBounce 1s infinite ease-in-out;
+    filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.8));
+}
+
+@keyframes crownBounce {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-10px) scale(1.1);
+    }
+}
+
+.victory-title {
+    font-size: 2.5em;
+    font-weight: 900;
+    margin: 15px 0;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 40px rgba(251, 191, 36, 0.5);
+    animation: titleGlow 2s infinite ease-in-out;
+}
+
+.victory-confetti {
+    font-size: 1.5em;
+    letter-spacing: 10px;
+    animation: confettiShake 0.5s infinite ease-in-out;
+}
+
+@keyframes confettiShake {
+    0%, 100% {
+        transform: rotate(-5deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+}
+
+.winner-card {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.15));
+    border: 2px solid rgba(251, 191, 36, 0.5);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(251, 191, 36, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.winner-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 900;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.5);
+    animation: badgePulse 1.5s infinite ease-in-out;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 25px rgba(251, 191, 36, 0.7);
+    }
+}
+
+.winner-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.winner-name {
+    font-size: 2em;
+    font-weight: 900;
+    color: #fbbf24;
+    text-shadow: 0 2px 8px rgba(251, 191, 36, 0.6);
+}
+
+.winner-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.winner-stat-item {
+    background: rgba(15, 23, 42, 0.6);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.winner-stat-label {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 5px;
+}
+
+.winner-stat-value {
+    font-size: 1.5em;
+    font-weight: 800;
+    color: #fbbf24;
+}
+
+.stats-section {
+    margin-top: 25px;
+}
+
+.stats-title {
+    font-size: 1.3em;
+    color: #60a5fa;
+    margin-bottom: 15px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.player-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.player-stat-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-radius: 12px;
+    padding: 15px;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 15px;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.player-stat-card.winner-rank {
+    border-color: rgba(251, 191, 36, 0.6);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
+}
+
+.player-stat-card.bankrupt-rank {
+    opacity: 0.6;
+}
+
+.player-stat-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 20px rgba(96, 165, 250, 0.3);
+}
+
+.player-rank {
+    font-size: 1.5em;
+    font-weight: 900;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(96, 165, 250, 0.2);
+    border: 2px solid rgba(96, 165, 250, 0.4);
+}
+
+.player-rank.rank-1 {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border-color: #fbbf24;
+    color: #000;
+}
+
+.player-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.player-stat-name {
+    font-weight: 800;
+    font-size: 1.1em;
+}
+
+.player-stat-status {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.player-stat-money,
+.player-stat-properties {
+    text-align: center;
+    font-weight: 700;
+}
+
+.player-stat-label-small {
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 2px;
+}
+
+.btn-victory-primary,
+.btn-victory-secondary {
+    flex: 1;
+    padding: 15px 25px;
+    font-size: 1.1em;
+    font-weight: 800;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-victory-primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-victory-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.6);
+}
+
+.btn-victory-secondary {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border: 2px solid rgba(239, 68, 68, 0.4);
+}
+
+.btn-victory-secondary:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.6);
+}
+
 /* Music Slider */
 .music-slider {
     accent-color: #60a5fa;

@@ -1126,13 +1126,6 @@ function updateGameBoard() {
             space.style.borderBottom = `4px solid ${owner.color}`;
             space.style.background = `linear-gradient(150deg, rgba(15, 23, 42, 0.9), ${owner.color}30)`;
             space.style.boxShadow = `0 4px 14px ${owner.color}55, 0 0 0 2px ${owner.color}55 inset`;
-
-            // Add owner badge with better design
-            const ownerBadge = document.createElement('div');
-            ownerBadge.className = 'owner-badge';
-            ownerBadge.textContent = (owner.name || '?').charAt(0).toUpperCase();
-            ownerBadge.style.background = owner.color;
-            space.appendChild(ownerBadge);
         } else {
             space.classList.remove('owned');
             space.style.opacity = '1';
@@ -1216,34 +1209,78 @@ function refreshTradeLists() {
 
     const me = gameState.players.find(p => p.id === socket.id);
     myList.innerHTML = '';
-    if (me && me.properties) {
+    if (me && me.properties && me.properties.length > 0) {
         me.properties.forEach(id => {
-            const prop = gameState.properties.find(p => p.id === id);
+            const prop = gameState.properties[id];
             if (!prop) return;
             const el = document.createElement('label');
-            el.style.display = 'flex';
-            el.style.alignItems = 'center';
-            el.style.gap = '6px';
-            el.style.marginBottom = '6px';
-            el.innerHTML = `<input type="checkbox" class="my-prop" value="${prop.id}"> <span>${prop.name}</span>`;
+            el.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                padding: 8px 10px;
+                background: linear-gradient(90deg, ${prop.color}33, transparent);
+                border-left: 4px solid ${prop.color};
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
+            `;
+            el.innerHTML = `
+                <input type="checkbox" class="my-prop" value="${prop.id}" style="cursor: pointer;">
+                <span style="color: ${prop.color}; font-weight: 600;">${prop.name}</span>
+            `;
+            el.addEventListener('mouseenter', () => {
+                el.style.background = `linear-gradient(90deg, ${prop.color}55, transparent)`;
+                el.style.transform = 'translateX(3px)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.background = `linear-gradient(90deg, ${prop.color}33, transparent)`;
+                el.style.transform = 'translateX(0)';
+            });
             myList.appendChild(el);
         });
+    } else {
+        myList.innerHTML = '<p style="color: #94a3b8; font-style: italic; padding: 10px;">Henüz mülkün yok</p>';
     }
 
     theirList.innerHTML = '';
     const other = gameState.players.find(p => p.id === targetId);
-    if (other && other.properties) {
+    if (!targetId || targetId === 'Oyuncu seç...') {
+        theirList.innerHTML = '<p style="color: #94a3b8; font-style: italic; padding: 10px;">Önce oyuncu seç...</p>';
+    } else if (other && other.properties && other.properties.length > 0) {
         other.properties.forEach(id => {
-            const prop = gameState.properties.find(p => p.id === id);
+            const prop = gameState.properties[id];
             if (!prop) return;
             const el = document.createElement('label');
-            el.style.display = 'flex';
-            el.style.alignItems = 'center';
-            el.style.gap = '6px';
-            el.style.marginBottom = '6px';
-            el.innerHTML = `<input type="checkbox" class="their-prop" value="${prop.id}"> <span>${prop.name}</span>`;
+            el.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                padding: 8px 10px;
+                background: linear-gradient(90deg, ${prop.color}33, transparent);
+                border-left: 4px solid ${prop.color};
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
+            `;
+            el.innerHTML = `
+                <input type="checkbox" class="their-prop" value="${prop.id}" style="cursor: pointer;">
+                <span style="color: ${prop.color}; font-weight: 600;">${prop.name}</span>
+            `;
+            el.addEventListener('mouseenter', () => {
+                el.style.background = `linear-gradient(90deg, ${prop.color}55, transparent)`;
+                el.style.transform = 'translateX(3px)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.background = `linear-gradient(90deg, ${prop.color}33, transparent)`;
+                el.style.transform = 'translateX(0)';
+            });
             theirList.appendChild(el);
         });
+    } else if (other) {
+        theirList.innerHTML = '<p style="color: #94a3b8; font-style: italic; padding: 10px;">Bu oyuncunun mülkü yok</p>';
     }
 
     // Enable button when a player is selected

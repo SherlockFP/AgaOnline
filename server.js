@@ -376,9 +376,10 @@ io.on('connection', (socket) => {
     // Set hasRolled flag
     currentPlayer.hasRolled = true;
 
-    // Single die instead of two dice
-    const diceValue = Math.floor(Math.random() * 9) + 1; // 1-9 instead of 1-6 + 1-6
-    const total = diceValue;
+    // Two dice like normal Monopoly
+    const dice1 = Math.floor(Math.random() * 6) + 1;
+    const dice2 = Math.floor(Math.random() * 6) + 1;
+    const total = dice1 + dice2;
     const oldPosition = currentPlayer.position;
     let newPosition = (currentPlayer.position + total) % 40;
 
@@ -533,8 +534,8 @@ io.on('connection', (socket) => {
 
     io.to(lobbyId).emit('diceRolled', {
       player: currentPlayer,
-      dice1: diceValue,
-      dice2: 0,
+      dice1: dice1,
+      dice2: dice2,
       total,
       newPosition,
       landedSpace,
@@ -545,7 +546,7 @@ io.on('connection', (socket) => {
       passedGo,
       goMoney: lobby.gameRules.goMoney,
       currency: lobby.currency,
-      message: `${currentPlayer.name} ${total} attı`,
+      message: `${currentPlayer.name} ${total} attı (${dice1} + ${dice2})`,
       isSpecialSpace,
       isBuyableProperty
     });

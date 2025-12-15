@@ -298,15 +298,17 @@ socket.on('diceRolled', (data) => {
     const resultEl = document.getElementById('diceResult');
     const endTurnBtn = document.getElementById('endTurnBtn');
 
-    // Animate single die
+    // Animate both dice
     dice1El.classList.add('rolling');
-    dice2El.style.display = 'none'; // Hide second die
+    dice2El.classList.add('rolling');
+    dice2El.style.display = 'flex'; // Show second die
 
     setTimeout(() => {
         dice1El.textContent = data.dice1;
-        // Remove the dice result text as requested
-        resultEl.textContent = '';
+        dice2El.textContent = data.dice2;
+        resultEl.textContent = `Toplam: ${data.total}`;
         dice1El.classList.remove('rolling');
+        dice2El.classList.remove('rolling');
     }, 600);
 
     // Hide roll button after rolling

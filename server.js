@@ -20,43 +20,43 @@ const playerSockets = new Map();
 const baseTemplate = [
   { color: '#22c55e', type: 'go', price: 0, rent: [] },
   { color: 'brown', type: 'property', price: 60, rent: [2, 10, 30, 90, 160, 250] },
-  { color: null, type: 'chest', price: 0, rent: [] },
+  { color: '#16a34a', type: 'chest', price: 0, rent: [] },
   { color: 'brown', type: 'property', price: 60, rent: [4, 20, 60, 180, 320, 450] },
-  { color: null, type: 'tax', price: 0, rent: [] },
-  { color: null, type: 'railroad', price: 200, rent: [] },
+  { color: '#eab308', type: 'tax', price: 0, rent: [] },
+  { color: '#0284c7', type: 'railroad', price: 200, rent: [] },
   { color: 'lightblue', type: 'property', price: 100, rent: [6, 30, 90, 270, 400, 550] },
-  { color: null, type: 'chance', price: 0, rent: [] },
+  { color: '#fb923c', type: 'chance', price: 0, rent: [] },
   { color: 'lightblue', type: 'property', price: 100, rent: [6, 30, 90, 270, 400, 550] },
   { color: 'lightblue', type: 'property', price: 120, rent: [8, 40, 120, 360, 640, 900] },
   { color: '#f97316', type: 'jail', price: 0, rent: [] },
   { color: 'pink', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750] },
-  { color: null, type: 'utility', price: 150, rent: [] },
+  { color: '#06b6d4', type: 'utility', price: 150, rent: [] },
   { color: 'pink', type: 'property', price: 140, rent: [10, 50, 150, 450, 625, 750] },
   { color: 'pink', type: 'property', price: 160, rent: [12, 60, 180, 500, 1100, 1300] },
-  { color: null, type: 'railroad', price: 200, rent: [] },
+  { color: '#0284c7', type: 'railroad', price: 200, rent: [] },
   { color: 'orange', type: 'property', price: 180, rent: [14, 70, 200, 550, 750, 950] },
-  { color: null, type: 'chest', price: 0, rent: [] },
+  { color: '#16a34a', type: 'chest', price: 0, rent: [] },
   { color: 'orange', type: 'property', price: 180, rent: [14, 70, 200, 550, 750, 950] },
   { color: 'orange', type: 'property', price: 200, rent: [16, 80, 220, 600, 800, 1000] },
   { color: '#a855f7', type: 'parking', price: 0, rent: [] },
   { color: 'red', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050] },
-  { color: null, type: 'chance', price: 0, rent: [] },
+  { color: '#fb923c', type: 'chance', price: 0, rent: [] },
   { color: 'red', type: 'property', price: 220, rent: [18, 90, 250, 700, 875, 1050] },
   { color: 'red', type: 'property', price: 240, rent: [20, 100, 300, 750, 925, 1100] },
-  { color: null, type: 'railroad', price: 200, rent: [] },
+  { color: '#0284c7', type: 'railroad', price: 200, rent: [] },
   { color: 'yellow', type: 'property', price: 260, rent: [22, 110, 330, 800, 975, 1150] },
   { color: 'yellow', type: 'property', price: 260, rent: [22, 110, 330, 800, 975, 1150] },
-  { color: null, type: 'utility', price: 150, rent: [] },
+  { color: '#06b6d4', type: 'utility', price: 150, rent: [] },
   { color: 'yellow', type: 'property', price: 280, rent: [24, 120, 360, 850, 1025, 1200] },
   { color: '#ef4444', type: 'gotojail', price: 0, rent: [] },
   { color: 'green', type: 'property', price: 300, rent: [26, 130, 390, 900, 1100, 1275] },
   { color: 'green', type: 'property', price: 300, rent: [26, 130, 390, 900, 1100, 1275] },
-  { color: null, type: 'chest', price: 0, rent: [] },
+  { color: '#16a34a', type: 'chest', price: 0, rent: [] },
   { color: 'green', type: 'property', price: 320, rent: [28, 150, 450, 1000, 1200, 1400] },
-  { color: null, type: 'railroad', price: 200, rent: [] },
-  { color: null, type: 'chance', price: 0, rent: [] },
+  { color: '#0284c7', type: 'railroad', price: 200, rent: [] },
+  { color: '#fb923c', type: 'chance', price: 0, rent: [] },
   { color: 'darkblue', type: 'property', price: 350, rent: [35, 175, 500, 1100, 1300, 1500] },
-  { color: null, type: 'tax', price: 0, rent: [] },
+  { color: '#eab308', type: 'tax', price: 0, rent: [] },
   { color: 'darkblue', type: 'property', price: 400, rent: [50, 200, 600, 1400, 1700, 2000] }
 ];
 
@@ -556,7 +556,10 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Determine space type for client-side handling
+    // Update landedSpace to reflect any card-induced moves (so client sees final landing)
+    landedSpace = finalLandedSpace || landedSpace;
+
+    // Determine space type for client-side handling (use updated landedSpace)
     const isSpecialSpace = ['tax', 'chance', 'chest', 'parking', 'gotojail', 'go', 'jail'].includes(landedSpace.type);
     const isBuyableProperty = ['property', 'railroad', 'utility'].includes(landedSpace.type) && !landedSpace.owner;
 

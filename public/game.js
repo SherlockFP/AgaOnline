@@ -368,6 +368,7 @@ socket.on('gameStarted', (lobby) => {
 });
 
 socket.on('diceRolled', (data) => {
+    let prevPlayerPosition = null;
     const dice1El = document.getElementById('dice1');
     const dice2El = document.getElementById('dice2');
     const resultEl = document.getElementById('diceResult');
@@ -404,27 +405,12 @@ socket.on('diceRolled', (data) => {
         showToast('🎲 Çift 6! Şanslı zar!', 'success');
     }
 
-    // Update gameState with new position - play step sounds
+    // Update gameState with new position; keep previous pos for correct animation start
     const playerIdx = gameState.players.findIndex(p => p.id === data.player.id);
     if (playerIdx >= 0) {
-        const oldPosition = gameState.players[playerIdx].position;
+        prevPlayerPosition = gameState.players[playerIdx].position;
         const newPosition = data.newPosition;
-        
-        // Animate token movement with sound effects
-        if (oldPosition !== newPosition) {
-            const steps = data.total; // Number of steps to animate
-            let currentStep = 0;
-            const stepInterval = setInterval(() => {
-                if (currentStep < steps) {
-                    playSound('move'); // Play move sound for each step
-                    currentStep++;
-                } else {
-                    clearInterval(stepInterval);
-                }
-            }, 100); // Play sound every 100ms
-        }
-        
-        gameState.players[playerIdx].position = data.newPosition;
+        gameState.players[playerIdx].position = newPosition;
         if (data.player.money !== undefined) {
             gameState.players[playerIdx].money = data.player.money;
         }
@@ -490,9 +476,9 @@ socket.on('diceRolled', (data) => {
         addBoardEvent(`${data.player.name} özel alana geldi`, data.player.color);
     }
 
-    // Animate player movement - step by step with trail
-    const oldPosition = playerIdx >= 0 ? (data.newPosition - data.total + 40) % 40 : 0;
-    animatePlayerMove(data.player.id, oldPosition, data.newPosition, data.player.color, () => {
+    // Animate player movement - use the actual previous position when available
+    const startPos = (typeof prevPlayerPosition === 'number') ? prevPlayerPosition : (playerIdx >= 0 ? (data.newPosition - data.total + 40) % 40 : 0);
+    animatePlayerMove(data.player.id, startPos, data.newPosition, data.player.color, () => {
         updateGameBoard();
         updateGamePlayersPanel();
         updateTurnDisplay();
@@ -1349,7 +1335,7 @@ function animatePlayerMove(playerId, startPos, endPos, playerColor, callback) {
             
             // Play move sound
             if (stepIndex === 0 || stepIndex % 3 === 0) {
-                playSound('soundMove');
+                playSound('move');
             }
         }
         
@@ -2875,6 +2861,8 @@ function checkAchievements(player) {
 }
 
 // ===== SOUND EFFECTS SYSTEM =====
+let audioContext = null;
+let audioUnlocked = false;
 const sounds = {
     dice: new Audio('/sounds/dice.mp3'),
     money: new Audio('/sounds/money.mp3'),
@@ -2882,7 +2870,8 @@ const sounds = {
     card: new Audio('/sounds/card.mp3'),
     jail: new Audio('/sounds/jail.mp3'),
     achievement: new Audio('/sounds/achievement.mp3'),
-    auction: new Audio('/sounds/auction.mp3')
+    auction: new Audio('/sounds/auction.mp3'),
+    move: new Audio('/sounds/move.mp3')
 };
 
 // Set volume for all sounds
@@ -2890,10 +2879,55 @@ Object.values(sounds).forEach(sound => {
     sound.volume = 0.3;
 });
 
+function unlockAudio() {
+    if (audioUnlocked) return;
+    try {
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioContext.resume().then(() => {
+            audioUnlocked = true;
+        }).catch(() => {
+            audioUnlocked = true;
+        });
+    } catch (e) {
+        audioUnlocked = true;
+    }
+}
+
+// Unlock audio on first user interaction
+['click','touchstart','keydown'].forEach(evt => {
+    window.addEventListener(evt, unlockAudio, { once: true });
+});
+
+function webAudioBeep(kind) {
+    try {
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = 'sine';
+        const freqMap = { dice: 420, move: 520, buy: 660, money: 360, card: 480, jail: 300, achievement: 800, auction: 700 };
+        osc.frequency.value = freqMap[kind] || 500;
+        gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.18);
+    } catch (e) {
+        // ignore
+    }
+}
+
 function playSound(soundName) {
-    if (sounds[soundName]) {
-        sounds[soundName].currentTime = 0;
-        sounds[soundName].play().catch(e => console.log('Sound play failed:', e));
+    const s = sounds[soundName];
+    if (s) {
+        s.currentTime = 0;
+        s.play().catch(() => {
+            // Fallback to WebAudio beep if file missing or play blocked
+            webAudioBeep(soundName);
+        });
+    } else {
+        webAudioBeep(soundName);
     }
 }
 

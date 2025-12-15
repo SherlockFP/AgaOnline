@@ -659,6 +659,9 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 5px;
+    overscroll-behavior: contain;
+    contain: paint;
+    box-sizing: border-box;
 }
 
 .player-item {
@@ -1471,6 +1474,9 @@ body {
     min-height: 0;
     max-height: 300px;
     word-wrap: break-word;
+    overscroll-behavior: contain;
+    contain: paint;
+    box-sizing: border-box;
 }
 
 .chat-message {

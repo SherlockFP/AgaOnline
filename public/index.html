@@ -240,10 +240,7 @@
                         <div class="panel-section chat-section">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                 <h3 style="margin: 0;">💬 Sohbet</h3>
-                                <div style="display: flex; gap: 6px;">
-                                    <button id="emojiBtn" onclick="toggleEmojiPanel()" class="btn-ghost" style="padding: 4px 8px; font-size: 1.2em;" title="Emoji efekt gönder">😀</button>
-                                    <button id="privateChatBtn" onclick="togglePrivateChat()" class="btn-ghost" style="padding: 4px 8px; font-size: 0.85em; display: none;" title="Özel mesaj">🔒</button>
-                                </div>
+                                <button id="emojiBtn" onclick="toggleEmojiPanel()" class="btn-ghost" style="padding: 4px 8px; font-size: 1.2em;" title="Emoji efekt gönder">😀</button>
                             </div>
                             
                             <!-- Emoji Panel -->
@@ -268,13 +265,6 @@
                                     <button onclick="sendEmoji('😱')" class="emoji-btn">😱</button>
                                     <button onclick="sendEmoji('🤔')" class="emoji-btn">🤔</button>
                                 </div>
-                            </div>
-                            
-                            <!-- Private Chat Selector -->
-                            <div id="privateChatSelector" style="display: none; background: rgba(15, 23, 42, 0.95); border-radius: 8px; padding: 8px; margin-bottom: 8px;">
-                                <div style="font-size: 0.85em; color: #94a3b8; margin-bottom: 6px;">Özel mesaj gönder:</div>
-                                <div id="privateChatPlayers" style="display: flex; flex-direction: column; gap: 4px;"></div>
-                                <button onclick="togglePrivateChat()" class="btn-ghost" style="width: 100%; margin-top: 6px; font-size: 0.8em;">Herkese gönder</button>
                             </div>
                             
                             <div id="chatMessages" class="chat-messages"></div>

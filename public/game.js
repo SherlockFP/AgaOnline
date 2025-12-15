@@ -284,10 +284,6 @@ socket.on('gameStarted', (lobby) => {
         const bankruptBtn = document.getElementById('bankruptBtn');
         if (bankruptBtn) bankruptBtn.style.display = 'block';
         
-        // Show private chat button when game starts
-        const privateChatBtn = document.getElementById('privateChatBtn');
-        if (privateChatBtn) privateChatBtn.style.display = 'inline-block';
-        
     const boardNameEl = document.getElementById('boardName');
     if (boardNameEl && lobby.boardName) {
         boardNameEl.textContent = `Tahta: ${lobby.boardName}`;
@@ -546,25 +542,6 @@ socket.on('messageReceived', (data) => {
     `;
     chatDiv.appendChild(msgEl);
     chatDiv.scrollTop = chatDiv.scrollHeight;
-});
-
-socket.on('privateMessageReceived', (data) => {
-    const chatDiv = document.getElementById('chatMessages');
-    const msgEl = document.createElement('div');
-    msgEl.className = 'chat-message';
-    msgEl.style.borderLeft = `3px solid ${data.playerColor}`;
-    msgEl.style.background = 'rgba(139, 92, 246, 0.15)';
-    msgEl.innerHTML = `
-        <div class="chat-message-author" style="color: ${data.playerColor}">
-            🔒 ${data.playerName} (Özel)
-        </div>
-        <div>${data.message}</div>
-    `;
-    chatDiv.appendChild(msgEl);
-    chatDiv.scrollTop = chatDiv.scrollHeight;
-    
-    // Play notification sound
-    playSound('soundDice');
 });
 
 socket.on('error', (message) => {
@@ -836,13 +813,18 @@ function updateGamePlayersPanel() {
         div.className = 'player-item' + (idx === gameState.currentTurn ? ' current-turn' : '');
         const isHost = currentLobby && player.id === currentLobby.host;
         const isMe = player.id === socket.id;
+        
+        // Add bankruptcy styling
+        const bankruptStyle = player.isBankrupt ? 'text-decoration: line-through; opacity: 0.6;' : '';
+        const bankruptBadge = player.isBankrupt ? ' <span style="color: #ef4444; font-weight: 700;">💸 İFLAS</span>' : '';
+        
         div.innerHTML = `
-            <div class="player-appearance">${player.appearance}</div>
-            <div class="player-info">
-                <div class="player-name">${player.name}${isHost ? ' 👑' : ''}${isMe ? ' (Sen)' : ''}</div>
+            <div class="player-appearance" style="${bankruptStyle}">${player.appearance}</div>
+            <div class="player-info" style="${bankruptStyle}">
+                <div class="player-name">${player.name}${isHost ? ' 👑' : ''}${isMe ? ' (Sen)' : ''}${bankruptBadge}</div>
                 <div class="player-money">💰 ₺${player.money}</div>
             </div>
-            <div style="width: 14px; height: 14px; background: ${player.color}; border-radius: 50%; border: 2px solid white;"></div>
+            <div style="width: 14px; height: 14px; background: ${player.color}; border-radius: 50%; border: 2px solid white; ${bankruptStyle}"></div>
         `;
         playersList.appendChild(div);
     });
@@ -985,10 +967,6 @@ function showGameBoard() {
     // Show bankruptcy button
     const bankruptBtn = document.getElementById('bankruptBtn');
     if (bankruptBtn) bankruptBtn.style.display = 'block';
-
-    // Show private chat button
-    const privateChatBtn = document.getElementById('privateChatBtn');
-    if (privateChatBtn) privateChatBtn.style.display = 'inline-block';
 
     // Show trade panel
     const tradeSection = document.querySelector('.trade-section');
@@ -1528,38 +1506,8 @@ function sendMessage() {
     const chatInput = document.getElementById('chatInput');
     const message = chatInput.value.trim();
     if (message) {
-        if (privateChatTarget) {
-            // Send private message
-            socket.emit('sendPrivateMessage', { 
-                message, 
-                targetId: privateChatTarget.id,
-                targetName: privateChatTarget.name
-            });
-            
-            // Show in own chat as sent
-            const chatMessages = document.getElementById('chatMessages');
-            if (chatMessages) {
-                const msgEl = document.createElement('div');
-                msgEl.className = 'chat-message';
-                msgEl.style.borderLeft = `3px solid ${privateChatTarget.color}`;
-                msgEl.style.background = 'rgba(139, 92, 246, 0.15)';
-                msgEl.innerHTML = `
-                    <div class="chat-message-author" style="color: ${privateChatTarget.color}">
-                        🔒 → ${privateChatTarget.name}
-                    </div>
-                    <div>${message}</div>
-                `;
-                chatMessages.appendChild(msgEl);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-            
-            // Reset private target
-            privateChatTarget = null;
-            chatInput.placeholder = 'Mesaj yaz...';
-        } else {
-            // Send public message
-            socket.emit('sendMessage', { message });
-        }
+        // Send public message
+        socket.emit('sendMessage', { message });
         chatInput.value = '';
     }
 }
@@ -2128,7 +2076,6 @@ function selectPlayerColor(color) {
 
 // Emoji Panel & Effects
 let emojiPanelOpen = false;
-let privateChatTarget = null;
 
 function toggleEmojiPanel() {
     emojiPanelOpen = !emojiPanelOpen;
@@ -2142,49 +2089,6 @@ function toggleEmojiPanel() {
         const privatePanel = document.getElementById('privateChatSelector');
         if (privatePanel) privatePanel.style.display = 'none';
     }
-}
-
-function togglePrivateChat() {
-    const panel = document.getElementById('privateChatSelector');
-    if (!panel) return;
-    
-    if (panel.style.display === 'none' || !panel.style.display) {
-        // Show private chat selector
-        panel.style.display = 'block';
-        
-        // Close emoji panel
-        const emojiPanel = document.getElementById('emojiPanel');
-        if (emojiPanel) emojiPanel.style.display = 'none';
-        emojiPanelOpen = false;
-        
-        // Populate players list
-        const playersList = document.getElementById('privateChatPlayers');
-        if (playersList && gameState) {
-            playersList.innerHTML = '';
-            gameState.players.forEach(player => {
-                if (player.id !== socket.id) {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-ghost';
-                    btn.style.cssText = 'width: 100%; text-align: left; padding: 6px 10px; font-size: 0.85em;';
-                    btn.innerHTML = `<span style="color: ${player.color}">●</span> ${player.name}`;
-                    btn.onclick = () => selectPrivateTarget(player);
-                    playersList.appendChild(btn);
-                }
-            });
-        }
-    } else {
-        // Hide and reset
-        panel.style.display = 'none';
-        privateChatTarget = null;
-        document.getElementById('chatInput').placeholder = 'Mesaj yaz...';
-    }
-}
-
-function selectPrivateTarget(player) {
-    privateChatTarget = player;
-    document.getElementById('chatInput').placeholder = `${player.name}'a özel mesaj...`;
-    document.getElementById('chatInput').focus();
-    togglePrivateChat(); // Close the selector
 }
 
 function sendEmoji(emoji) {

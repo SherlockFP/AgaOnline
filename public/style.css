@@ -1378,14 +1378,16 @@ body {
     min-height: 0;
     flex: 0 0 auto;
     max-height: 40%;
-    overflow: visible;
+    overflow: hidden; /* keep content inside frame */
+    contain: layout paint; /* prevent paint overflow */
 }
 
 .chat-section .panel-content {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    overflow: hidden;
+    overflow: hidden; /* clip scroll area */
+    border-radius: inherit;
     flex: 1;
 }
 
@@ -1478,8 +1480,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 10px;
-    padding-right: 5px;
+    margin-bottom: 8px;
+    padding: 8px;
     min-height: 0;
     max-height: 300px;
     word-wrap: break-word;
@@ -1496,8 +1498,10 @@ body {
     font-size: 0.9em;
     border-left: 3px solid rgba(96, 165, 250, 0.4);
     word-wrap: break-word;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     max-width: 100%;
+    box-sizing: border-box;
 }
 
 .chat-message img,

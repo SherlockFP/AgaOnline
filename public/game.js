@@ -1769,7 +1769,7 @@ function sendMessage() {
     const message = chatInput.value.trim();
     if (message) {
         // Check for YouTube music commands
-        if (message.startsWith('!play ') || message.startsWith('!p ')) {
+        if (message.startsWith('!play ') || message.startsWith('!p ') || message.startsWith('/p ')) {
             const link = message.replace(/^(!play|!p)\s+/, '').trim();
             if (link) {
                 const videoId = extractYouTubeVideoId(link);
@@ -1794,7 +1794,7 @@ function sendMessage() {
                     return;
                 }
             }
-        } else if (message === '!stop') {
+        } else if (message === '!stop' || message === '/stop') {
             stopYoutubeMusic();
             chatInput.value = '';
             return;
@@ -2638,7 +2638,7 @@ socket.on('youtubeMusicPlay', (data) => {
     msgEl.className = 'chat-message';
     msgEl.innerHTML = `
         <div class="chat-message-author" style="color: #ff0000;">🎵 YouTube Müzik</div>
-        <div style="color: #60a5fa;">${playerName} bir müzik açtı!</div>
+        <div style="color: #60a5fa;">${playerName} bir müzik açtı! Başlık yükleniyor...</div>
     `;
     chatDiv.appendChild(msgEl);
     setTimeout(() => {
@@ -2678,7 +2678,7 @@ socket.on('youtubeMusicPlay', (data) => {
                         'onReady': (event) => {
                             event.target.setVolume(50);
                             event.target.playVideo();
-                            showCurrentMusic(videoId);
+                            showCurrentMusic(videoId, playerName);
                         },
                         'onStateChange': (event) => {
                             if (event.data === YT.PlayerState.ENDED) {
@@ -2693,14 +2693,32 @@ socket.on('youtubeMusicPlay', (data) => {
         // Player exists, just load new video
         currentYoutubePlayer.loadVideoById(videoId);
         currentYoutubePlayer.setVolume(50);
-        showCurrentMusic(videoId);
+        showCurrentMusic(videoId, playerName);
     }
 });
 
-function showCurrentMusic(videoId) {
+function showCurrentMusic(videoId, playerName) {
     const currentMusicDiv = document.getElementById('currentYoutubeMusic');
     if (currentMusicDiv) {
         currentMusicDiv.style.display = 'block';
+    }
+    // Update chat with video title if available
+    try {
+        const data = currentYoutubePlayer && currentYoutubePlayer.getVideoData ? currentYoutubePlayer.getVideoData() : null;
+        const title = data && data.title ? data.title : null;
+        if (title) {
+            const chatDiv = document.getElementById('chatMessages');
+            const msgEl = document.createElement('div');
+            msgEl.className = 'chat-message';
+            msgEl.innerHTML = `
+                <div class="chat-message-author" style="color: #ff0000;">🎵 YouTube Müzik</div>
+                <div style="color: #60a5fa;"><strong>${playerName}</strong> şu videoyu açtı: <em>${title}</em></div>
+            `;
+            chatDiv.appendChild(msgEl);
+            setTimeout(() => { chatDiv.scrollTop = chatDiv.scrollHeight; }, 10);
+        }
+    } catch (e) {
+        // ignore
     }
 }
 

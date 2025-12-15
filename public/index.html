@@ -347,15 +347,15 @@
                             
                             <div id="chatMessages" class="chat-messages"></div>
                             <div class="chat-input">
-                                <input type="text" id="chatInput" placeholder="Mesaj yaz..." onkeypress="handleChatKeypress(event)">
+                                <button onclick="openGiphyPicker()" class="btn-gif" title="GIF ekle" style="padding: 10px 12px; background: linear-gradient(135deg, #9333ea, #7c3aed); border: none; border-radius: 8px; color: white; font-weight: 700; cursor: pointer; font-size: 1.1em; min-width: 45px;">GIF</button>
+                                <input type="text" id="chatInput" placeholder="Mesaj yaz... (GIF için link yapıştır)" onkeypress="handleChatKeypress(event)">
                                 <button onclick="sendMessage()" class="btn-send">Gönder</button>
                             </div>
                             
-                            <!-- Music command info -->
-                            <div style="margin-top: 8px; padding: 6px; background: rgba(96, 165, 250, 0.1); border-radius: 6px; border: 1px solid rgba(96, 165, 250, 0.2); font-size: 0.75em; color: rgba(255,255,255,0.7);">
-                                <div style="margin-bottom: 3px;">🎵 <strong>Müzik Komutları:</strong></div>
-                                <div><code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">!play &lt;link&gt;</code> veya <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">!p &lt;link&gt;</code></div>
-                                <div><code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">!stop</code> - Müziği durdur</div>
+                            <!-- Commands info -->
+                            <div style="margin-top: 8px; padding: 8px; background: rgba(96, 165, 250, 0.08); border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.2); font-size: 0.75em; color: rgba(255,255,255,0.7);">
+                                <div style="margin-bottom: 4px;">🎵 <strong>Müzik:</strong> <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">!play &lt;link&gt;</code> <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">!p &lt;link&gt;</code> <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">!stop</code></div>
+                                <div>🎬 <strong>GIF:</strong> GIF butonu veya direkt GIF linki yapıştır</div>
                             </div>
                             <div id="currentYoutubeMusic" style="display: none; margin-top: 8px; padding: 8px; background: rgba(255, 0, 0, 0.1); border-radius: 6px; border: 1px solid rgba(255, 0, 0, 0.3); font-size: 0.8em; color: rgba(255,255,255,0.9);">
                                 <span id="currentMusicTitle">🎵 Müzik çalıyor...</span>

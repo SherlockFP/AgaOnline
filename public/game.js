@@ -536,9 +536,26 @@ socket.on('messageReceived', (data) => {
     const chatDiv = document.getElementById('chatMessages');
     const msgEl = document.createElement('div');
     msgEl.className = 'chat-message';
+    
+    let messageContent = data.message;
+    
+    // Check if message contains a GIF link (Giphy, Tenor, or direct .gif)
+    const gifRegex = /(https?:\/\/.+\.(gif|gifv))|(https?:\/\/(media\.giphy\.com|tenor\.com|i\.giphy\.com|c\.tenor\.com)\/.+)/gi;
+    const gifMatch = messageContent.match(gifRegex);
+    
+    if (gifMatch) {
+        // Extract GIF URL
+        let gifUrl = gifMatch[0];
+        
+        // Replace message with text + GIF preview
+        const textWithoutGif = messageContent.replace(gifRegex, '').trim();
+        messageContent = textWithoutGif ? `<div>${textWithoutGif}</div>` : '';
+        messageContent += `<img src="${gifUrl}" class="gif-preview" alt="GIF" onerror="this.style.display='none'">`;
+    }
+    
     msgEl.innerHTML = `
         <div class="chat-message-author">${data.appearance} ${data.playerName}</div>
-        <div>${data.message}</div>
+        <div>${messageContent}</div>
     `;
     chatDiv.appendChild(msgEl);
     // Scroll to bottom with smooth behavior
@@ -1553,6 +1570,24 @@ function handleChatKeypress(event) {
     if (event.key === 'Enter') {
         sendMessage();
     }
+}
+
+function openGiphyPicker() {
+    // Open Giphy in a new window
+    const giphyWindow = window.open('https://giphy.com/', 'GiphyPicker', 'width=800,height=600,menubar=no,toolbar=no,location=no');
+    
+    // Show instructions in chat
+    const chatDiv = document.getElementById('chatMessages');
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-message';
+    msgEl.innerHTML = `
+        <div class="chat-message-author" style="color: #9333ea;">🎬 GIF Sistemi</div>
+        <div style="color: #60a5fa;">Giphy'den GIF seç, sağ tıklayıp "Copy Image Address" (Resim Adresini Kopyala) yap ve buraya yapıştır!</div>
+    `;
+    chatDiv.appendChild(msgEl);
+    setTimeout(() => {
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    }, 10);
 }
 
 function buildHouse() {

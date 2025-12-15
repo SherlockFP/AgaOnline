@@ -2355,10 +2355,10 @@ function showEmojiEffect(emoji, playerName, playerColor) {
     
     container.appendChild(emojiEl);
     
-    // Remove after animation (4 seconds)
+    // Remove after animation (7 seconds)
     setTimeout(() => {
         emojiEl.remove();
-    }, 4000);
+    }, 7000);
 }
 
 // YouTube Music Functions

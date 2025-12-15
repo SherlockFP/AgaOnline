@@ -335,6 +335,7 @@
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <h3 style="margin: 0;">💬 Sohbet</h3>
                                     <button id="emojiBtn" onclick="toggleEmojiPanel()" class="btn-ghost" style="padding: 4px 8px; font-size: 1.2em;" title="Emoji efekt gönder">😀</button>
+                                    <button onclick="openGiphyPicker()" class="btn-gif-small" title="GIF ekle">🎬</button>
                                 </div>
                                 <button class="btn-toggle-panel" onclick="togglePanel('chat-section')" title="Küçült/Genişlet">▲</button>
                             </div>
@@ -366,7 +367,6 @@
                             
                             <div id="chatMessages" class="chat-messages"></div>
                             <div class="chat-input">
-                                <button onclick="openGiphyPicker()" class="btn-gif" title="GIF ekle">🎬 GIF</button>
                                 <input type="text" id="chatInput" placeholder="Mesaj yaz..." onkeypress="handleChatKeypress(event)">
                                 <button onclick="sendMessage()" class="btn-send">Gönder</button>
                             </div>

@@ -145,6 +145,19 @@ const boards = {
       'Şans', 'New York', 'Lüks Vergisi', 'Los Angeles'
     ])
   },
+  istanbul: {
+    name: 'İstanbul',
+    currency: '₺',
+    properties: buildBoard([
+      '🕌 BAŞLA / MAAŞ', 'Kadıköy', 'Kamu Sandığı', 'Moda Caddesi', 'Gelir Vergisi', 'Marmaray',
+      'Bağdat Caddesi', 'Şans', 'Nişantaşı', 'Bebek', 'Hapishane (Ziyaret)', 'Ortaköy',
+      'İSKİ', 'Beşiktaş', 'Etiler', 'Metrobüs Hattı', 'Levent', 'Kamu Sandığı',
+      'Maslak', 'Şişli', 'Ücretsiz Park', 'Taksim Meydanı', 'Şans', 'İstiklal Caddesi',
+      'Beyoğlu', 'Füniküler', 'Karaköy', 'Galata', 'İGDAŞ', 'Eminönü',
+      'Hapishaneye Git', 'Fatih', 'Sultanahmet', 'Kamu Sandığı', 'Beyazıt', 'M1 Metro',
+      'Şans', 'Bakırköy', 'Lüks Vergisi', 'Florya Sahili'
+    ])
+  },
   japonya: {
     name: 'Japonya',
     currency: '¥',

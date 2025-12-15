@@ -982,6 +982,14 @@ function showGameBoard() {
     const colorPickerPanel = document.getElementById('colorPickerPanel');
     if (colorPickerPanel) colorPickerPanel.style.display = 'none';
 
+    // Show bankruptcy button
+    const bankruptBtn = document.getElementById('bankruptBtn');
+    if (bankruptBtn) bankruptBtn.style.display = 'block';
+
+    // Show private chat button
+    const privateChatBtn = document.getElementById('privateChatBtn');
+    if (privateChatBtn) privateChatBtn.style.display = 'inline-block';
+
     // Show trade panel
     const tradeSection = document.querySelector('.trade-section');
     if (tradeSection) tradeSection.style.display = 'block';

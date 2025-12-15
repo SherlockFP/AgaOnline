@@ -588,7 +588,7 @@ body {
     border: 2px solid rgba(96, 165, 250, 0.2);
     border-radius: 16px;
     padding: 20px;
-    overflow: visible;
+    overflow: hidden;
     max-height: 400px;
     transition: all 0.3s ease;
 }
@@ -1318,6 +1318,15 @@ body {
     min-height: 0;
     flex: 0 0 auto;
     max-height: 45%;
+    overflow: hidden;
+}
+
+.chat-section .panel-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    flex: 1;
 }
 
 /* Trade Section */
@@ -1402,11 +1411,14 @@ body {
 .chat-messages {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 8px;
     margin-bottom: 10px;
     padding-right: 5px;
+    min-height: 0;
+    word-wrap: break-word;
 }
 
 .chat-message {
@@ -1415,6 +1427,9 @@ body {
     border-radius: 8px;
     font-size: 0.9em;
     border-left: 3px solid rgba(96, 165, 250, 0.4);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .chat-message img,

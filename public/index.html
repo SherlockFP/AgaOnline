@@ -58,14 +58,7 @@
                             </div>
                         </div>
 
-                        <div class="music-control-section" style="background: rgba(96, 165, 250, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 5px solid rgba(96, 165, 250, 0.6);">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                <label style="flex: 1; font-weight: 600; margin: 0;">🎵 Müzik</label>
-                                <button id="musicToggleBtn" onclick="toggleBackgroundMusic()" class="btn-ghost" style="padding: 4px 8px; font-size: 0.85em;">▶ Çal</button>
-                            </div>
-                            <input type="range" id="musicVolume" class="music-slider" min="0" max="100" value="30" onchange="setMusicVolume(this.value)" style="width: 100%;">
-                            <div style="font-size: 0.75em; color: rgba(255,255,255,0.6); margin-top: 4px;">Ses: <span id="volumePercent">30</span>%</div>
-                        </div>
+
 
                         <div class="menu-buttons">
                             <button onclick="createLobby()" class="btn-primary">Oyun Oluştur</button>
@@ -117,7 +110,7 @@
                             <div id="playersList" class="players-list"></div>
                         </div>
 
-                        <div class="panel-section events-section">
+                        <div class="panel-section events-section" style="display: none;">
                             <h3>📜 Olaylar</h3>
                             <div id="eventLog" class="event-log"></div>
                         </div>
@@ -195,6 +188,9 @@
                                 </div>
                                     <button id="rollBtn" class="btn-roll" onclick="rollDice()" aria-label="Zar at" style="display: none;">🎲</button>
                                     <button id="endTurnBtn" class="btn-end-turn" onclick="endTurn()" style="display: none;">Sırayı Bitir</button>
+
+                                <!-- Board Event Log -->
+                                <div id="boardEventDisplay" class="board-event-display" style="margin-top: 15px; max-height: 80px; overflow: hidden;"></div>
                             </div>
                             
                             <!-- Board Event Log (Overlay) -->
@@ -209,33 +205,12 @@
                             <div id="ownedPropertiesList" class="owned-list"></div>
                         </div>
 
-                        <div class="panel-section trade-section" id="tradePanel" style="display: none;">
+                        <div class="panel-section trade-section">
                             <h3>💰 Takas Merkezi</h3>
-                            <div class="trade-content">
-                                <label style="color: rgba(255,255,255,0.8); font-size: 0.9em; margin-bottom: 5px; display: block;">Oyuncu Seç</label>
-                                <select id="tradeWithPlayer" class="input-field" style="margin-bottom: 10px;" onchange="refreshTradeLists()">
-                                    <option>Oyuncu seç...</option>
-                                </select>
-
-                                <div style="display:flex; gap:10px; margin:8px 0;">
-                                    <div style="flex:1;">
-                                        <div style="font-weight:700; margin-bottom:6px;">Benim Mülklerim</div>
-                                        <div id="myPropsForTrade" class="owned-list" style="max-height:110px; overflow:auto;"></div>
-                                        <label style="display:block; margin-top:6px; font-size:0.9em;">Benim Para: <input type="number" id="tradeMoneyOffer" class="input-field" style="margin-top:6px;" min="0" value="0"></label>
-                                    </div>
-                                    <div style="flex:1;">
-                                        <div style="font-weight:700; margin-bottom:6px;">Karşı Taraf</div>
-                                        <div id="theirPropsForTrade" class="owned-list" style="max-height:110px; overflow:auto;"></div>
-                                        <label style="display:block; margin-top:6px; font-size:0.9em;">Onların Para: <input type="number" id="tradeMoneyRequest" class="input-field" style="margin-top:6px;" min="0" value="0"></label>
-                                    </div>
-                                </div>
-
-                                <div style="display: flex; gap: 8px;">
-                                    <button id="btnProposeTrade" class="btn-trade" onclick="proposeTrade()" disabled>
-                                        <span style="font-size: 1.2em;">💱</span> Teklif Gönder
-                                    </button>
-                                </div>
-                            </div>
+                            <div id="tradeHistoryList" class="trade-history" style="margin-bottom: 10px; max-height: 120px; overflow: auto;"></div>
+                            <button onclick="openTradeModal()" class="btn-primary" style="width: 100%;">
+                                <span style="font-size: 1.2em;">💱</span> Takas Yap
+                            </button>
                         </div>
 
                         <div class="panel-section chat-section">
@@ -244,11 +219,19 @@
                             <div class="chat-input">
                                 <input type="text" id="chatInput" placeholder="Mesaj yaz..." onkeypress="handleChatKeypress(event)">
                                 <button onclick="sendMessage()" class="btn-send">Gönder</button>
-                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Music Control in Game -->
+                <div class="game-music-control" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 8px; border-radius: 8px; display: none;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="color: white; font-size: 0.9em;">🎵</span>
+                        <input type="range" id="gameMusicVolume" class="music-slider" min="0" max="100" value="50" onchange="setMusicVolume(this.value)" style="width: 60px;">
+                    </div>
+                </div>
             </div>
+        </div>
         </div>
     </div>
 
@@ -311,7 +294,7 @@
         <div class="trade-offer-content">
             <h2 style="margin-top: 0; text-align: center;">🔄 Karşı Teklif Gönder</h2>
             <div class="trade-offer-sender" id="counterOfferTarget"></div>
-            
+
             <div style="display: flex; gap: 15px; margin: 15px 0; font-size: 0.9em;">
                 <div style="flex: 1;">
                     <div style="font-weight: 700; margin-bottom: 8px; color: #FFD700;">Biz Talep Ediyoruz</div>
@@ -333,6 +316,60 @@
             <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
                 <button class="btn-accept-trade" onclick="sendCounterOffer()">✓ Karşı Teklif Gönder</button>
                 <button class="btn-reject-trade" onclick="closeCounterOfferPanel()">✕ İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Modal -->
+    <div id="tradeModal" class="trade-offer-modal" style="display: none;">
+        <div class="trade-offer-overlay" onclick="closeTradeModal()" style="cursor: pointer;"></div>
+        <div class="trade-offer-content" style="max-width: 600px;">
+            <h2 style="margin-top: 0; text-align: center;">💱 Takas Merkezi</h2>
+
+            <div style="margin-bottom: 20px;">
+                <label style="color: rgba(255,255,255,0.8); font-size: 0.9em; margin-bottom: 5px; display: block;">Oyuncu Seç</label>
+                <select id="tradeWithPlayer" class="input-field" style="margin-bottom: 10px; width: 100%;" onchange="refreshTradeLists()">
+                    <option>Oyuncu seç...</option>
+                </select>
+            </div>
+
+            <div style="display:flex; gap:15px; margin:15px 0;">
+                <div style="flex:1;">
+                    <div style="font-weight:700; margin-bottom:8px; color: #FFD700;">Benim Mülklerim</div>
+                    <div id="myPropsForTrade" class="owned-list" style="max-height:120px; overflow:auto; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;"></div>
+                    <label style="display:block; margin-top:8px; font-size:0.9em;">Benim Para: <input type="number" id="tradeMoneyOffer" class="input-field" style="margin-top:4px;" min="0" value="0"></label>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:700; margin-bottom:8px; color: #FFD700;">Karşı Taraf</div>
+                    <div id="theirPropsForTrade" class="owned-list" style="max-height:120px; overflow:auto; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;"></div>
+                    <label style="display:block; margin-top:8px; font-size:0.9em;">Onların Para: <input type="number" id="tradeMoneyRequest" class="input-field" style="margin-top:4px;" min="0" value="0"></label>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                <button id="btnProposeTrade" class="btn-accept-trade" onclick="proposeTrade()" disabled>
+                    <span style="font-size: 1.2em;">💱</span> Teklif Gönder
+                </button>
+                <button class="btn-reject-trade" onclick="closeTradeModal()">✕ İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jail Modal -->
+    <div id="jailModal" class="trade-offer-modal" style="display: none;">
+        <div class="trade-offer-overlay" onclick="closeJailModal()" style="cursor: pointer;"></div>
+        <div class="trade-offer-content" style="max-width: 400px;">
+            <h2 style="margin-top: 0; text-align: center;">👮 Hapishane</h2>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <p>Hapishanedesin! Çıkmak için aşağıdaki seçeneklerden birini kullanabilirsin:</p>
+                <div id="jailTurnsLeft" style="margin: 10px 0; font-weight: bold;"></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn-primary" onclick="payJailFine()" style="width: 100%;">💰 100 TL Öde</button>
+                <button class="btn-secondary" onclick="rollForJail()" style="width: 100%;">🎲 Çift Zar At</button>
+                <button class="btn-ghost" onclick="closeJailModal()" style="width: 100%;">⏳ Bekle (Otomatik çıkış)</button>
             </div>
         </div>
     </div>

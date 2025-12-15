@@ -18,25 +18,46 @@ let musicTracks = [];
 
 // Initialize background music
 function initializeBackgroundMusic() {
+    if (backgroundAudio) return; // Prevent multiple initializations
     backgroundAudio = new Audio();
     backgroundAudio.loop = true;
-    backgroundAudio.volume = 0.3;
+    backgroundAudio.volume = 0.2; // Higher volume for main menu
     backgroundAudio.src = '/music/music.mp3';
+    backgroundAudio.preload = 'auto';
     loadMusicTracks();
-    // Auto-play music
-    setTimeout(() => {
-        backgroundAudio.play().catch(e => console.log('Auto-play blocked by browser:', e));
-        isPlayingMusic = true;
-        updateMusicButton();
-    }, 500);
+
+    // Try to play immediately (may be blocked)
+    const tryPlay = () => {
+        backgroundAudio.play().then(() => {
+            isPlayingMusic = true;
+            console.log('Music started automatically');
+        }).catch(e => {
+            console.log('Auto-play blocked, waiting for user interaction:', e);
+            isPlayingMusic = false;
+            // Set up click-to-play for the whole document
+            const startMusic = () => {
+                backgroundAudio.play().then(() => {
+                    isPlayingMusic = true;
+                    document.removeEventListener('click', startMusic);
+                    document.removeEventListener('keydown', startMusic);
+                });
+            };
+            document.addEventListener('click', startMusic, { once: true });
+            document.addEventListener('keydown', startMusic, { once: true });
+        });
+    };
+
+    // Delay to ensure DOM is ready
+    setTimeout(tryPlay, 100);
 }
 
 // Update music button state
 function updateMusicButton() {
-    const btn = document.getElementById('musicToggleBtn');
-    if (btn) {
-        btn.textContent = isPlayingMusic ? '⏸ Durdur' : '▶ Çal';
-    }
+    const lobbyBtn = document.getElementById('musicToggleBtn');
+    const gameBtn = document.getElementById('gameMusicToggleBtn');
+    const text = isPlayingMusic ? '⏸ Durdur' : '▶ Çal';
+    if (lobbyBtn) lobbyBtn.textContent = text;
+    if (gameBtn) gameBtn.textContent = text;
 }
 
 // Load available music tracks
@@ -276,7 +297,7 @@ socket.on('diceRolled', (data) => {
     const statusEl = document.getElementById('gameStatus');
     if (statusEl) statusEl.textContent = `${data.player.name} ${data.total} attı`;
 
-    addEvent(`${data.player.name} ${data.dice1} + ${data.dice2} attı = ${data.total}`);
+    // Zar mesajını göstermiyoruz artık, sadece önemli olaylar
     playSound('soundDice');
 
     // Update gameState with new position
@@ -325,6 +346,14 @@ socket.on('diceRolled', (data) => {
             showPropertyPopup(data.landedSpace);
         }, 1400);
     }
+
+    // Auto-end turn after dice roll and actions are complete
+    // Wait for animations and possible popups, then auto-end turn
+    setTimeout(() => {
+        if (gameState.players[gameState.currentTurn].id === socket.id) {
+            endTurn();
+        }
+    }, 4000); // 4 seconds should be enough for most actions
 });
 
 socket.on('propertyBought', (data) => {
@@ -397,17 +426,21 @@ socket.on('turnEnded', (data) => {
     const currentPlayer = gameState.players[gameState.currentTurn];
     const gameStatus = document.getElementById('gameStatus');
     gameStatus.textContent = `Oyun devam ediyor`;
-    
+
     // Update board center turn display
     const turnDisplay = document.getElementById('currentTurnDisplay');
     updateTurnDisplay();
-    
+
     updateGameBoard();
     updateGamePlayersPanel();
-    
-    // Enable roll button for current player
+
+    // Check if current player is in jail
+    checkJailStatus();
+
+    // Enable roll button for current player (only if not in jail)
     const rollBtn = document.getElementById('rollBtn');
-    rollBtn.disabled = gameState.players[gameState.currentTurn].id !== socket.id;
+    const isInJail = currentPlayer && currentPlayer.inJail;
+    rollBtn.disabled = (gameState.players[gameState.currentTurn].id !== socket.id) || isInJail;
 
     const endTurnBtn = document.getElementById('endTurnBtn');
     endTurnBtn.style.display = gameState.players[gameState.currentTurn].id === socket.id ? 'block' : 'none';
@@ -653,6 +686,30 @@ function updateLobbyUI() {
     } else if (startBtn) {
         startBtn.style.display = 'none';
     }
+
+    // Hide game UI elements if game hasn't started
+    if (!currentLobby.started) {
+        const ownedSection = document.querySelector('.owned-section');
+        if (ownedSection) ownedSection.style.display = 'none';
+
+        const chatSection = document.querySelector('.chat-section');
+        if (chatSection) chatSection.style.display = 'none';
+
+        const eventsSection = document.querySelector('.events-section');
+        if (eventsSection) eventsSection.style.display = 'none';
+
+        const diceDisplay = document.querySelector('.dice-display');
+        if (diceDisplay) diceDisplay.style.display = 'none';
+
+        const rollBtn = document.getElementById('rollBtn');
+        if (rollBtn) rollBtn.style.display = 'none';
+
+        const endTurnBtn = document.getElementById('endTurnBtn');
+        if (endTurnBtn) endTurnBtn.style.display = 'none';
+
+        const gameMusicControl = document.querySelector('.game-music-control');
+        if (gameMusicControl) gameMusicControl.style.display = 'none';
+    }
 }
 
 function updateGamePlayersPanel() {
@@ -754,13 +811,29 @@ function showGameBoard() {
     const tradePanel = document.getElementById('tradePanel');
     if (tradePanel) tradePanel.style.display = 'block';
 
-    // Show roll button and end turn button
+    // Show game UI elements
+    const ownedSection = document.querySelector('.owned-section');
+    if (ownedSection) ownedSection.style.display = 'block';
+
+    const chatSection = document.querySelector('.chat-section');
+    if (chatSection) chatSection.style.display = 'block';
+
+    const eventsSection = document.querySelector('.events-section');
+    if (eventsSection) eventsSection.style.display = 'block';
+
+    const diceDisplay = document.querySelector('.dice-display');
+    if (diceDisplay) diceDisplay.style.display = 'block';
+
+    // Show roll button and hide end turn button (auto-end turn now)
     const rollBtn = document.getElementById('rollBtn');
     const endTurnBtn = document.getElementById('endTurnBtn');
     rollBtn.style.display = 'block';
-    endTurnBtn.style.display = 'block';
+    endTurnBtn.style.display = 'none'; // Hidden since we auto-end turn
     rollBtn.disabled = gameState.players[gameState.currentTurn].id !== socket.id;
-    endTurnBtn.style.display = gameState.players[gameState.currentTurn].id === socket.id ? 'block' : 'none';
+
+    // Show game music control
+    const gameMusicControl = document.querySelector('.game-music-control');
+    if (gameMusicControl) gameMusicControl.style.display = 'block';
 
     // Initialize board
     initializeBoard();
@@ -1272,12 +1345,94 @@ function sellHouse() {
 }
 
 function addEvent(message) {
-    const eventLog = document.getElementById('eventLog');
-    const item = document.createElement('div');
-    item.className = 'event-item';
-    item.textContent = message;
-    eventLog.appendChild(item);
-    eventLog.scrollTop = eventLog.scrollHeight;
+    // Add to board center event display instead of side panel
+    const boardDisplay = document.getElementById('boardEventDisplay');
+    if (boardDisplay && gameState) {
+        // Clear previous messages and add new one
+        boardDisplay.innerHTML = '';
+
+        // Try to extract player name from message and get their color
+        let playerColor = 'white'; // Default color
+        const players = gameState.players;
+
+        // Common message patterns that include player names
+        const playerPatterns = [
+            /^([^,]+),\s/,  // "Player name, mülkünü satın aldı"
+            /^✨\s*([^,]+)\s/,  // "✨ Player name BAŞLA'dan geçti"
+            /^👮\s*([^,]+)\s/,  // "👮 Player name hapishaneden çıktı"
+        ];
+
+        for (const pattern of playerPatterns) {
+            const match = message.match(pattern);
+            if (match) {
+                const playerName = match[1].trim();
+                const player = players.find(p => p.name === playerName);
+                if (player) {
+                    playerColor = player.color;
+                    break;
+                }
+            }
+        }
+
+        // Ensure color is readable on dark background
+        const rgb = hexToRgb(playerColor);
+        if (rgb) {
+            // Calculate brightness and adjust if too dark
+            const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+            if (brightness < 128) {
+                // Too dark, make it lighter
+                playerColor = lightenColor(playerColor, 0.6);
+            }
+        }
+
+        const item = document.createElement('div');
+        item.className = 'board-center-event';
+        item.textContent = message;
+        item.style.cssText = `
+            background: rgba(0,0,0,0.8);
+            color: ${playerColor};
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            text-align: center;
+            margin-bottom: 4px;
+            max-width: 300px;
+            word-wrap: break-word;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            font-weight: 600;
+        `;
+        boardDisplay.appendChild(item);
+
+        // Auto-remove after 60 seconds (1 minute)
+        setTimeout(() => {
+            if (item.parentElement) {
+                item.style.opacity = '0';
+                setTimeout(() => item.remove(), 300);
+            }
+        }, 60000);
+    }
+}
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+// Helper function to lighten a color
+function lightenColor(hex, percent) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return hex;
+
+    const r = Math.min(255, Math.floor(rgb.r + (255 - rgb.r) * percent));
+    const g = Math.min(255, Math.floor(rgb.g + (255 - rgb.g) * percent));
+    const b = Math.min(255, Math.floor(rgb.b + (255 - rgb.b) * percent));
+
+    return `rgb(${r}, ${g}, ${b})`;
 }
 
 function addBoardEvent(message) {
@@ -1304,6 +1459,28 @@ function addBoardEvent(message) {
     }, 5000);
 }
 
+function openTradeModal() {
+    const modal = document.getElementById('tradeModal');
+    if (modal) modal.style.display = 'flex';
+
+    // Update dropdown with current players
+    const tradeSelect = document.getElementById('tradeWithPlayer');
+    tradeSelect.innerHTML = '<option>Oyuncu seç...</option>';
+    gameState.players.forEach(player => {
+        if (player.id !== socket.id) {
+            const option = document.createElement('option');
+            option.value = player.id;
+            option.textContent = `${player.appearance} ${player.name}`;
+            tradeSelect.appendChild(option);
+        }
+    });
+}
+
+function closeTradeModal() {
+    const modal = document.getElementById('tradeModal');
+    if (modal) modal.style.display = 'none';
+}
+
 function proposeTrade() {
     const targetId = document.getElementById('tradeWithPlayer')?.value;
     if (!targetId || targetId === 'Oyuncu seç...') {
@@ -1324,6 +1501,71 @@ function proposeTrade() {
     });
     addEvent(`💱 Takas teklifi gönderildi`);
     addBoardEvent(`💱 Takas teklifi gönderildi`);
+    closeTradeModal();
+}
+
+function updateTradeHistory() {
+    const historyEl = document.getElementById('tradeHistoryList');
+    if (!historyEl || !gameState) return;
+
+    // Get recent trades from gameState (we'll add this to server)
+    // For now, show empty state
+    historyEl.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.9em; padding: 10px;">Henüz takas geçmişi yok</div>';
+}
+
+function payJailFine() {
+    socket.emit('payJailFine');
+    closeJailModal();
+}
+
+function rollForJail() {
+    socket.emit('rollForJail');
+    closeJailModal();
+}
+
+function closeJailModal() {
+    const modal = document.getElementById('jailModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Jail event handlers
+socket.on('jailReleased', (data) => {
+    addEvent(`👮 ${data.player.name} hapishaneden çıktı: ${data.reason}`);
+    addBoardEvent(`👮 ${data.player.name} çıktı`);
+
+    if (data.dice1 && data.dice2) {
+        // Player rolled doubles and moved
+        setTimeout(() => {
+            updateGameBoard();
+            updateGamePlayersPanel();
+        }, 500);
+    }
+
+    updateGameBoard();
+    updateGamePlayersPanel();
+});
+
+socket.on('jailRollFailed', (data) => {
+    addEvent(`🎲 ${data.message}`);
+    addBoardEvent(`🎲 Çift zar atılamadı`);
+});
+
+// Check if current player is in jail and show jail modal
+function checkJailStatus() {
+    const currentPlayer = gameState.players[gameState.currentTurn];
+    if (currentPlayer && currentPlayer.id === socket.id && currentPlayer.inJail) {
+        showJailModal(currentPlayer);
+    }
+}
+
+function showJailModal(player) {
+    const modal = document.getElementById('jailModal');
+    const turnsLeftEl = document.getElementById('jailTurnsLeft');
+    if (modal && turnsLeftEl) {
+        const turnsLeft = Math.max(0, 3 - (player.jailTurns || 0));
+        turnsLeftEl.textContent = `Kalan tur: ${turnsLeft}`;
+        modal.style.display = 'flex';
+    }
 }
 
 socket.on('tradeOffer', (data) => {

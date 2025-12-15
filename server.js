@@ -550,6 +550,19 @@ io.on('connection', (socket) => {
     const lobby = lobbies.get(lobbyId);
     if (!lobby) return;
 
+    // Handle jail logic
+    const currentPlayer = lobby.players[lobby.currentTurn];
+    if (currentPlayer.inJail) {
+      currentPlayer.jailTurns++;
+      // Auto-release after 3 turns
+      if (currentPlayer.jailTurns >= 3) {
+        currentPlayer.inJail = false;
+        currentPlayer.jailTurns = 0;
+        lobby.events.push({ type: 'jail-released', player: currentPlayer.name, reason: '3 tur doldu' });
+        io.to(lobbyId).emit('jailReleased', { player: currentPlayer, reason: '3 tur bekledin' });
+      }
+    }
+
     lobby.currentTurn = (lobby.currentTurn + 1) % lobby.players.length;
     io.to(lobbyId).emit('turnEnded', { currentTurn: lobby.currentTurn });
   });
@@ -663,6 +676,58 @@ io.on('connection', (socket) => {
       updatedProperties,
       message: `${from.name} ⇄ ${to.name}`
     });
+  });
+
+  socket.on('payJailFine', () => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby.started) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    if (!player || !player.inJail) return;
+
+    const fineAmount = 100;
+    if (player.money < fineAmount) {
+      socket.emit('errorMessage', 'Yetersiz para! Hapishane cezasını ödeyemiyorsun.');
+      return;
+    }
+
+    player.money -= fineAmount;
+    player.inJail = false;
+    player.jailTurns = 0;
+
+    lobby.events.push({ type: 'jail-released', player: player.name, reason: 'ceza ödendi' });
+    io.to(lobbyId).emit('jailReleased', { player, reason: 'Ceza ödendi' });
+  });
+
+  socket.on('rollForJail', () => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby.started) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    if (!player || !player.inJail) return;
+
+    const dice1 = Math.floor(Math.random() * 6) + 1;
+    const dice2 = Math.floor(Math.random() * 6) + 1;
+    const isDoubles = dice1 === dice2;
+
+    if (isDoubles) {
+      player.inJail = false;
+      player.jailTurns = 0;
+      player.position = (player.position + dice1 + dice2) % 40;
+
+      lobby.events.push({ type: 'jail-released', player: player.name, reason: 'çift zar' });
+      io.to(lobbyId).emit('jailReleased', {
+        player,
+        reason: `Çift zar attın (${dice1}-${dice2})`,
+        dice1,
+        dice2,
+        newPosition: player.position
+      });
+    } else {
+      socket.emit('jailRollFailed', { dice1, dice2, message: 'Çift zar atamadın, hapiste kalıyorsun.' });
+    }
   });
 
   socket.on('disconnect', () => {

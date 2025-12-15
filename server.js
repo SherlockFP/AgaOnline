@@ -383,9 +383,10 @@ io.on('connection', (socket) => {
     const lobbyId = playerSockets.get(socket.id);
     const lobby = lobbies.get(lobbyId);
     if (!lobby || !lobby.started) return;
+    try {
 
     const currentPlayer = lobby.players[lobby.currentTurn];
-    if (currentPlayer.id !== socket.id) return;
+    if (!currentPlayer || currentPlayer.id !== socket.id) return;
 
     // Set hasRolled flag
     currentPlayer.hasRolled = true;
@@ -407,12 +408,15 @@ io.on('connection', (socket) => {
 
     currentPlayer.position = newPosition;
     const landedSpace = lobby.properties[newPosition];
+    if (!landedSpace) {
+      console.warn('⚠️ landedSpace undefined at position', newPosition);
+    }
 
     // Handle special spaces
     let specialMessage = null;
 
     // Parking - get free parking money
-    if (landedSpace.type === 'parking') {
+    if (landedSpace && landedSpace.type === 'parking') {
       const parkingBonus = 100;
       currentPlayer.money += parkingBonus;
       specialMessage = `${currentPlayer.name} Ücretsiz Park'a geldi ve ${lobby.currency}${parkingBonus} kazandı!`;
@@ -420,7 +424,7 @@ io.on('connection', (socket) => {
     }
 
     // Go to Jail
-    if (landedSpace.type === 'gotojail') {
+    if (landedSpace && landedSpace.type === 'gotojail') {
       currentPlayer.position = 10; // Jail position
       currentPlayer.inJail = true;
       currentPlayer.jailTurns = 0;
@@ -430,7 +434,7 @@ io.on('connection', (socket) => {
 
     // Tax spaces
     let taxMessage = null;
-    if (landedSpace.type === 'tax') {
+    if (landedSpace && landedSpace.type === 'tax') {
       const taxAmount = newPosition === 4 ? 200 : 100;
       currentPlayer.money -= taxAmount;
       taxMessage = `${currentPlayer.name} vergi olarak ${lobby.currency}${taxAmount} ödedi`;
@@ -439,7 +443,7 @@ io.on('connection', (socket) => {
 
     // Handle chance and community chest cards - show actual card messages
     let cardMessage = null;
-    if (landedSpace.type === 'chance' || landedSpace.type === 'chest') {
+    if (landedSpace && (landedSpace.type === 'chance' || landedSpace.type === 'chest')) {
       const cardType = landedSpace.type === 'chance' ? 'Şans' : 'Topluluk';
       const cards = [
         { msg: 'Banka hatası! Sana ₺200 ödendi.', money: 200 },
@@ -519,9 +523,12 @@ io.on('connection', (socket) => {
     // Update landedSpace after chance/chest cards that might move player
     const finalPosition = currentPlayer.position;
     const finalLandedSpace = lobby.properties[finalPosition];
+    if (!finalLandedSpace) {
+      console.warn('⚠️ finalLandedSpace undefined at position', finalPosition);
+    }
     let rentMessage = null;
     
-    if (['property', 'railroad', 'utility'].includes(finalLandedSpace.type) && finalLandedSpace.owner && finalLandedSpace.owner !== socket.id) {
+    if (finalLandedSpace && ['property', 'railroad', 'utility'].includes(finalLandedSpace.type) && finalLandedSpace.owner && finalLandedSpace.owner !== socket.id) {
       const owner = lobby.players.find(p => p.id === finalLandedSpace.owner);
       if (owner && !owner.isBankrupt) {
         let rentAmount = finalLandedSpace.rent || 0;
@@ -560,8 +567,8 @@ io.on('connection', (socket) => {
     landedSpace = finalLandedSpace || landedSpace;
 
     // Determine space type for client-side handling (use updated landedSpace)
-    const isSpecialSpace = ['tax', 'chance', 'chest', 'parking', 'gotojail', 'go', 'jail'].includes(landedSpace.type);
-    const isBuyableProperty = ['property', 'railroad', 'utility'].includes(landedSpace.type) && !landedSpace.owner;
+    const isSpecialSpace = landedSpace ? ['tax', 'chance', 'chest', 'parking', 'gotojail', 'go', 'jail'].includes(landedSpace.type) : false;
+    const isBuyableProperty = landedSpace ? (['property', 'railroad', 'utility'].includes(landedSpace.type) && !landedSpace.owner) : false;
 
     io.to(lobbyId).emit('diceRolled', {
       player: currentPlayer,
@@ -581,6 +588,12 @@ io.on('connection', (socket) => {
       isSpecialSpace,
       isBuyableProperty
     });
+    } catch (err) {
+      console.error('❌ Error in rollDice handler:', err);
+      try {
+        io.to(lobbyId).emit('serverError', { message: 'Zar atarken sunucu hatası oluştu. Lütfen tekrar deneyin.' });
+      } catch {}
+    }
   });
 
   socket.on('advanceTurn', () => {

@@ -117,19 +117,43 @@
 
                         <div class="panel-section color-selector-lobby" id="colorSelectorPanel">
                             <h3>🎨 Renk Seç</h3>
-                            <div class="color-grid">
-                                <button class="color-btn selected" data-color="#ef4444" style="background: #ef4444;" onclick="selectColorLobby('#ef4444')"></button>
-                                <button class="color-btn" data-color="#f97316" style="background: #f97316;" onclick="selectColorLobby('#f97316')"></button>
-                                <button class="color-btn" data-color="#eab308" style="background: #eab308;" onclick="selectColorLobby('#eab308')"></button>
-                                <button class="color-btn" data-color="#22c55e" style="background: #22c55e;" onclick="selectColorLobby('#22c55e')"></button>
-                                <button class="color-btn" data-color="#3b82f6" style="background: #3b82f6;" onclick="selectColorLobby('#3b82f6')"></button>
-                                <button class="color-btn" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="selectColorLobby('#8b5cf6')"></button>
-                                <button class="color-btn" data-color="#ec4899" style="background: #ec4899;" onclick="selectColorLobby('#ec4899')"></button>
-                                <button class="color-btn" data-color="#06b6d4" style="background: #06b6d4;" onclick="selectColorLobby('#06b6d4')"></button>
-                                <button class="color-btn" data-color="#10b981" style="background: #10b981;" onclick="selectColorLobby('#10b981')"></button>
-                                <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" onclick="selectColorLobby('#f59e0b')"></button>
-                                <button class="color-btn" data-color="#6366f1" style="background: #6366f1;" onclick="selectColorLobby('#6366f1')"></button>
-                                <button class="color-btn" data-color="#14b8a6" style="background: #14b8a6;" onclick="selectColorLobby('#14b8a6')"></button>
+                            <div class="color-grid-large">
+                                <button class="color-btn-large" data-color="#ef4444" style="background: #ef4444;" onclick="selectColorLobby('#ef4444')">
+                                    <span class="color-name">Kırmızı</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#f97316" style="background: #f97316;" onclick="selectColorLobby('#f97316')">
+                                    <span class="color-name">Turuncu</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#eab308" style="background: #eab308;" onclick="selectColorLobby('#eab308')">
+                                    <span class="color-name">Sarı</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#22c55e" style="background: #22c55e;" onclick="selectColorLobby('#22c55e')">
+                                    <span class="color-name">Yeşil</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#3b82f6" style="background: #3b82f6;" onclick="selectColorLobby('#3b82f6')">
+                                    <span class="color-name">Mavi</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="selectColorLobby('#8b5cf6')">
+                                    <span class="color-name">Mor</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#ec4899" style="background: #ec4899;" onclick="selectColorLobby('#ec4899')">
+                                    <span class="color-name">Pembe</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#06b6d4" style="background: #06b6d4;" onclick="selectColorLobby('#06b6d4')">
+                                    <span class="color-name">Turkuaz</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#10b981" style="background: #10b981;" onclick="selectColorLobby('#10b981')">
+                                    <span class="color-name">Açık Yeşil</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#f59e0b" style="background: #f59e0b;" onclick="selectColorLobby('#f59e0b')">
+                                    <span class="color-name">Altın</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#6366f1" style="background: #6366f1;" onclick="selectColorLobby('#6366f1')">
+                                    <span class="color-name">Lacivert</span>
+                                </button>
+                                <button class="color-btn-large" data-color="#14b8a6" style="background: #14b8a6;" onclick="selectColorLobby('#14b8a6')">
+                                    <span class="color-name">Mint</span>
+                                </button>
                             </div>
                         </div>
                         
@@ -188,13 +212,8 @@
                                 </div>
                                     <button id="rollBtn" class="btn-roll" onclick="rollDice()" aria-label="Zar at" style="display: none;">🎲</button>
                                     <button id="endTurnBtn" class="btn-end-turn" onclick="endTurn()" style="display: none;">Sırayı Bitir</button>
-
-                                <!-- Board Event Log -->
-                                <div id="boardEventDisplay" class="board-event-display" style="margin-top: 15px; max-height: 80px; overflow: hidden;"></div>
+                                <div id="boardEventDisplay" class="board-event-display" style="margin-top: 15px; max-height: 80px; overflow: hidden; font-size: 0.85em; color: rgba(255,255,255,0.9); text-align: center; line-height: 1.3;"></div>
                             </div>
-                            
-                            <!-- Board Event Log (Overlay) -->
-                            <div id="boardEventLog" class="board-event-log"></div>
                         </div>
                     </div>
 
@@ -337,12 +356,12 @@
                 <div style="flex:1;">
                     <div style="font-weight:700; margin-bottom:8px; color: #FFD700;">Benim Mülklerim</div>
                     <div id="myPropsForTrade" class="owned-list" style="max-height:120px; overflow:auto; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;"></div>
-                    <label style="display:block; margin-top:8px; font-size:0.9em;">Benim Para: <input type="number" id="tradeMoneyOffer" class="input-field" style="margin-top:4px;" min="0" value="0"></label>
+                    <label style="display:block; margin-top:8px; font-size:0.9em;">Benim Para: ₺<span id="tradeMoneyOfferValue">0</span><br><input type="range" id="tradeMoneyOffer" class="money-slider" min="0" max="2000" value="0" onchange="updateTradeMoneyOffer()" style="margin-top:4px; width: 100%;"></label>
                 </div>
                 <div style="flex:1;">
                     <div style="font-weight:700; margin-bottom:8px; color: #FFD700;">Karşı Taraf</div>
                     <div id="theirPropsForTrade" class="owned-list" style="max-height:120px; overflow:auto; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;"></div>
-                    <label style="display:block; margin-top:8px; font-size:0.9em;">Onların Para: <input type="number" id="tradeMoneyRequest" class="input-field" style="margin-top:4px;" min="0" value="0"></label>
+                    <label style="display:block; margin-top:8px; font-size:0.9em;">Onların Para: ₺<span id="tradeMoneyRequestValue">0</span><br><input type="range" id="tradeMoneyRequest" class="money-slider" min="0" max="2000" value="0" onchange="updateTradeMoneyRequest()" style="margin-top:4px; width: 100%;"></label>
                 </div>
             </div>
 

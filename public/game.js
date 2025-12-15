@@ -194,7 +194,9 @@ socket = io();
 
 // Ensure lobbies appear on first load
 socket.on('connect', () => {
-    socket.emit('getLobbies');
+    setTimeout(() => {
+        socket.emit('getLobbies');
+    }, 500);
 });
 
 // Socket Events
@@ -221,7 +223,6 @@ socket.on('lobbiesList', (lobbies) => {
 socket.on('errorMessage', (msg) => {
     isJoiningLobby = false;  // Reset flag on error
     addEvent(`⚠️ ${msg}`);
-    addBoardEvent(`⚠️ ${msg}`);
 });
 
 // Update player info in header when lobby updates
@@ -278,16 +279,14 @@ socket.on('diceRolled', (data) => {
     const resultEl = document.getElementById('diceResult');
     const endTurnBtn = document.getElementById('endTurnBtn');
 
-    // Animate dice
+    // Animate single die
     dice1El.classList.add('rolling');
-    dice2El.classList.add('rolling');
+    dice2El.style.display = 'none'; // Hide second die
 
     setTimeout(() => {
         dice1El.textContent = data.dice1;
-        dice2El.textContent = data.dice2;
-        resultEl.textContent = `Toplam: ${data.total}`;
+        resultEl.textContent = `Zar: ${data.total}`;
         dice1El.classList.remove('rolling');
-        dice2El.classList.remove('rolling');
     }, 600);
 
     if (endTurnBtn) {
@@ -295,7 +294,7 @@ socket.on('diceRolled', (data) => {
     }
 
     const statusEl = document.getElementById('gameStatus');
-    if (statusEl) statusEl.textContent = `${data.player.name} ${data.total} attı`;
+    if (statusEl) statusEl.textContent = `${data.player.name} sırası`;
 
     // Zar mesajını göstermiyoruz artık, sadece önemli olaylar
     playSound('soundDice');
@@ -308,29 +307,29 @@ socket.on('diceRolled', (data) => {
             gameState.players[playerIdx].money = data.player.money;
         }
     }
-    
+
     // Show GO passed message
     if (data.passedGo) {
         addEvent(`✨ ${data.player.name} BAŞLA'dan geçti ve ${data.currency}${data.goMoney} kazandı!`);
-        addBoardEvent(`✨ ${data.player.name} +${data.currency}${data.goMoney}`);
+        addBoardEvent(`${data.player.name} BAŞLA'dan geçti`);
     }
-    
+
     // Show card message if chance/chest card
     if (data.cardMessage) {
         addEvent(`🎴 ${data.cardMessage}`);
-        addBoardEvent(`🎴 ${data.cardMessage}`);
+        addBoardEvent(`${data.player.name} kart çekti`);
     }
-    
+
     // Show tax message
     if (data.taxMessage) {
         addEvent(`💸 ${data.taxMessage}`);
-        addBoardEvent(`💸 ${data.taxMessage}`);
+        addBoardEvent(`${data.player.name} vergi ödedi`);
     }
-    
+
     // Show special space messages
     if (data.specialMessage) {
         addEvent(data.specialMessage);
-        addBoardEvent(data.specialMessage);
+        addBoardEvent(`${data.player.name} özel alana geldi`);
     }
 
     // Animate player movement
@@ -368,7 +367,7 @@ socket.on('propertyBought', (data) => {
     }
 
     addEvent(`${data.player.name}, ${data.property.name} mülkünü satın aldı`);
-    addBoardEvent(`🏠 ${data.player.name} ${data.property.name} aldı`);
+    addBoardEvent(`${data.player.name} mülk satın aldı`);
     playSound('soundBuy');
     updateGameBoard();
     updateOwnedProperties();
@@ -387,7 +386,6 @@ socket.on('houseBuilt', (data) => {
     }
 
     addEvent(`🏠 ${data.message}`);
-    addBoardEvent(`🏠 ${data.message}`);
     playSound('soundBuy');
     updateGameBoard();
     updateOwnedProperties();
@@ -410,7 +408,6 @@ socket.on('houseSold', (data) => {
     }
 
     addEvent(`💸 ${data.message}`);
-    addBoardEvent(`💸 ${data.message}`);
     updateGameBoard();
     updateOwnedProperties();
     updateGamePlayersPanel();
@@ -437,13 +434,21 @@ socket.on('turnEnded', (data) => {
     // Check if current player is in jail
     checkJailStatus();
 
-    // Enable roll button for current player (only if not in jail)
+    // Show/hide roll button for current player only
     const rollBtn = document.getElementById('rollBtn');
+    const isMyTurn = gameState.players[gameState.currentTurn].id === socket.id;
     const isInJail = currentPlayer && currentPlayer.inJail;
-    rollBtn.disabled = (gameState.players[gameState.currentTurn].id !== socket.id) || isInJail;
+
+    if (isMyTurn && !isInJail) {
+        rollBtn.style.display = 'block';
+        rollBtn.disabled = false;
+    } else {
+        rollBtn.style.display = 'none';
+        rollBtn.disabled = true;
+    }
 
     const endTurnBtn = document.getElementById('endTurnBtn');
-    endTurnBtn.style.display = gameState.players[gameState.currentTurn].id === socket.id ? 'block' : 'none';
+    endTurnBtn.style.display = isMyTurn ? 'block' : 'none';
 
     const diceResult = document.getElementById('diceResult');
     if (diceResult) diceResult.textContent = 'Zarı at';
@@ -657,7 +662,7 @@ function updateLobbyUI() {
     });
 
     const playerCount = document.getElementById('playerCount');
-    playerCount.textContent = `Oyuncu: ${currentLobby.players.length}/6`;
+    playerCount.textContent = `Oyuncu: ${currentLobby.players.length}/12`;
 
     const boardNameEl = document.getElementById('boardName');
     if (boardNameEl && currentLobby.boardName) {
@@ -687,6 +692,12 @@ function updateLobbyUI() {
         startBtn.style.display = 'none';
     }
 
+    // Show setup panel only to host
+    const setupPanel = document.getElementById('setupPanel');
+    if (setupPanel) {
+        setupPanel.style.display = (currentLobby.host === socket.id && !currentLobby.started) ? 'block' : 'none';
+    }
+
     // Hide game UI elements if game hasn't started
     if (!currentLobby.started) {
         const ownedSection = document.querySelector('.owned-section');
@@ -697,6 +708,9 @@ function updateLobbyUI() {
 
         const eventsSection = document.querySelector('.events-section');
         if (eventsSection) eventsSection.style.display = 'none';
+
+        const tradeSection = document.querySelector('.trade-section');
+        if (tradeSection) tradeSection.style.display = 'none';
 
         const diceDisplay = document.querySelector('.dice-display');
         if (diceDisplay) diceDisplay.style.display = 'none';
@@ -734,7 +748,7 @@ function updateGamePlayersPanel() {
     });
 
     const playerCount = document.getElementById('playerCount');
-    if (playerCount) playerCount.textContent = `Oyuncu: ${gameState.players.length}/6`;
+    if (playerCount) playerCount.textContent = `Oyuncu: ${gameState.players.length}/12`;
 }
 
 function startGame() {
@@ -785,12 +799,21 @@ function updateGoMoney() {
     function updateColorSelector(players) {
             const shouldLock = colorsLocked || (currentLobby && currentLobby.started);
         const usedColors = players.map(p => p.color);
-        document.querySelectorAll('.color-btn').forEach(btn => {
+        document.querySelectorAll('.color-btn-large').forEach(btn => {
             const color = btn.dataset.color;
             const isTaken = usedColors.includes(color) && color !== selectedColor;
-                btn.disabled = isTaken || shouldLock;
-                btn.style.opacity = (isTaken || shouldLock) ? '0.35' : '1';
-                btn.style.cursor = (isTaken || shouldLock) ? 'not-allowed' : 'pointer';
+            const takenBy = isTaken ? players.find(p => p.color === color)?.name : '';
+
+            btn.classList.toggle('taken', isTaken);
+            if (isTaken) {
+                btn.setAttribute('data-taken-by', takenBy);
+            } else {
+                btn.removeAttribute('data-taken-by');
+            }
+
+            btn.disabled = isTaken || shouldLock;
+            btn.style.opacity = (isTaken || shouldLock) ? '0.35' : '1';
+            btn.style.cursor = (isTaken || shouldLock) ? 'not-allowed' : 'pointer';
         });
     }
 
@@ -808,8 +831,8 @@ function showGameBoard() {
     if (colorPanel) colorPanel.style.display = 'none';
 
     // Show trade panel
-    const tradePanel = document.getElementById('tradePanel');
-    if (tradePanel) tradePanel.style.display = 'block';
+    const tradeSection = document.querySelector('.trade-section');
+    if (tradeSection) tradeSection.style.display = 'block';
 
     // Show game UI elements
     const ownedSection = document.querySelector('.owned-section');
@@ -818,8 +841,9 @@ function showGameBoard() {
     const chatSection = document.querySelector('.chat-section');
     if (chatSection) chatSection.style.display = 'block';
 
+    // Remove events section completely when game starts
     const eventsSection = document.querySelector('.events-section');
-    if (eventsSection) eventsSection.style.display = 'block';
+    if (eventsSection) eventsSection.style.display = 'none';
 
     const diceDisplay = document.querySelector('.dice-display');
     if (diceDisplay) diceDisplay.style.display = 'block';
@@ -986,6 +1010,11 @@ function updateGameBoard() {
         const prop = gameState.properties[index];
         space.onclick = () => {
             if (!prop) return;
+            // Don't allow clicking on corner/special spaces
+            if (prop.type === 'go' || prop.type === 'jail' || prop.type === 'parking' || prop.type === 'gotojail' ||
+                prop.type === 'chance' || prop.type === 'chest' || prop.type === 'tax') {
+                return;
+            }
             const iAmOwner = prop.owner === socket.id;
             const iAmOnThisSpace = isMyTurn && currentPlayer.position === index;
             if (iAmOwner || iAmOnThisSpace) {
@@ -996,7 +1025,9 @@ function updateGameBoard() {
         };
         const iAmOwner2 = prop && prop.owner === socket.id;
         const iAmOnThisSpace2 = isMyTurn && currentPlayer && currentPlayer.position === index;
-        space.style.cursor = (iAmOwner2 || iAmOnThisSpace2) ? 'pointer' : 'help';
+        const isSpecialSpace = prop && (prop.type === 'go' || prop.type === 'jail' || prop.type === 'parking' ||
+                              prop.type === 'gotojail' || prop.type === 'chance' || prop.type === 'chest' || prop.type === 'tax');
+        space.style.cursor = isSpecialSpace ? 'default' : ((iAmOwner2 || iAmOnThisSpace2) ? 'pointer' : 'help');
     });
     
     spaces.forEach(space => {
@@ -1030,32 +1061,16 @@ function updateGameBoard() {
             const owner = gameState.players.find(p => p.id === prop.owner);
             space.classList.add('owned');
             space.style.opacity = '1';
+            // Use owner's color for the border instead of property color
             space.style.borderBottom = `4px solid ${owner.color}`;
             space.style.background = `linear-gradient(150deg, rgba(15, 23, 42, 0.9), ${owner.color}30)`;
             space.style.boxShadow = `0 4px 14px ${owner.color}55, 0 0 0 2px ${owner.color}55 inset`;
-            
-            // Add owner badge
+
+            // Add owner badge with better design
             const ownerBadge = document.createElement('div');
             ownerBadge.className = 'owner-badge';
             ownerBadge.textContent = (owner.name || '?').charAt(0).toUpperCase();
-            ownerBadge.style.cssText = `
-                position: absolute;
-                top: 2px;
-                left: 2px;
-                width: 16px;
-                height: 16px;
-                background: ${owner.color};
-                border: 1px solid white;
-                border-radius: 50%;
-                font-size: 0.6em;
-                font-weight: 800;
-                color: white;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 5;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            `;
+            ownerBadge.style.background = owner.color;
             space.appendChild(ownerBadge);
         } else {
             space.classList.remove('owned');
@@ -1345,21 +1360,22 @@ function sellHouse() {
 }
 
 function addEvent(message) {
-    // Add to board center event display instead of side panel
-    const boardDisplay = document.getElementById('boardEventDisplay');
-    if (boardDisplay && gameState) {
-        // Clear previous messages and add new one
-        boardDisplay.innerHTML = '';
-
+    // Add to left panel event log
+    const eventLog = document.getElementById('eventLog');
+    if (eventLog) {
         // Try to extract player name from message and get their color
-        let playerColor = 'white'; // Default color
-        const players = gameState.players;
+        let playerColor = '#ffffff'; // Default color
+        const players = gameState ? gameState.players : [];
 
         // Common message patterns that include player names
         const playerPatterns = [
             /^([^,]+),\s/,  // "Player name, mülkünü satın aldı"
             /^✨\s*([^,]+)\s/,  // "✨ Player name BAŞLA'dan geçti"
             /^👮\s*([^,]+)\s/,  // "👮 Player name hapishaneden çıktı"
+            /^💸\s*([^,]+)\s/,  // "💸 Player name vergi ödedi"
+            /^🎴\s*([^:]+):/,  // "🎴 Player name: card message"
+            /^💱\s*([^:]+):/,  // "💱 Player name: trade message"
+            /^🏠\s*([^:]+):/,  // "🏠 Player name: house message"
         ];
 
         for (const pattern of playerPatterns) {
@@ -1374,42 +1390,27 @@ function addEvent(message) {
             }
         }
 
-        // Ensure color is readable on dark background
-        const rgb = hexToRgb(playerColor);
-        if (rgb) {
-            // Calculate brightness and adjust if too dark
-            const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-            if (brightness < 128) {
-                // Too dark, make it lighter
-                playerColor = lightenColor(playerColor, 0.6);
-            }
-        }
-
         const item = document.createElement('div');
-        item.className = 'board-center-event';
+        item.className = 'event-item';
         item.textContent = message;
         item.style.cssText = `
-            background: rgba(0,0,0,0.8);
             color: ${playerColor};
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+            font-weight: 500;
             font-size: 0.9em;
-            text-align: center;
-            margin-bottom: 4px;
-            max-width: 300px;
-            word-wrap: break-word;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-            font-weight: 600;
         `;
-        boardDisplay.appendChild(item);
 
-        // Auto-remove after 60 seconds (1 minute)
-        setTimeout(() => {
-            if (item.parentElement) {
-                item.style.opacity = '0';
-                setTimeout(() => item.remove(), 300);
-            }
-        }, 60000);
+        // Add new message to the top (newest first)
+        eventLog.insertBefore(item, eventLog.firstChild);
+
+        // Keep only max 8 messages, remove oldest (bottom)
+        while (eventLog.children.length > 8) {
+            eventLog.removeChild(eventLog.lastChild);
+        }
+
+        // Scroll to top to show new message
+        eventLog.scrollTop = 0;
     }
 }
 
@@ -1436,27 +1437,20 @@ function lightenColor(hex, percent) {
 }
 
 function addBoardEvent(message) {
-    const boardLog = document.getElementById('boardEventLog');
-    if (!boardLog) return;
-    
-    const item = document.createElement('div');
-    item.className = 'board-event-item';
-    item.textContent = message;
-    boardLog.appendChild(item);
-    
-    // Keep only last 3 events
-    while (boardLog.children.length > 3) {
-        boardLog.removeChild(boardLog.firstChild);
-    }
-    
-    // Auto-remove after 5 seconds
+    const boardDisplay = document.getElementById('boardEventDisplay');
+    if (!boardDisplay) return;
+
+    // Clear previous message and show new one
+    boardDisplay.textContent = message;
+    boardDisplay.style.display = 'block';
+
+    // Auto-remove after 8 seconds
     setTimeout(() => {
-        if (item.parentElement) {
-            item.style.opacity = '0';
-            item.style.transform = 'translateY(-20px)';
-            setTimeout(() => item.remove(), 500);
+        if (boardDisplay && boardDisplay.textContent === message) {
+            boardDisplay.style.display = 'none';
+            boardDisplay.textContent = '';
         }
-    }, 5000);
+    }, 8000);
 }
 
 function openTradeModal() {
@@ -1474,11 +1468,54 @@ function openTradeModal() {
             tradeSelect.appendChild(option);
         }
     });
+
+    // Initialize trade lists
+    refreshTradeLists();
+
+    // Set slider max values based on current player's money
+    updateTradeSliders();
 }
 
 function closeTradeModal() {
     const modal = document.getElementById('tradeModal');
     if (modal) modal.style.display = 'none';
+}
+
+function updateTradeMoneyOffer() {
+    const slider = document.getElementById('tradeMoneyOffer');
+    const valueSpan = document.getElementById('tradeMoneyOfferValue');
+    if (slider && valueSpan) {
+        valueSpan.textContent = slider.value;
+    }
+}
+
+function updateTradeMoneyRequest() {
+    const slider = document.getElementById('tradeMoneyRequest');
+    const valueSpan = document.getElementById('tradeMoneyRequestValue');
+    if (slider && valueSpan) {
+        valueSpan.textContent = slider.value;
+    }
+}
+
+function updateTradeSliders() {
+    const me = gameState.players.find(p => p.id === socket.id);
+    if (!me) return;
+
+    const offerSlider = document.getElementById('tradeMoneyOffer');
+    const requestSlider = document.getElementById('tradeMoneyRequest');
+
+    if (offerSlider) {
+        offerSlider.max = me.money;
+        offerSlider.value = Math.min(parseInt(offerSlider.value) || 0, me.money);
+        updateTradeMoneyOffer();
+    }
+
+    if (requestSlider) {
+        // For now, keep max at a reasonable amount, could be improved to show target player's max
+        requestSlider.max = 10000; // Could be set to target player's money if available
+        requestSlider.value = Math.min(parseInt(requestSlider.value) || 0, parseInt(requestSlider.max));
+        updateTradeMoneyRequest();
+    }
 }
 
 function proposeTrade() {
@@ -1500,7 +1537,6 @@ function proposeTrade() {
         theirPropIds
     });
     addEvent(`💱 Takas teklifi gönderildi`);
-    addBoardEvent(`💱 Takas teklifi gönderildi`);
     closeTradeModal();
 }
 
@@ -1528,10 +1564,8 @@ function closeJailModal() {
     if (modal) modal.style.display = 'none';
 }
 
-// Jail event handlers
 socket.on('jailReleased', (data) => {
     addEvent(`👮 ${data.player.name} hapishaneden çıktı: ${data.reason}`);
-    addBoardEvent(`👮 ${data.player.name} çıktı`);
 
     if (data.dice1 && data.dice2) {
         // Player rolled doubles and moved
@@ -1547,7 +1581,6 @@ socket.on('jailReleased', (data) => {
 
 socket.on('jailRollFailed', (data) => {
     addEvent(`🎲 ${data.message}`);
-    addBoardEvent(`🎲 Çift zar atılamadı`);
 });
 
 // Check if current player is in jail and show jail modal
@@ -1609,7 +1642,6 @@ function rejectTradeOffer() {
     socket.emit('respondTrade', { tradeId: gameState.currentTradeOffer.tradeId, accept: false });
     closeTradeOfferModal();
     addEvent(`💱 Takas teklifi reddedildi`);
-    addBoardEvent(`💱 Takas reddedildi`);
 }
 
 function closeTradeOfferModal() {
@@ -1666,7 +1698,6 @@ function sendCounterOffer() {
     });
     
     addEvent(`💱 Karşı teklif gönderildi`);
-    addBoardEvent(`💱 Karşı teklif gönderildi`);
     closeCounterOfferPanel();
     closeTradeOfferModal();
 }
@@ -1681,7 +1712,6 @@ document.addEventListener('click', (e) => {
 
 socket.on('tradeCompleted', (payload) => {
     addEvent(`💱 Takas tamamlandı: ${payload.message}`);
-    addBoardEvent(`💱 Takas tamamlandı`);
     if (payload.updatedPlayers) {
         payload.updatedPlayers.forEach(up => {
             const idx = gameState.players.findIndex(p => p.id === up.id);

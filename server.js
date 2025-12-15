@@ -359,9 +359,9 @@ io.on('connection', (socket) => {
     const currentPlayer = lobby.players[lobby.currentTurn];
     if (currentPlayer.id !== socket.id) return;
 
-    const dice1 = Math.floor(Math.random() * 6) + 1;
-    const dice2 = Math.floor(Math.random() * 6) + 1;
-    const total = dice1 + dice2;
+    // Single die instead of two dice
+    const diceValue = Math.floor(Math.random() * 9) + 1; // 1-9 instead of 1-6 + 1-6
+    const total = diceValue;
     const oldPosition = currentPlayer.position;
     let newPosition = (currentPlayer.position + total) % 40;
 
@@ -378,7 +378,7 @@ io.on('connection', (socket) => {
 
     // Handle special spaces
     let specialMessage = null;
-    
+
     // Parking - get free parking money
     if (landedSpace.type === 'parking') {
       const parkingBonus = 100;
@@ -386,7 +386,7 @@ io.on('connection', (socket) => {
       specialMessage = `${currentPlayer.name} Ücretsiz Park'a geldi ve ${lobby.currency}${parkingBonus} kazandı!`;
       lobby.events.push({ type: 'parking', player: currentPlayer.name });
     }
-    
+
     // Go to Jail
     if (landedSpace.type === 'gotojail') {
       currentPlayer.position = 10; // Jail position
@@ -395,7 +395,7 @@ io.on('connection', (socket) => {
       specialMessage = `${currentPlayer.name} hapishaneye gönderildi!`;
       lobby.events.push({ type: 'gotojail', player: currentPlayer.name });
     }
-    
+
     // Tax spaces
     let taxMessage = null;
     if (landedSpace.type === 'tax') {
@@ -405,7 +405,7 @@ io.on('connection', (socket) => {
       lobby.events.push({ type: 'tax-paid', player: currentPlayer.name, amount: taxAmount });
     }
 
-    // Handle chance and community chest cards
+    // Handle chance and community chest cards - show actual card messages
     let cardMessage = null;
     if (landedSpace.type === 'chance' || landedSpace.type === 'chest') {
       const cardType = landedSpace.type === 'chance' ? 'Şans' : 'Topluluk';
@@ -423,14 +423,14 @@ io.on('connection', (socket) => {
       ];
       const card = cards[Math.floor(Math.random() * cards.length)];
       currentPlayer.money += card.money;
-      cardMessage = `${cardType} Kartı: ${card.msg}`;
+      cardMessage = `${cardType}: ${card.msg}`;
       lobby.events.push({ type: cardType.toLowerCase(), player: currentPlayer.name, message: card.msg });
     }
 
     io.to(lobbyId).emit('diceRolled', {
       player: currentPlayer,
-      dice1,
-      dice2,
+      dice1: diceValue, // Send single die value
+      dice2: 0, // Set second die to 0 for compatibility
       total,
       newPosition,
       landedSpace,
@@ -440,7 +440,7 @@ io.on('connection', (socket) => {
       passedGo,
       goMoney: lobby.gameRules.goMoney,
       currency: lobby.currency,
-      message: `${currentPlayer.name} ${dice1} + ${dice2} attı`
+      message: `${currentPlayer.name} ${total} attı`
     });
   });
 

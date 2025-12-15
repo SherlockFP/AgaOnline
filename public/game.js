@@ -280,6 +280,10 @@ socket.on('gameStarted', (lobby) => {
         const bankruptBtn = document.getElementById('bankruptBtn');
         if (bankruptBtn) bankruptBtn.style.display = 'block';
         
+        // Show private chat button when game starts
+        const privateChatBtn = document.getElementById('privateChatBtn');
+        if (privateChatBtn) privateChatBtn.style.display = 'inline-block';
+        
     const boardNameEl = document.getElementById('boardName');
     if (boardNameEl && lobby.boardName) {
         boardNameEl.textContent = `Tahta: ${lobby.boardName}`;
@@ -538,6 +542,25 @@ socket.on('messageReceived', (data) => {
     `;
     chatDiv.appendChild(msgEl);
     chatDiv.scrollTop = chatDiv.scrollHeight;
+});
+
+socket.on('privateMessageReceived', (data) => {
+    const chatDiv = document.getElementById('chatMessages');
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-message';
+    msgEl.style.borderLeft = `3px solid ${data.playerColor}`;
+    msgEl.style.background = 'rgba(139, 92, 246, 0.15)';
+    msgEl.innerHTML = `
+        <div class="chat-message-author" style="color: ${data.playerColor}">
+            🔒 ${data.playerName} (Özel)
+        </div>
+        <div>${data.message}</div>
+    `;
+    chatDiv.appendChild(msgEl);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+    
+    // Play notification sound
+    playSound('soundDice');
 });
 
 socket.on('error', (message) => {
@@ -889,7 +912,8 @@ function updateGoMoney() {
             if (!color) return;
             
             const isTaken = usedColors.includes(color) && color !== myColor;
-            const takenBy = isTaken ? players.find(p => p.color === color)?.name : '';
+            const takenByPlayer = players.find(p => p.color === color);
+            const takenBy = takenByPlayer?.name || '';
 
             btn.classList.toggle('taken', isTaken);
             
@@ -900,12 +924,27 @@ function updateGoMoney() {
                 btn.style.filter = 'grayscale(50%)';
                 btn.title = `${takenBy} seçti`;
                 
-                // Add checkmark for taken colors
+                // Add player name label for taken colors
                 if (!btn.querySelector('.taken-marker')) {
                     const marker = document.createElement('div');
                     marker.className = 'taken-marker';
-                    marker.innerHTML = '✓';
-                    marker.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;';
+                    marker.innerHTML = `✓ ${takenBy}`;
+                    marker.style.cssText = 'position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; color: white; background: rgba(0,0,0,0.9); padding: 2px 6px; border-radius: 6px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,0.8); pointer-events: none; z-index: 10;';
+                    btn.style.position = 'relative';
+                    btn.appendChild(marker);
+                }
+            } else if (takenByPlayer && takenByPlayer.id === socket.id) {
+                // Show own name for selected color
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.filter = 'none';
+                btn.title = `Senin rengin`;
+                
+                if (!btn.querySelector('.taken-marker')) {
+                    const marker = document.createElement('div');
+                    marker.className = 'taken-marker';
+                    marker.innerHTML = `✓ ${takenBy}`;
+                    marker.style.cssText = 'position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #10b981; background: rgba(0,0,0,0.9); padding: 2px 6px; border-radius: 6px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,0.8); pointer-events: none; z-index: 10;';
                     btn.style.position = 'relative';
                     btn.appendChild(marker);
                 }
@@ -1007,25 +1046,17 @@ function initializeBoard() {
 
         space.dataset.id = index;
         
-        // Add group icon for color properties and special spaces
+        // Add group icon only for special spaces (not color properties)
         let groupIcon = '';
-        if (prop.color === 'brown') groupIcon = '🟫';
-        else if (prop.color === 'lightblue') groupIcon = '🟦';
-        else if (prop.color === 'pink') groupIcon = '🟪';
-        else if (prop.color === 'orange') groupIcon = '🟧';
-        else if (prop.color === 'red') groupIcon = '🟥';
-        else if (prop.color === 'yellow') groupIcon = '🟨';
-        else if (prop.color === 'green') groupIcon = '🟩';
-        else if (prop.color === 'darkblue') groupIcon = '🟦';
-        else if (prop.type === 'railroad') groupIcon = '🚂';
-        else if (prop.type === 'utility') groupIcon = '💡';
-        else if (prop.type === 'go') groupIcon = '🎯';
-        else if (prop.type === 'jail') groupIcon = '👮';
-        else if (prop.type === 'parking') groupIcon = '🅿️';
-        else if (prop.type === 'gotojail') groupIcon = '🚔';
-        else if (prop.type === 'chance') groupIcon = '❓';
-        else if (prop.type === 'chest') groupIcon = '📦';
-        else if (prop.type === 'tax') groupIcon = '💸';
+        if (prop.type === 'railroad') groupIcon = '🚂 ';
+        else if (prop.type === 'utility') groupIcon = '💡 ';
+        else if (prop.type === 'go') groupIcon = '🎯 ';
+        else if (prop.type === 'jail') groupIcon = '👮 ';
+        else if (prop.type === 'parking') groupIcon = '🅿️ ';
+        else if (prop.type === 'gotojail') groupIcon = '🚔 ';
+        else if (prop.type === 'chance') groupIcon = '❓ ';
+        else if (prop.type === 'chest') groupIcon = '📦 ';
+        else if (prop.type === 'tax') groupIcon = '💸 ';
         
         let houseIndicator = '';
         if (prop.houses > 0) {
@@ -1037,7 +1068,7 @@ function initializeBoard() {
         }
         
         const groupLabel = prop.group ? `<div class="space-group">${prop.group}</div>` : '';
-        space.innerHTML = `<div class="space-name">${groupIcon} ${prop.name}</div>${groupLabel}${prop.price > 0 ? `<div class="space-price">₺${prop.price}</div>` : ''}${houseIndicator}`;
+        space.innerHTML = `<div class="space-name">${groupIcon}${prop.name}</div>${groupLabel}${prop.price > 0 ? `<div class="space-price">₺${prop.price}</div>` : ''}${houseIndicator}`;
 
         board.appendChild(space);
     });
@@ -1481,7 +1512,38 @@ function sendMessage() {
     const chatInput = document.getElementById('chatInput');
     const message = chatInput.value.trim();
     if (message) {
-        socket.emit('sendMessage', { message });
+        if (privateChatTarget) {
+            // Send private message
+            socket.emit('sendPrivateMessage', { 
+                message, 
+                targetId: privateChatTarget.id,
+                targetName: privateChatTarget.name
+            });
+            
+            // Show in own chat as sent
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                const msgEl = document.createElement('div');
+                msgEl.className = 'chat-message';
+                msgEl.style.borderLeft = `3px solid ${privateChatTarget.color}`;
+                msgEl.style.background = 'rgba(139, 92, 246, 0.15)';
+                msgEl.innerHTML = `
+                    <div class="chat-message-author" style="color: ${privateChatTarget.color}">
+                        🔒 → ${privateChatTarget.name}
+                    </div>
+                    <div>${message}</div>
+                `;
+                chatMessages.appendChild(msgEl);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Reset private target
+            privateChatTarget = null;
+            chatInput.placeholder = 'Mesaj yaz...';
+        } else {
+            // Send public message
+            socket.emit('sendMessage', { message });
+        }
         chatInput.value = '';
     }
 }
@@ -2037,6 +2099,115 @@ function selectPlayerColor(color) {
     selectedColor = color;
     socket.emit('updatePlayer', { color });
     console.log('🎨 Renk seçildi:', color);
+}
+
+// Emoji Panel & Effects
+let emojiPanelOpen = false;
+let privateChatTarget = null;
+
+function toggleEmojiPanel() {
+    emojiPanelOpen = !emojiPanelOpen;
+    const panel = document.getElementById('emojiPanel');
+    if (panel) {
+        panel.style.display = emojiPanelOpen ? 'block' : 'none';
+    }
+    
+    // Close private chat if open
+    if (emojiPanelOpen) {
+        const privatePanel = document.getElementById('privateChatSelector');
+        if (privatePanel) privatePanel.style.display = 'none';
+    }
+}
+
+function togglePrivateChat() {
+    const panel = document.getElementById('privateChatSelector');
+    if (!panel) return;
+    
+    if (panel.style.display === 'none' || !panel.style.display) {
+        // Show private chat selector
+        panel.style.display = 'block';
+        
+        // Close emoji panel
+        const emojiPanel = document.getElementById('emojiPanel');
+        if (emojiPanel) emojiPanel.style.display = 'none';
+        emojiPanelOpen = false;
+        
+        // Populate players list
+        const playersList = document.getElementById('privateChatPlayers');
+        if (playersList && gameState) {
+            playersList.innerHTML = '';
+            gameState.players.forEach(player => {
+                if (player.id !== socket.id) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-ghost';
+                    btn.style.cssText = 'width: 100%; text-align: left; padding: 6px 10px; font-size: 0.85em;';
+                    btn.innerHTML = `<span style="color: ${player.color}">●</span> ${player.name}`;
+                    btn.onclick = () => selectPrivateTarget(player);
+                    playersList.appendChild(btn);
+                }
+            });
+        }
+    } else {
+        // Hide and reset
+        panel.style.display = 'none';
+        privateChatTarget = null;
+        document.getElementById('chatInput').placeholder = 'Mesaj yaz...';
+    }
+}
+
+function selectPrivateTarget(player) {
+    privateChatTarget = player;
+    document.getElementById('chatInput').placeholder = `${player.name}'a özel mesaj...`;
+    document.getElementById('chatInput').focus();
+    togglePrivateChat(); // Close the selector
+}
+
+function sendEmoji(emoji) {
+    if (!gameState || !currentLobby) return;
+    
+    // Play sound effect
+    playSound('soundDice'); // Reuse dice sound for now
+    
+    // Send to server to broadcast to all players
+    socket.emit('sendEmoji', { emoji });
+    
+    // Close emoji panel
+    toggleEmojiPanel();
+}
+
+// Listen for emoji effects from server
+socket.on('emojiEffect', (data) => {
+    showEmojiEffect(data.emoji, data.playerName, data.playerColor);
+});
+
+function showEmojiEffect(emoji, playerName, playerColor) {
+    const container = document.getElementById('emojiEffectContainer');
+    if (!container) return;
+    
+    // Random position on screen
+    const x = Math.random() * (window.innerWidth - 100) + 50;
+    const y = Math.random() * (window.innerHeight - 200) + 100;
+    
+    // Create emoji element
+    const emojiEl = document.createElement('div');
+    emojiEl.className = 'emoji-effect';
+    emojiEl.textContent = emoji;
+    emojiEl.style.left = x + 'px';
+    emojiEl.style.top = y + 'px';
+    
+    // Add sender label
+    const label = document.createElement('div');
+    label.className = 'emoji-sender-label';
+    label.textContent = playerName;
+    label.style.color = playerColor;
+    emojiEl.appendChild(label);
+    
+    container.appendChild(emojiEl);
+    
+    // Remove after animation
+    setTimeout(() => {
+        emojiEl.remove();
+    }, 2000);
 }
 
 console.log('🎮 Oyun yüklendi ve hazır!');

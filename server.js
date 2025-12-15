@@ -774,6 +774,40 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('sendPrivateMessage', (data) => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    const target = lobby.players.find(p => p.id === data.targetId);
+    if (!target) return;
+
+    // Send only to target
+    io.to(data.targetId).emit('privateMessageReceived', {
+      playerName: player.name,
+      playerColor: player.color,
+      message: data.message,
+      timestamp: new Date()
+    });
+  });
+
+  socket.on('sendEmoji', (data) => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    
+    // Broadcast emoji effect to all players in lobby
+    io.to(lobbyId).emit('emojiEffect', {
+      emoji: data.emoji,
+      playerName: player.name,
+      playerColor: player.color,
+      playerId: socket.id
+    });
+  });
+
   // Simple trade relay + apply on accept
   socket.on('proposeTrade', (data) => {
     const lobbyId = playerSockets.get(socket.id);

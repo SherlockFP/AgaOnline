@@ -1741,3 +1741,57 @@ body {
     border: none;
     box-shadow: 0 2px 8px rgba(96, 165, 250, 0.4);
 }
+
+/* Emoji Panel Styles */
+.emoji-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.emoji-btn:hover {
+    background: rgba(96, 165, 250, 0.2);
+    transform: scale(1.2);
+}
+
+.emoji-effect {
+    position: absolute;
+    font-size: 3em;
+    animation: emojiFloat 2s ease-out forwards;
+    pointer-events: none;
+    z-index: 9999;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+@keyframes emojiFloat {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(0.5) rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-100px) scale(1.2) rotate(180deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-200px) scale(0.8) rotate(360deg);
+    }
+}
+
+.emoji-sender-label {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.5em;
+    white-space: nowrap;
+    font-family: 'Segoe UI', sans-serif;
+}

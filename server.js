@@ -434,14 +434,14 @@ io.on('connection', (socket) => {
       lobby.events.push({ type: cardType.toLowerCase(), player: currentPlayer.name, message: card.msg });
     }
 
-    // Determine if should auto-end turn (for special spaces)
+    // Determine space type for client-side handling
     const isSpecialSpace = ['tax', 'chance', 'chest', 'parking', 'gotojail', 'go', 'jail'].includes(landedSpace.type);
     const isBuyableProperty = ['property', 'railroad', 'utility'].includes(landedSpace.type) && !landedSpace.owner;
 
     io.to(lobbyId).emit('diceRolled', {
       player: currentPlayer,
-      dice1: diceValue, // Send single die value
-      dice2: 0, // Set second die to 0 for compatibility
+      dice1: diceValue,
+      dice2: 0,
       total,
       newPosition,
       landedSpace,
@@ -452,43 +452,47 @@ io.on('connection', (socket) => {
       goMoney: lobby.gameRules.goMoney,
       currency: lobby.currency,
       message: `${currentPlayer.name} ${total} attı`,
-      autoEndTurn: isSpecialSpace // Auto-end for special spaces
+      isSpecialSpace,
+      isBuyableProperty
     });
+  });
+
+  socket.on('advanceTurn', () => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby.started) return;
+
+    const currentPlayer = lobby.players[lobby.currentTurn];
     
-    // Auto-end turn for special spaces after 2.5 seconds
-    if (isSpecialSpace) {
-      setTimeout(() => {
-        // Re-check if it's still this player's turn and they haven't ended it manually
-        const updatedLobby = lobbies.get(lobbyId);
-        if (updatedLobby && updatedLobby.players[updatedLobby.currentTurn]?.id === socket.id) {
-          // Auto-advance turn
-          const cp = updatedLobby.players[updatedLobby.currentTurn];
-          cp.hasRolled = false;
-          
-          // Handle jail logic
-          if (cp.inJail) {
-            cp.jailTurns++;
-            if (cp.jailTurns >= 3) {
-              cp.inJail = false;
-              cp.jailTurns = 0;
-              updatedLobby.events.push({ type: 'jail-released', player: cp.name, reason: '3 tur doldu' });
-              io.to(lobbyId).emit('jailReleased', { player: cp, reason: '3 tur bekledin' });
-            }
-          }
-          
-          // Move to next player
-          let nextTurn = (updatedLobby.currentTurn + 1) % updatedLobby.players.length;
-          let attempts = 0;
-          while (updatedLobby.players[nextTurn].isBankrupt && attempts < updatedLobby.players.length) {
-            nextTurn = (nextTurn + 1) % updatedLobby.players.length;
-            attempts++;
-          }
-          
-          updatedLobby.currentTurn = nextTurn;
-          io.to(lobbyId).emit('turnEnded', { currentTurn: updatedLobby.currentTurn });
-        }
-      }, 2500);
+    // Only current player can advance turn
+    if (currentPlayer.id !== socket.id) return;
+    
+    // Reset hasRolled flag
+    currentPlayer.hasRolled = false;
+    
+    // Handle jail logic
+    if (currentPlayer.inJail) {
+      currentPlayer.jailTurns++;
+      if (currentPlayer.jailTurns >= 3) {
+        currentPlayer.inJail = false;
+        currentPlayer.jailTurns = 0;
+        lobby.events.push({ type: 'jail-released', player: currentPlayer.name, reason: '3 tur doldu' });
+        io.to(lobbyId).emit('jailReleased', { player: currentPlayer, reason: '3 tur bekledin' });
+      }
     }
+    
+    // Move to next player (skip bankrupt players)
+    let nextTurn = (lobby.currentTurn + 1) % lobby.players.length;
+    let attempts = 0;
+    while (lobby.players[nextTurn].isBankrupt && attempts < lobby.players.length) {
+      nextTurn = (nextTurn + 1) % lobby.players.length;
+      attempts++;
+    }
+    
+    lobby.currentTurn = nextTurn;
+    io.to(lobbyId).emit('turnEnded', { currentTurn: lobby.currentTurn });
+    
+    console.log(`➡️ Sıra geçti: ${lobby.players[nextTurn].name}`);
   });
 
   socket.on('buyProperty', (data) => {
@@ -529,25 +533,6 @@ io.on('connection', (socket) => {
       playerColor: player.color,
       property: property.name 
     });
-    
-    // Auto-advance turn after property purchase (1.5 seconds)
-    setTimeout(() => {
-      const updatedLobby = lobbies.get(lobbyId);
-      if (updatedLobby && updatedLobby.players[updatedLobby.currentTurn]?.id === socket.id) {
-        const cp = updatedLobby.players[updatedLobby.currentTurn];
-        cp.hasRolled = false;
-        
-        let nextTurn = (updatedLobby.currentTurn + 1) % updatedLobby.players.length;
-        let attempts = 0;
-        while (updatedLobby.players[nextTurn].isBankrupt && attempts < updatedLobby.players.length) {
-          nextTurn = (nextTurn + 1) % updatedLobby.players.length;
-          attempts++;
-        }
-        
-        updatedLobby.currentTurn = nextTurn;
-        io.to(lobbyId).emit('turnEnded', { currentTurn: updatedLobby.currentTurn });
-      }
-    }, 1500);
   });
 
   socket.on('buildHouse', (data) => {

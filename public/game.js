@@ -348,25 +348,30 @@ socket.on('diceRolled', (data) => {
     }, 800);
 
     // Check if we landed on a buyable property
-    const landedOnBuyable = data.landedSpace && ['property', 'railroad', 'utility'].includes(data.landedSpace.type) && !data.landedSpace.owner;
+    const landedOnBuyable = data.isBuyableProperty;
+    const isSpecialSpace = data.isSpecialSpace;
+    const isMyTurn = gameState.players[gameState.currentTurn]?.id === socket.id;
 
-    // Show property popup if landed on buyable property
-    if (landedOnBuyable) {
+    if (landedOnBuyable && isMyTurn) {
+        // Show property popup
         setTimeout(() => {
             showPropertyPopup(data.landedSpace);
         }, 1400);
         
-        // If property not bought within 10 seconds, auto-advance turn
+        // Auto-advance after 12 seconds if not bought
         setTimeout(() => {
             const popup = document.getElementById('propertyPopup');
-            if (popup && popup.style.display !== 'none' && gameState.players[gameState.currentTurn]?.id === socket.id) {
+            if (popup && popup.style.display !== 'none') {
                 closePopup();
-                // Server will handle turn advancement
+                socket.emit('advanceTurn');
             }
-        }, 10000);
+        }, 12000);
+    } else if (isSpecialSpace && isMyTurn) {
+        // Auto-advance turn for special spaces after 2.5 seconds
+        setTimeout(() => {
+            socket.emit('advanceTurn');
+        }, 2500);
     }
-    
-    // Auto-end turn handled by server for special spaces
 });
 
 socket.on('propertyBought', (data) => {
@@ -388,7 +393,12 @@ socket.on('propertyBought', (data) => {
     updateGamePlayersPanel();
     closePopup();
     
-    // Note: Server handles auto turn advancement
+    // Advance turn after property purchase
+    if (gameState.players[gameState.currentTurn]?.id === socket.id) {
+        setTimeout(() => {
+            socket.emit('advanceTurn');
+        }, 1500);
+    }
 });
 
 socket.on('houseBuilt', (data) => {
@@ -1305,7 +1315,16 @@ function showPropertyPopup(property) {
 }
 
 function closePopup() {
-    document.getElementById('propertyPopup').style.display = 'none';
+    const popup = document.getElementById('propertyPopup');
+    const wasOpen = popup.style.display !== 'none';
+    popup.style.display = 'none';
+    
+    // If popup was open and it's my turn, advance turn after closing
+    if (wasOpen && gameState && gameState.players[gameState.currentTurn]?.id === socket.id) {
+        setTimeout(() => {
+            socket.emit('advanceTurn');
+        }, 500);
+    }
 }
 
 function showReadOnlyProperty(property) {

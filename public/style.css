@@ -816,8 +816,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px 16px; /* slightly larger tiles */
-    font-size: 1.08em; /* a bit larger text for readability */
+    padding: 22px 14px; /* slightly larger tiles */
+    font-size: 1.00em; /* slightly reduced text size */
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -987,14 +987,14 @@ body {
     margin-bottom: 2px;
     color: white;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(0, 0, 0, 1);
-    font-size: 0.82em;
+    font-size: 0.80em;
     letter-spacing: 0.3px;
     line-height: 1.2;
 }
 
 .space-group {
     margin-top: 2px;
-    font-size: 0.8em;
+    font-size: 0.76em;
     color: #ffffff;
     background: rgba(96,165,250,0.35);
     border: 1px solid rgba(96,165,250,0.6);
@@ -1006,7 +1006,7 @@ body {
 }
 
 .space-price {
-    font-size: 0.68em;
+    font-size: 0.62em;
     color: #fbbf24;
     font-weight: 700;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);

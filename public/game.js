@@ -541,7 +541,10 @@ socket.on('messageReceived', (data) => {
         <div>${data.message}</div>
     `;
     chatDiv.appendChild(msgEl);
-    chatDiv.scrollTop = chatDiv.scrollHeight;
+    // Scroll to bottom with smooth behavior
+    setTimeout(() => {
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    }, 10);
 });
 
 socket.on('error', (message) => {
@@ -732,7 +735,7 @@ function updateLobbyUI() {
             <div class="player-appearance">${player.appearance}</div>
             <div class="player-info">
                 <div class="player-name">${player.name}${isHost ? ' 👑' : ''}${isMe ? ' (Sen)' : ''}</div>
-                <div class="player-money">💰 ₺${player.money}</div>
+                <div class="player-money">💰 €${player.money}</div>
             </div>
             <div style="width: 14px; height: 14px; background: ${player.color}; border-radius: 50%; border: 2px solid white;"></div>
         `;
@@ -1171,7 +1174,9 @@ function updateGameBoard() {
             token.style.background = player.color;
             token.style.borderColor = player.color;
             token.title = player.name;
-            token.textContent = (player.name || '?').charAt(0).toUpperCase();
+            // Show avatar instead of initial
+            token.textContent = player.appearance || '👤';
+            token.style.fontSize = '1.3em';
             space.appendChild(token);
         }
     });
@@ -2066,7 +2071,7 @@ function showVictoryModal(winner, playerStats) {
         <div class="winner-stats">
             <div class="winner-stat-item">
                 <div class="winner-stat-label">💰 Para</div>
-                <div class="winner-stat-value">$${winner.money}</div>
+                <div class="winner-stat-value">€${winner.money}</div>
             </div>
             <div class="winner-stat-item">
                 <div class="winner-stat-label">🏘️ Mülk</div>
@@ -2094,7 +2099,7 @@ function showVictoryModal(winner, playerStats) {
                 <div class="player-stat-money">
                     <div class="player-stat-label-small">Para</div>
                     <div style="color: ${player.isBankrupt ? '#ef4444' : '#10b981'};">
-                        $${player.money}
+                        €${player.money}
                     </div>
                 </div>
                 <div class="player-stat-properties">
@@ -2207,10 +2212,10 @@ function showEmojiEffect(emoji, playerName, playerColor) {
     
     container.appendChild(emojiEl);
     
-    // Remove after animation
+    // Remove after animation (4 seconds)
     setTimeout(() => {
         emojiEl.remove();
-    }, 2000);
+    }, 4000);
 }
 
 console.log('🎮 Oyun yüklendi ve hazır!');

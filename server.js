@@ -970,10 +970,11 @@ io.on('connection', (socket) => {
     player.money -= fineAmount;
     player.inJail = false;
     player.jailTurns = 0;
-    player.hasRolled = true; // Mark as if rolled to allow turn end
+    player.hasRolled = false; // Allow player to roll after paying
 
     lobby.events.push({ type: 'jail-released', player: player.name, reason: 'ceza ödendi' });
     io.to(lobbyId).emit('jailReleased', { player, reason: 'Ceza ödendi' });
+    io.to(lobbyId).emit('lobbyUpdated', lobby);
   });
 
   socket.on('rollForJail', () => {

@@ -1417,7 +1417,7 @@ function updateGameBoard() {
         const existingBadge = space.querySelector('.owner-badge');
         if (existingBadge) existingBadge.remove();
         
-        if (prop.owner) {
+        if (prop && prop.owner) {
             const owner = gameState.players.find(p => p.id === prop.owner);
             space.classList.add('owned');
             space.style.opacity = '1';
@@ -1434,21 +1434,49 @@ function updateGameBoard() {
             
             // Hide price when property is owned
             if (priceEl) priceEl.style.display = 'none';
-        } else {
+        } else if (prop) {
             space.classList.remove('owned');
             space.style.opacity = '1';
             space.style.borderBottom = 'none';
-            space.style.background = '';
-            space.style.boxShadow = '';
+            // Default colors per type when unowned
+            let defaultBg = '';
+            let defaultShadow = '';
+            if (prop.type === 'chance') {
+                defaultBg = '#fb923c';
+                defaultShadow = '0 0 0 3px #fb923c66 inset';
+            } else if (prop.type === 'chest') {
+                defaultBg = '#16a34a';
+                defaultShadow = '0 0 0 3px #16a34a66 inset';
+            } else if (prop.type === 'railroad') {
+                defaultBg = '#0284c7';
+                defaultShadow = '0 0 0 3px #0284c766 inset';
+            } else if (prop.type === 'utility') {
+                defaultBg = '#06b6d4';
+                defaultShadow = '0 0 0 3px #06b6d466 inset';
+            } else if (prop.type === 'tax') {
+                defaultBg = '#eab308';
+                defaultShadow = '0 0 0 3px #eab30866 inset';
+            } else if (prop.type === 'parking') {
+                defaultBg = '#a855f7';
+                defaultShadow = '0 0 0 3px #a855f766 inset';
+            } else if (prop.type === 'gotojail') {
+                defaultBg = '#ef4444';
+                defaultShadow = '0 0 0 3px #ef444466 inset';
+            } else if (prop.type === 'go') {
+                defaultBg = '#22c55e';
+                defaultShadow = '0 0 0 3px #22c55e66 inset';
+            }
+            space.style.background = defaultBg;
+            space.style.boxShadow = defaultShadow;
             
-            // Text renklerini sıfırla
+            // Text renklerini sıfırla veya kontrast sağla
             const nameEl = space.querySelector('.space-name');
             const priceEl = space.querySelector('.space-price');
-            if (nameEl) nameEl.style.color = '';
-            if (priceEl) priceEl.style.color = '';
+            if (nameEl) nameEl.style.color = defaultBg ? '#ffffff' : '';
+            if (priceEl) priceEl.style.color = defaultBg ? '#ffffff' : '';
             
-            // Show price when property is not owned
-            if (priceEl) priceEl.style.display = 'block';
+            // Show price only on buyable properties
+            if (priceEl) priceEl.style.display = (prop.type === 'property' || prop.type === 'railroad' || prop.type === 'utility') ? 'block' : 'none';
         }
     });
 

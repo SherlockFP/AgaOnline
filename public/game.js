@@ -256,8 +256,9 @@ socket.on('gameStarted', (lobby) => {
     colorsLocked = true;
     const startBtn = document.getElementById('startBtn');
     if (startBtn) startBtn.style.display = 'none';
-    // Set initial turn display immediately
+    // Set initial turn display immediately and show it
     const turnDisplay = document.getElementById('currentTurnDisplay');
+    if (turnDisplay) turnDisplay.style.display = 'block';
     updateTurnDisplay();
     showGameBoard();
     
@@ -274,14 +275,15 @@ socket.on('gameStarted', (lobby) => {
         if (colorPanel) colorPanel.style.display = 'none';
         if (setupPanel) setupPanel.style.display = 'none';
         if (colorPickerPanel) colorPickerPanel.style.display = 'none';
+        
+        // Show bankruptcy button when game starts
+        const bankruptBtn = document.getElementById('bankruptBtn');
+        if (bankruptBtn) bankruptBtn.style.display = 'block';
+        
     const boardNameEl = document.getElementById('boardName');
     if (boardNameEl && lobby.boardName) {
         boardNameEl.textContent = `Tahta: ${lobby.boardName}`;
     }
-    
-    // Show bankruptcy button when game starts
-    const bankruptBtn = document.getElementById('bankruptBtn');
-    if (bankruptBtn) bankruptBtn.style.display = 'block';
     
     console.log('🎮 Oyun başladı!');
 });
@@ -327,31 +329,31 @@ socket.on('diceRolled', (data) => {
     // Show GO passed message
     if (data.passedGo) {
         addEvent(`✨ ${data.player.name} BAŞLA'dan geçti ve ${data.currency}${data.goMoney} bonus para aldı!`, data.player.color);
-        addBoardEvent(`${data.player.name} BAŞLA'dan geçti (+${data.currency}${data.goMoney})`);
+        addBoardEvent(`${data.player.name} BAŞLA'dan geçti (+${data.currency}${data.goMoney})`, data.player.color);
     }
 
     // Show card message if chance/chest card
     if (data.cardMessage) {
         addEvent(`🎴 ${data.player.name}: ${data.cardMessage}`, data.player.color);
-        addBoardEvent(`${data.player.name} ${data.cardMessage}`);
+        addBoardEvent(`${data.player.name} ${data.cardMessage}`, data.player.color);
     }
 
     // Show tax message
     if (data.taxMessage) {
         addEvent(`💸 ${data.taxMessage}`, data.player.color);
-        addBoardEvent(`${data.player.name} vergi ödedi`);
+        addBoardEvent(`${data.player.name} vergi ödedi`, data.player.color);
     }
 
     // Show rent message
     if (data.rentMessage) {
         addEvent(`🏠 ${data.rentMessage}`, data.player.color);
-        addBoardEvent(data.rentMessage);
+        addBoardEvent(data.rentMessage, data.player.color);
     }
 
     // Show special space messages
     if (data.specialMessage) {
         addEvent(data.specialMessage, data.player.color);
-        addBoardEvent(`${data.player.name} özel alana geldi`);
+        addBoardEvent(`${data.player.name} özel alana geldi`, data.player.color);
     }
 
     // Animate player movement
@@ -422,7 +424,7 @@ socket.on('propertyBought', (data) => {
     }
 
     addEvent(`${data.player.name}, ${data.property.name} mülkünü satın aldı`, data.player.color);
-    addBoardEvent(`${data.player.name} ${data.property.name} aldı`);
+    addBoardEvent(`${data.player.name} ${data.property.name} aldı`, data.player.color);
     playSound('soundBuy');
     updateGameBoard();
     updateOwnedProperties();
@@ -1568,13 +1570,22 @@ function lightenColor(hex, percent) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
-function addBoardEvent(message) {
+function addBoardEvent(message, playerColor = null) {
     const boardDisplay = document.getElementById('boardEventDisplay');
     if (!boardDisplay) return;
 
     // Clear previous message and show new one
     boardDisplay.textContent = message;
     boardDisplay.style.display = 'block';
+    
+    // Apply player color if provided
+    if (playerColor) {
+        boardDisplay.style.color = playerColor;
+        boardDisplay.style.textShadow = `0 0 10px ${playerColor}80, 0 2px 4px rgba(0,0,0,0.8)`;
+    } else {
+        boardDisplay.style.color = '#60a5fa';
+        boardDisplay.style.textShadow = '0 0 10px rgba(96, 165, 250, 0.5), 0 2px 4px rgba(0,0,0,0.8)';
+    }
 
     // Auto-remove after 8 seconds
     setTimeout(() => {
@@ -1847,7 +1858,9 @@ socket.on('tradeCompleted', (payload) => {
     const tradeColor = payload.fromColor || '#60a5fa';
     if (payload.tradeMessage) {
         addEvent(payload.tradeMessage, tradeColor);
-        addBoardEvent(payload.tradeMessage);
+        // Get initiator color for trade message
+        const initiatorPlayer = gameState.players.find(p => p.id === payload.initiatorId);
+        addBoardEvent(payload.tradeMessage, initiatorPlayer ? initiatorPlayer.color : null);
     } else {
         addEvent(`💱 Takas tamamlandı: ${payload.message}`, tradeColor);
     }
@@ -1950,7 +1963,7 @@ function declareBankruptcy() {
 // Handle bankruptcy events
 socket.on('playerBankrupt', (data) => {
     addEvent(`💸 ${data.message}`, data.player.color);
-    addBoardEvent(`${data.player.name} iflas etti!`);
+    addBoardEvent(`${data.player.name} iflas etti!`, data.player.color);
     
     // Update player state
     const playerIdx = gameState.players.findIndex(p => p.id === data.player.id);

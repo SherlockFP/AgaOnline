@@ -477,37 +477,43 @@ io.on('connection', (socket) => {
     }
 
     // Check if landed on owned property (pay rent)
+    // Update landedSpace after chance/chest cards that might move player
+    const finalPosition = currentPlayer.position;
+    const finalLandedSpace = lobby.properties[finalPosition];
     let rentMessage = null;
-    if (['property', 'railroad', 'utility'].includes(landedSpace.type) && landedSpace.owner && landedSpace.owner !== socket.id) {
-      const owner = lobby.players.find(p => p.id === landedSpace.owner);
+    
+    if (['property', 'railroad', 'utility'].includes(finalLandedSpace.type) && finalLandedSpace.owner && finalLandedSpace.owner !== socket.id) {
+      const owner = lobby.players.find(p => p.id === finalLandedSpace.owner);
       if (owner && !owner.isBankrupt) {
-        let rentAmount = landedSpace.rent || 0;
+        let rentAmount = finalLandedSpace.rent || 0;
         
         // Calculate rent based on houses
-        if (landedSpace.houses > 0) {
-          const houseRents = [landedSpace.rent1house, landedSpace.rent2house, landedSpace.rent3house, landedSpace.rent4house, landedSpace.renthotel];
-          rentAmount = houseRents[landedSpace.houses - 1] || rentAmount;
+        if (finalLandedSpace.houses > 0) {
+          const houseRents = [finalLandedSpace.rent1house, finalLandedSpace.rent2house, finalLandedSpace.rent3house, finalLandedSpace.rent4house, finalLandedSpace.renthotel];
+          rentAmount = houseRents[finalLandedSpace.houses - 1] || rentAmount;
         }
         
-        // Pay rent
-        currentPlayer.money -= rentAmount;
-        owner.money += rentAmount;
-        
-        rentMessage = `${currentPlayer.name}, ${owner.name}'in mülküne geldi ve ${lobby.currency}${rentAmount} kira ödedi`;
-        if (landedSpace.houses > 0) {
-          const houseText = landedSpace.houses === 5 ? 'otel' : `${landedSpace.houses} ev`;
-          rentMessage += ` (${houseText})`;
+        // Pay rent only if both players have enough money
+        if (currentPlayer.money >= rentAmount) {
+          currentPlayer.money -= rentAmount;
+          owner.money += rentAmount;
+          
+          rentMessage = `${currentPlayer.name}, ${owner.name}'in mülküne geldi ve ${lobby.currency}${rentAmount} kira ödedi`;
+          if (finalLandedSpace.houses > 0) {
+            const houseText = finalLandedSpace.houses === 5 ? 'otel' : `${finalLandedSpace.houses} ev`;
+            rentMessage += ` (${houseText})`;
+          }
+          
+          lobby.events.push({ 
+            type: 'rent-paid', 
+            player: currentPlayer.name, 
+            owner: owner.name, 
+            amount: rentAmount,
+            property: finalLandedSpace.name,
+            playerColor: currentPlayer.color,
+            ownerColor: owner.color
+          });
         }
-        
-        lobby.events.push({ 
-          type: 'rent-paid', 
-          player: currentPlayer.name, 
-          owner: owner.name, 
-          amount: rentAmount,
-          property: landedSpace.name,
-          playerColor: currentPlayer.color,
-          ownerColor: owner.color
-        });
       }
     }
 

@@ -142,48 +142,7 @@
                             <div id="eventLog" class="event-log"></div>
                         </div>
 
-                        <div class="panel-section color-selector-lobby" id="colorSelectorPanel">
-                            <h3>🎨 Renk Seç</h3>
-                            <div class="color-grid-large">
-                                <button class="color-btn-large" data-color="#ef4444" style="background: #ef4444;" onclick="selectColorLobby('#ef4444')">
-                                    <span class="color-name">Kırmızı</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#f97316" style="background: #f97316;" onclick="selectColorLobby('#f97316')">
-                                    <span class="color-name">Turuncu</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#eab308" style="background: #eab308;" onclick="selectColorLobby('#eab308')">
-                                    <span class="color-name">Sarı</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#22c55e" style="background: #22c55e;" onclick="selectColorLobby('#22c55e')">
-                                    <span class="color-name">Yeşil</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#3b82f6" style="background: #3b82f6;" onclick="selectColorLobby('#3b82f6')">
-                                    <span class="color-name">Mavi</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#8b5cf6" style="background: #8b5cf6;" onclick="selectColorLobby('#8b5cf6')">
-                                    <span class="color-name">Mor</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#ec4899" style="background: #ec4899;" onclick="selectColorLobby('#ec4899')">
-                                    <span class="color-name">Pembe</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#06b6d4" style="background: #06b6d4;" onclick="selectColorLobby('#06b6d4')">
-                                    <span class="color-name">Turkuaz</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#10b981" style="background: #10b981;" onclick="selectColorLobby('#10b981')">
-                                    <span class="color-name">Açık Yeşil</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#f59e0b" style="background: #f59e0b;" onclick="selectColorLobby('#f59e0b')">
-                                    <span class="color-name">Altın</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#6366f1" style="background: #6366f1;" onclick="selectColorLobby('#6366f1')">
-                                    <span class="color-name">Lacivert</span>
-                                </button>
-                                <button class="color-btn-large" data-color="#14b8a6" style="background: #14b8a6;" onclick="selectColorLobby('#14b8a6')">
-                                    <span class="color-name">Mint</span>
-                                </button>
-                            </div>
-                        </div>
-                        
+
                         <div class="panel-section setup-section" id="setupPanel">
                             <h3>⚙️ Host Ayarları</h3>
                             <div class="game-rules">
@@ -233,19 +192,23 @@
                                         <h3 style="margin: 0 0 15px 0; color: #60a5fa; font-size: 1.3em; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">🎨 Rengini Seç</h3>
                                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 15px;">
                                             <button onclick="selectPlayerColor('#ef4444')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #ef4444, #dc2626); cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                                            <button onclick="selectPlayerColor('#f97316')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #f97316, #ea580c); cursor: pointer; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                                            <button onclick="selectPlayerColor('#eab308')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #eab308, #ca8a04); cursor: pointer; box-shadow: 0 4px 12px rgba(234, 179, 8, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                                            <button onclick="selectPlayerColor('#22c55e')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #22c55e, #16a34a); cursor: pointer; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
                                             <button onclick="selectPlayerColor('#3b82f6')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #3b82f6, #2563eb); cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
-                                            <button onclick="selectPlayerColor('#10b981')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #10b981, #059669); cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
-                                            <button onclick="selectPlayerColor('#f59e0b')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #f59e0b, #d97706); cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
                                             <button onclick="selectPlayerColor('#8b5cf6')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #8b5cf6, #7c3aed); cursor: pointer; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
                                             <button onclick="selectPlayerColor('#ec4899')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #ec4899, #db2777); cursor: pointer; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                                            <button onclick="selectPlayerColor('#06b6d4')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #06b6d4, #0891b2); cursor: pointer; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                                            <button onclick="selectPlayerColor('#10b981')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #10b981, #059669); cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                                            <button onclick="selectPlayerColor('#f59e0b')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #f59e0b, #d97706); cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
+                                            <button onclick="selectPlayerColor('#6366f1')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #6366f1, #4f46e5); cursor: pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
                                             <button onclick="selectPlayerColor('#14b8a6')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #14b8a6, #0d9488); cursor: pointer; box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
-                                            <button onclick="selectPlayerColor('#f97316')" style="width: 50px; height: 50px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #f97316, #ea580c); cursor: pointer; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"></button>
                                         </div>
                                         <div id="selectedColorPreview" style="margin-top: 10px; padding: 10px; border-radius: 8px; background: rgba(96, 165, 250, 0.2); font-size: 0.9em; color: #60a5fa;">Bir renk seç</div>
                                     </div>
 
                                     <button id="startBtn" class="btn-start" onclick="startGame()" style="display: none;">Oyunu Başlat</button>
-                                <div id="currentTurnDisplay" class="current-turn-info"></div>
+                                <div id="currentTurnDisplay" class="current-turn-info" style="display: none;"></div>
                                 <div class="dice-display">
                                     <div class="dice-box">
                                         <div id="dice1" class="dice">?</div>

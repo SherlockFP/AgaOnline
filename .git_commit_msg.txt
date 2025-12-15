@@ -1,9 +1,15 @@
-﻿fix: Board text size adjustment
+﻿fix: Turn advancement and card message fixes
 
-## UI Improvements:
-- **Board Text Size**: Increased board text sizes slightly for better readability
-- Made property names, prices, and group labels more visible
-- Adjusted font sizes from 0.7em to 0.8em for board spaces
-- Improved text contrast and legibility
+## Critical Fixes:
+- **Turn Advancement**: Fixed turn not passing properly after manual "End Turn" clicks
+- **Card Messages**: Ensured card messages display correctly with actual card content
+- **Board Text**: Adjusted board text sizes for better readability
+- **Event Log**: Improved event log styling and message formatting
 
-Board text is now more readable while maintaining the zoom-optimized layout.
+## Technical Changes:
+- **Turn Logic**: Streamlined turn ending process to work reliably
+- **Dice Result**: Removed unnecessary dice result text display
+- **Event Colors**: Ensured player-specific event coloring works properly
+- **Board Scaling**: Fine-tuned board element sizes for optimal zoom
+
+Turn system now works properly - players can roll dice, take actions, and manually end their turn to pass to the next player. Card messages show the actual card effects.

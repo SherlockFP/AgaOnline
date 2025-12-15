@@ -270,6 +270,11 @@ socket.on('gameStarted', (lobby) => {
     if (boardNameEl && lobby.boardName) {
         boardNameEl.textContent = `Tahta: ${lobby.boardName}`;
     }
+    
+    // Show bankruptcy button when game starts
+    const bankruptBtn = document.getElementById('bankruptBtn');
+    if (bankruptBtn) bankruptBtn.style.display = 'block';
+    
     console.log('🎮 Oyun başladı!');
 });
 
@@ -290,8 +295,15 @@ socket.on('diceRolled', (data) => {
         dice1El.classList.remove('rolling');
     }, 600);
 
+    // Show end turn button to current player after rolling dice
     if (endTurnBtn) {
         endTurnBtn.style.display = gameState.players[gameState.currentTurn].id === socket.id ? 'block' : 'none';
+    }
+
+    // Hide roll button after rolling
+    const rollBtn = document.getElementById('rollBtn');
+    if (rollBtn) {
+        rollBtn.style.display = 'none';
     }
 
     const statusEl = document.getElementById('gameStatus');
@@ -311,8 +323,8 @@ socket.on('diceRolled', (data) => {
 
     // Show GO passed message
     if (data.passedGo) {
-        addEvent(`✨ ${data.player.name} BAŞLA'dan geçti ve ${data.currency}${data.goMoney} kazandı!`);
-        addBoardEvent(`${data.player.name} BAŞLA'dan geçti`);
+        addEvent(`✨ ${data.player.name} BAŞLA'dan geçti ve ${data.currency}${data.goMoney} bonus para aldı!`);
+        addBoardEvent(`${data.player.name} BAŞLA'dan geçti (+${data.currency}${data.goMoney})`);
     }
 
     // Show card message if chance/chest card
@@ -340,22 +352,17 @@ socket.on('diceRolled', (data) => {
         updateTurnDisplay();
     }, 800);
 
+    // Check if we landed on a buyable property
+    const landedOnBuyable = data.landedSpace && ['property', 'railroad', 'utility'].includes(data.landedSpace.type) && !data.landedSpace.owner;
+
     // Show property popup if landed on buyable property
-    if (data.landedSpace && ['property', 'railroad', 'utility'].includes(data.landedSpace.type) && !data.landedSpace.owner) {
+    if (landedOnBuyable) {
         setTimeout(() => {
             showPropertyPopup(data.landedSpace);
         }, 1400);
     }
-
-    // Auto-end turn after dice roll and actions are complete
-    // Wait for animations and possible popups, then auto-end turn
-    // Only end turn if it's still the current player's turn
-    setTimeout(() => {
-        // Check if turn has already advanced due to special actions
-        if (gameState.players[gameState.currentTurn].id === socket.id) {
-            endTurn();
-        }
-    }, 5000); // 5 seconds should be enough for most actions
+    
+    // No more auto-end turn - player must manually end turn after dice roll
 });
 
 socket.on('propertyBought', (data) => {
@@ -370,7 +377,7 @@ socket.on('propertyBought', (data) => {
     }
 
     addEvent(`${data.player.name}, ${data.property.name} mülkünü satın aldı`);
-    addBoardEvent(`${data.player.name} mülk satın aldı`);
+    addBoardEvent(`${data.player.name} ${data.property.name} aldı`);
     playSound('soundBuy');
     updateGameBoard();
     updateOwnedProperties();
@@ -1730,6 +1737,38 @@ socket.on('tradeCompleted', (payload) => {
     updateOwnedProperties();
     updateGameBoard();
     refreshTradeLists();
+});
+
+// Bankruptcy function
+function declareBankruptcy() {
+    if (!confirm('⚠️ İflas etmek istediğinizden emin misiniz?\n\nTüm mülkleriniz sahipsiz kalacak ve paranız sıfırlanacak. Oyunu izleyici olarak sürdürebilirsiniz.')) {
+        return;
+    }
+    
+    socket.emit('declareBankruptcy');
+    
+    // Hide bankruptcy button after declaring
+    const bankruptBtn = document.getElementById('bankruptBtn');
+    if (bankruptBtn) bankruptBtn.style.display = 'none';
+}
+
+// Handle bankruptcy events
+socket.on('playerBankrupt', (data) => {
+    addEvent(`💸 ${data.message}`);
+    addBoardEvent(`${data.player.name} iflas etti!`);
+    
+    // Update player state
+    const playerIdx = gameState.players.findIndex(p => p.id === data.player.id);
+    if (playerIdx >= 0) {
+        gameState.players[playerIdx] = { ...gameState.players[playerIdx], ...data.player };
+    }
+    
+    // Update board and UI
+    updateGameBoard();
+    updateGamePlayersPanel();
+    updateOwnedProperties();
+    
+    playSound('soundSell');
 });
 
 console.log('🎮 Oyun yüklendi ve hazır!');

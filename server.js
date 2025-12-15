@@ -244,7 +244,9 @@ io.on('connection', (socket) => {
         position: 0,
         properties: [],
         inJail: false,
-        jailTurns: 0
+        jailTurns: 0,
+        hasRolled: false,
+        isBankrupt: false
       }],
       started: false,
       currentTurn: 0,
@@ -308,7 +310,9 @@ io.on('connection', (socket) => {
       position: 0,
       properties: [],
       inJail: false,
-      jailTurns: 0
+      jailTurns: 0,
+      hasRolled: false,
+      isBankrupt: false
     });
 
     playerSockets.set(socket.id, data.lobbyId);
@@ -358,6 +362,9 @@ io.on('connection', (socket) => {
 
     const currentPlayer = lobby.players[lobby.currentTurn];
     if (currentPlayer.id !== socket.id) return;
+
+    // Set hasRolled flag
+    currentPlayer.hasRolled = true;
 
     // Single die instead of two dice
     const diceValue = Math.floor(Math.random() * 9) + 1; // 1-9 instead of 1-6 + 1-6
@@ -550,8 +557,18 @@ io.on('connection', (socket) => {
     const lobby = lobbies.get(lobbyId);
     if (!lobby) return;
 
-    // Handle jail logic
     const currentPlayer = lobby.players[lobby.currentTurn];
+    
+    // Check if current player has rolled dice
+    if (!currentPlayer.hasRolled && !currentPlayer.inJail) {
+      socket.emit('errorMessage', 'Önce zar atmalısınız!');
+      return;
+    }
+
+    // Reset hasRolled flag for current player
+    currentPlayer.hasRolled = false;
+
+    // Handle jail logic
     if (currentPlayer.inJail) {
       currentPlayer.jailTurns++;
       // Auto-release after 3 turns
@@ -563,7 +580,15 @@ io.on('connection', (socket) => {
       }
     }
 
-    lobby.currentTurn = (lobby.currentTurn + 1) % lobby.players.length;
+    // Move to next player (skip bankrupt players)
+    let nextTurn = (lobby.currentTurn + 1) % lobby.players.length;
+    let attempts = 0;
+    while (lobby.players[nextTurn].isBankrupt && attempts < lobby.players.length) {
+      nextTurn = (nextTurn + 1) % lobby.players.length;
+      attempts++;
+    }
+    
+    lobby.currentTurn = nextTurn;
     io.to(lobbyId).emit('turnEnded', { currentTurn: lobby.currentTurn });
   });
 
@@ -695,6 +720,7 @@ io.on('connection', (socket) => {
     player.money -= fineAmount;
     player.inJail = false;
     player.jailTurns = 0;
+    player.hasRolled = true; // Mark as if rolled to allow turn end
 
     lobby.events.push({ type: 'jail-released', player: player.name, reason: 'ceza ödendi' });
     io.to(lobbyId).emit('jailReleased', { player, reason: 'Ceza ödendi' });
@@ -715,6 +741,7 @@ io.on('connection', (socket) => {
     if (isDoubles) {
       player.inJail = false;
       player.jailTurns = 0;
+      player.hasRolled = true; // Mark as rolled
       player.position = (player.position + dice1 + dice2) % 40;
 
       lobby.events.push({ type: 'jail-released', player: player.name, reason: 'çift zar' });
@@ -728,6 +755,49 @@ io.on('connection', (socket) => {
     } else {
       socket.emit('jailRollFailed', { dice1, dice2, message: 'Çift zar atamadın, hapiste kalıyorsun.' });
     }
+  });
+
+  socket.on('declareBankruptcy', () => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby || !lobby.started) return;
+
+    const player = lobby.players.find(p => p.id === socket.id);
+    if (!player || player.isBankrupt) return;
+
+    // Mark player as bankrupt
+    player.isBankrupt = true;
+    player.money = 0;
+
+    // Release all properties - make them unowned
+    lobby.properties.forEach(prop => {
+      if (prop.owner === socket.id) {
+        prop.owner = null;
+        prop.ownerColor = null;
+        prop.houses = 0;
+      }
+    });
+
+    // Clear player's property list
+    player.properties = [];
+
+    // Add event
+    lobby.events.push({ 
+      type: 'bankrupt', 
+      player: player.name, 
+      message: `${player.name} iflas etti ve oyundan çekildi!` 
+    });
+
+    // Notify all players
+    io.to(lobbyId).emit('playerBankrupt', { 
+      player,
+      message: `${player.name} iflas etti!`
+    });
+
+    // Update game state
+    io.to(lobbyId).emit('lobbyUpdated', lobby);
+
+    console.log(`💸 ${player.name} declared bankruptcy in lobby ${lobbyId}`);
   });
 
   socket.on('disconnect', () => {

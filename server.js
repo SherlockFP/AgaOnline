@@ -730,26 +730,50 @@ io.on('connection', (socket) => {
     if (!validMyProps || !validTheirProps) return;
 
     const tradeId = uuidv4();
-    io.to(to.id).emit('tradeOffer', {
-      tradeId,
-      from: socket.id,
-      myPropIds: data.myPropIds || [],
-      theirPropIds: data.theirPropIds || [],
-      offerMoney: Math.max(0, data.offerMoney || 0),
-      requestMoney: Math.max(0, data.requestMoney || 0)
-    });
-
-    // Store trade in memory
+    
+    // Store trade in memory first
     lobby._pendingTrades = lobby._pendingTrades || new Map();
     lobby._pendingTrades.set(tradeId, {
       id: tradeId,
       from: socket.id,
       to: to.id,
+      fromName: from.name,
+      toName: to.name,
+      fromColor: from.color,
+      toColor: to.color,
+      myPropIds: data.myPropIds || [],
+      theirPropIds: data.theirPropIds || [],
+      offerMoney: Math.max(0, data.offerMoney || 0),
+      requestMoney: Math.max(0, data.requestMoney || 0),
+      timestamp: Date.now()
+    });
+    
+    // Send to receiver
+    io.to(to.id).emit('tradeOffer', {
+      tradeId,
+      from: socket.id,
+      fromName: from.name,
+      fromColor: from.color,
       myPropIds: data.myPropIds || [],
       theirPropIds: data.theirPropIds || [],
       offerMoney: Math.max(0, data.offerMoney || 0),
       requestMoney: Math.max(0, data.requestMoney || 0)
     });
+    
+    // Also send pending trades list to receiver
+    const pendingList = Array.from(lobby._pendingTrades.values())
+      .filter(t => t.to === to.id)
+      .map(t => ({
+        id: t.id,
+        fromName: t.fromName,
+        fromColor: t.fromColor,
+        myPropIds: t.myPropIds,
+        theirPropIds: t.theirPropIds,
+        offerMoney: t.offerMoney,
+        requestMoney: t.requestMoney,
+        timestamp: t.timestamp
+      }));
+    io.to(to.id).emit('pendingTradesUpdate', { trades: pendingList });
   });
 
   socket.on('respondTrade', (payload) => {
@@ -803,13 +827,37 @@ io.on('connection', (socket) => {
 
     lobby._pendingTrades.delete(payload.tradeId);
 
+    // Add to event log
+    const tradeDetails = [];
+    if (tr.myPropIds.length > 0) tradeDetails.push(`${tr.myPropIds.length} mülk`);
+    if (tr.offerMoney > 0) tradeDetails.push(`${lobby.currency}${tr.offerMoney}`);
+    const tradeFrom = tradeDetails.join(' + ');
+    
+    const tradeDetails2 = [];
+    if (tr.theirPropIds.length > 0) tradeDetails2.push(`${tr.theirPropIds.length} mülk`);
+    if (tr.requestMoney > 0) tradeDetails2.push(`${lobby.currency}${tr.requestMoney}`);
+    const tradeTo = tradeDetails2.join(' + ');
+    
+    const tradeMsg = `💱 ${from.name} ⇄ ${to.name}: ${tradeFrom} ↔ ${tradeTo}`;
+    lobby.events.push({ 
+      type: 'trade', 
+      from: from.name, 
+      to: to.name,
+      fromColor: from.color,
+      toColor: to.color,
+      message: tradeMsg
+    });
+
     io.to(lobbyId).emit('tradeCompleted', {
       updatedPlayers: [
         { id: from.id, money: from.money, properties: from.properties },
         { id: to.id, money: to.money, properties: to.properties }
       ],
       updatedProperties,
-      message: `${from.name} ⇄ ${to.name}`
+      message: `${from.name} ⇄ ${to.name}`,
+      tradeMessage: tradeMsg,
+      fromColor: from.color,
+      toColor: to.color
     });
   });
 

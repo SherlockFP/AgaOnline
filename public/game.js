@@ -1835,7 +1835,15 @@ document.addEventListener('click', (e) => {
 });
 
 socket.on('tradeCompleted', (payload) => {
-    addEvent(`💱 Takas tamamlandı: ${payload.message}`);
+    // Add to event log with player color
+    const tradeColor = payload.fromColor || '#60a5fa';
+    if (payload.tradeMessage) {
+        addEvent(payload.tradeMessage, tradeColor);
+        addBoardEvent(payload.tradeMessage);
+    } else {
+        addEvent(`💱 Takas tamamlandı: ${payload.message}`, tradeColor);
+    }
+    
     if (payload.updatedPlayers) {
         payload.updatedPlayers.forEach(up => {
             const idx = gameState.players.findIndex(p => p.id === up.id);
@@ -1851,7 +1859,72 @@ socket.on('tradeCompleted', (payload) => {
     updateOwnedProperties();
     updateGameBoard();
     refreshTradeLists();
+    
+    playSound('soundBuy');
 });
+
+socket.on('pendingTradesUpdate', (data) => {
+    updatePendingTradesList(data.trades || []);
+});
+
+function updatePendingTradesList(trades) {
+    const listEl = document.getElementById('pendingTradesList');
+    const countEl = document.getElementById('pendingTradeCount');
+    
+    if (!listEl || !countEl) return;
+    
+    countEl.textContent = trades.length;
+    
+    if (trades.length === 0) {
+        listEl.innerHTML = `
+            <div style="text-align: center; color: rgba(255,255,255,0.5); padding: 10px; font-size: 0.9em;">
+                Bekleyen teklif yok
+            </div>
+        `;
+        return;
+    }
+    
+    listEl.innerHTML = trades.map(trade => {
+        const offering = [];
+        if (trade.myPropIds.length > 0) offering.push(`${trade.myPropIds.length} mülk`);
+        if (trade.offerMoney > 0) offering.push(`₺${trade.offerMoney}`);
+        const offerText = offering.join(' + ') || 'Hiçbir şey';
+        
+        const requesting = [];
+        if (trade.theirPropIds.length > 0) requesting.push(`${trade.theirPropIds.length} mülk`);
+        if (trade.requestMoney > 0) requesting.push(`₺${trade.requestMoney}`);
+        const requestText = requesting.join(' + ') || 'Hiçbir şey';
+        
+        const timeAgo = Math.floor((Date.now() - trade.timestamp) / 1000);
+        const timeText = timeAgo < 60 ? `${timeAgo}s önce` : `${Math.floor(timeAgo / 60)}dk önce`;
+        
+        return `
+            <div style="background: linear-gradient(90deg, ${trade.fromColor}22, transparent); border-left: 4px solid ${trade.fromColor}; padding: 10px; border-radius: 6px; font-size: 0.85em;">
+                <div style="font-weight: 700; margin-bottom: 5px; color: ${trade.fromColor};">
+                    👤 ${trade.fromName}
+                    <span style="float: right; color: rgba(255,255,255,0.5); font-size: 0.9em; font-weight: 400;">${timeText}</span>
+                </div>
+                <div style="margin: 4px 0;">
+                    <span style="color: rgba(255,255,255,0.7);">📤 Veriyor:</span> ${offerText}
+                </div>
+                <div style="margin: 4px 0;">
+                    <span style="color: rgba(255,255,255,0.7);">📥 İstiyor:</span> ${requestText}
+                </div>
+                <div style="margin-top: 8px; display: flex; gap: 6px;">
+                    <button onclick="viewTradeOffer('${trade.id}')" style="flex: 1; padding: 4px 8px; background: ${trade.fromColor}; border: none; border-radius: 4px; color: #fff; cursor: pointer; font-size: 0.85em; font-weight: 600;">
+                        👁️ Görüntüle
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function viewTradeOffer(tradeId) {
+    // This will show the trade offer in a dedicated view
+    console.log('Viewing trade:', tradeId);
+    // For now, just trigger the existing trade offer handler
+}
 
 // Bankruptcy function
 function declareBankruptcy() {

@@ -342,8 +342,22 @@
     <!-- Trade Modal -->
     <div id="tradeModal" class="trade-offer-modal" style="display: none;">
         <div class="trade-offer-overlay" onclick="closeTradeModal()" style="cursor: pointer;"></div>
-        <div class="trade-offer-content" style="max-width: 600px;">
+        <div class="trade-offer-content" style="max-width: 650px; max-height: 90vh; overflow-y: auto;">
             <h2 style="margin-top: 0; text-align: center;">💱 Takas Merkezi</h2>
+
+            <!-- Pending Trades Section -->
+            <div id="pendingTradesSection" style="margin-bottom: 20px; padding: 12px; background: rgba(96, 165, 250, 0.1); border-radius: 8px; border: 1px solid rgba(96, 165, 250, 0.3);">
+                <div style="font-weight: 700; margin-bottom: 10px; color: #60a5fa; display: flex; align-items: center; gap: 8px;">
+                    <span>📬</span>
+                    <span>Bekleyen Teklifler</span>
+                    <span id="pendingTradeCount" style="background: #60a5fa; color: #000; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: 800;">0</span>
+                </div>
+                <div id="pendingTradesList" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="text-align: center; color: rgba(255,255,255,0.5); padding: 10px; font-size: 0.9em;">
+                        Bekleyen teklif yok
+                    </div>
+                </div>
+            </div>
 
             <div style="margin-bottom: 20px;">
                 <label style="color: rgba(255,255,255,0.8); font-size: 0.9em; margin-bottom: 5px; display: block;">Oyuncu Seç</label>

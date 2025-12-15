@@ -284,10 +284,17 @@ socket.on('gameStarted', (lobby) => {
         const bankruptBtn = document.getElementById('bankruptBtn');
         if (bankruptBtn) bankruptBtn.style.display = 'block';
         
+        // Show statistics button when game starts
+        const statsBtn = document.getElementById('statsBtn');
+        if (statsBtn) statsBtn.style.display = 'block';
+        
     const boardNameEl = document.getElementById('boardName');
     if (boardNameEl && lobby.boardName) {
         boardNameEl.textContent = `Tahta: ${lobby.boardName}`;
     }
+    
+    // Show welcome toast
+    showToast('🎮 Oyun başladı! İyi şanslar!', 'success', 5000);
     
     console.log('🎮 Oyun başladı!');
 });
@@ -320,8 +327,14 @@ socket.on('diceRolled', (data) => {
     const statusEl = document.getElementById('gameStatus');
     if (statusEl) statusEl.textContent = `${data.player.name} sırası`;
 
-    // Zar mesajını göstermiyoruz artık, sadece önemli olaylar
-    playSound('soundDice');
+    // Play dice sound
+    playSound('dice');
+    
+    // Check for lucky double 6
+    if (data.dice1 === 6 && data.dice2 === 6) {
+        showAchievement('luckyRoll');
+        showToast('🎲 Çift 6! Şanslı zar!', 'success');
+    }
 
     // Update gameState with new position
     const playerIdx = gameState.players.findIndex(p => p.id === data.player.id);
@@ -336,24 +349,54 @@ socket.on('diceRolled', (data) => {
     if (data.passedGo) {
         addEvent(`✨ ${data.player.name} BAŞLA'dan geçti ve ${data.currency}${data.goMoney} bonus para aldı!`, data.player.color);
         addBoardEvent(`${data.player.name} BAŞLA'dan geçti (+${data.currency}${data.goMoney})`, data.player.color);
+        showToast(`✨ ${data.player.name} BAŞLA'dan geçti! +${data.currency}${data.goMoney}`, 'money', 4000);
+        playSound('money');
+        
+        // Show money animation
+        const playerEl = document.querySelector(`.player-token[data-player-id="${data.player.id}"]`);
+        if (playerEl) {
+            const rect = playerEl.getBoundingClientRect();
+            showMoneyAnimation(data.goMoney, rect.left + rect.width/2, rect.top);
+        }
     }
 
     // Show card message if chance/chest card
     if (data.cardMessage) {
         addEvent(`🎴 ${data.player.name}: ${data.cardMessage}`, data.player.color);
         addBoardEvent(`${data.player.name} ${data.cardMessage}`, data.player.color);
+        showToast(`🎴 ${data.cardMessage}`, 'info', 5000);
+        playSound('card');
     }
 
     // Show tax message
     if (data.taxMessage) {
         addEvent(`💸 ${data.taxMessage}`, data.player.color);
         addBoardEvent(`${data.player.name} vergi ödedi`, data.player.color);
+        showToast(`💸 ${data.taxMessage}`, 'warning');
+        
+        // Show negative money animation
+        const playerEl = document.querySelector(`.player-token[data-player-id="${data.player.id}"]`);
+        if (playerEl) {
+            const rect = playerEl.getBoundingClientRect();
+            const taxAmount = data.taxMessage.match(/\d+/);
+            if (taxAmount) showMoneyAnimation(-parseInt(taxAmount[0]), rect.left + rect.width/2, rect.top);
+        }
     }
 
     // Show rent message
     if (data.rentMessage) {
         addEvent(`🏠 ${data.rentMessage}`, data.player.color);
         addBoardEvent(data.rentMessage, data.player.color);
+        showToast(`🏠 Kira ödendi`, 'property');
+        playSound('money');
+        
+        // Show negative money animation
+        const playerEl = document.querySelector(`.player-token[data-player-id="${data.player.id}"]`);
+        if (playerEl) {
+            const rect = playerEl.getBoundingClientRect();
+            const rentAmount = data.rentMessage.match(/\d+/);
+            if (rentAmount) showMoneyAnimation(-parseInt(rentAmount[0]), rect.left + rect.width/2, rect.top);
+        }
     }
 
     // Show special space messages
@@ -432,7 +475,21 @@ socket.on('propertyBought', (data) => {
 
     addEvent(`${data.player.name}, ${data.property.name} mülkünü satın aldı`, data.player.color);
     addBoardEvent(`${data.player.name} ${data.property.name} aldı`, data.player.color);
-    playSound('soundBuy');
+    
+    // Show toast and play sound
+    showToast(`🏠 ${data.property.name} satın alındı!`, 'property', 4000);
+    playSound('buy');
+    
+    // Show money animation
+    const playerEl = document.querySelector(`.player-token[data-player-id="${data.player.id}"]`);
+    if (playerEl) {
+        const rect = playerEl.getBoundingClientRect();
+        showMoneyAnimation(-data.property.price, rect.left + rect.width/2, rect.top);
+    }
+    
+    // Check achievements
+    checkAchievements(data.player);
+    
     updateGameBoard();
     updateOwnedProperties();
     updateGamePlayersPanel();
@@ -457,7 +514,19 @@ socket.on('houseBuilt', (data) => {
     }
 
     addEvent(`🏠 ${data.message}`, data.player.color);
-    playSound('soundBuy');
+    
+    // Show toast
+    const isHotel = data.property.houses === 5;
+    showToast(`${isHotel ? '🏨 Otel' : '🏗️ Ev'} inşa edildi!`, 'success', 4000);
+    playSound('buy');
+    
+    // Check achievements
+    if (data.property.houses === 1) {
+        showAchievement('firstHouse');
+    } else if (data.property.houses === 5) {
+        showAchievement('firstHotel');
+    }
+    
     updateGameBoard();
     updateOwnedProperties();
     updateGamePlayersPanel();
@@ -1344,9 +1413,18 @@ function updateOwnedProperties() {
         const item = document.createElement('div');
         item.className = 'owned-item';
         
+        // Oyuncunun token rengini kullan
+        const playerColor = me.color || '#60a5fa';
+        
+        // Mülkün kendi rengini colorDot için kullan
         const colorDot = prop.color ? `<span class="prop-dot" style="background:${prop.color}"></span>` : '<span class="prop-dot" style="background: #94a3b8"></span>';
         const rentText = prop.rent && prop.rent.length ? `Kira: ₺${prop.rent[0]}` : 'Kira: -';
         const priceText = prop.price ? `₺${prop.price}` : '-';
+        
+        // Kartın arka planını ve border'ını oyuncu rengine göre ayarla
+        item.style.background = `linear-gradient(135deg, ${playerColor}22, ${playerColor}08)`;
+        item.style.borderLeft = `4px solid ${playerColor}`;
+        item.style.boxShadow = `0 2px 8px ${playerColor}33`;
         
         item.innerHTML = `
             ${colorDot}
@@ -1448,6 +1526,9 @@ function refreshTradeLists() {
 
     // Enable button when a player is selected
     if (proposeBtn) proposeBtn.disabled = !targetId || targetId === 'Oyuncu seç...';
+    
+    // Slider'ları güncelle - özellikle requestSlider için max değeri
+    updateTradeSliders();
 }
 
 function rollDice() {
@@ -1855,6 +1936,9 @@ function updateTradeSliders() {
     const me = gameState.players.find(p => p.id === socket.id);
     if (!me) return;
 
+    const targetId = document.getElementById('tradeWithPlayer')?.value;
+    const other = gameState.players.find(p => p.id === targetId);
+
     const offerSlider = document.getElementById('tradeMoneyOffer');
     const requestSlider = document.getElementById('tradeMoneyRequest');
 
@@ -1865,9 +1949,10 @@ function updateTradeSliders() {
     }
 
     if (requestSlider) {
-        // For now, keep max at a reasonable amount, could be improved to show target player's max
-        requestSlider.max = 10000; // Could be set to target player's money if available
-        requestSlider.value = Math.min(parseInt(requestSlider.value) || 0, parseInt(requestSlider.max));
+        // Set max to target player's money if they're selected
+        const maxRequest = other ? other.money : 10000;
+        requestSlider.max = maxRequest;
+        requestSlider.value = Math.min(parseInt(requestSlider.value) || 0, maxRequest);
         updateTradeMoneyRequest();
     }
 }
@@ -1878,10 +1963,37 @@ function proposeTrade() {
         alert('Önce bir oyuncu seç!');
         return;
     }
+    
+    const me = gameState.players.find(p => p.id === socket.id);
+    const other = gameState.players.find(p => p.id === targetId);
+    
+    if (!me || !other) {
+        alert('Oyuncu bulunamadı!');
+        return;
+    }
+    
     const offerMoney = Math.max(0, parseInt(document.getElementById('tradeMoneyOffer')?.value || 0));
     const requestMoney = Math.max(0, parseInt(document.getElementById('tradeMoneyRequest')?.value || 0));
+    
+    // Validasyonlar
+    if (offerMoney > me.money) {
+        alert(`Yeterli paran yok! Sahip olduğun: ₺${me.money}`);
+        return;
+    }
+    
+    if (requestMoney > other.money) {
+        alert(`${other.name} oyuncusunun yeterli parası yok! Sahip olduğu: ₺${other.money}`);
+        return;
+    }
+    
     const myPropIds = Array.from(document.querySelectorAll('.my-prop:checked')).map(i => parseInt(i.value));
     const theirPropIds = Array.from(document.querySelectorAll('.their-prop:checked')).map(i => parseInt(i.value));
+    
+    // En az bir şey teklif edilmeli
+    if (offerMoney === 0 && requestMoney === 0 && myPropIds.length === 0 && theirPropIds.length === 0) {
+        alert('En az bir şey teklif etmelisin!');
+        return;
+    }
 
     socket.emit('proposeTrade', {
         to: targetId,
@@ -1925,6 +2037,10 @@ function closeJailModal() {
 
 socket.on('jailReleased', (data) => {
     addEvent(`👮 ${data.player.name} hapishaneden çıktı: ${data.reason}`);
+    
+    // Show toast and achievement
+    showToast(`🔓 Hapishaneden çıktın!`, 'success', 4000);
+    showAchievement('escapedJail');
 
     if (data.dice1 && data.dice2) {
         // Player rolled doubles and moved
@@ -2466,7 +2582,7 @@ socket.on('youtubeMusicPlay', (data) => {
                     width: '0',
                     videoId: videoId,
                     playerVars: {
-                        'autoplay': 1,
+                        'autoplay': 0,
                         'controls': 0,
                         'disablekb': 1,
                         'fs': 0,
@@ -2537,5 +2653,318 @@ socket.on('youtubeMusicStop', (data) => {
         chatDiv.scrollTop = chatDiv.scrollHeight;
     }, 10);
 });
+
+// ===== TOAST NOTIFICATION SYSTEM =====
+function showToast(message, type = 'info', duration = 4000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️',
+        money: '💰',
+        property: '🏠',
+        jail: '👮',
+        dice: '🎲'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-content">
+            <div class="toast-icon">${icons[type] || icons.info}</div>
+            <div class="toast-text">${message}</div>
+            <button class="toast-close" onclick="this.parentElement.parentElement.remove()">✕</button>
+        </div>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto remove
+    setTimeout(() => {
+        toast.style.animation = 'toastSlideOut 0.3s ease-in-out';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+    
+    // Click to remove
+    toast.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') {
+            toast.style.animation = 'toastSlideOut 0.3s ease-in-out';
+            setTimeout(() => toast.remove(), 300);
+        }
+    });
+}
+
+// ===== MONEY ANIMATION SYSTEM =====
+function showMoneyAnimation(amount, x, y) {
+    const container = document.getElementById('moneyAnimationContainer');
+    if (!container) return;
+    
+    const moneyEl = document.createElement('div');
+    moneyEl.className = `money-float ${amount > 0 ? 'positive' : 'negative'}`;
+    moneyEl.textContent = amount > 0 ? `+${amount}` : amount;
+    moneyEl.style.left = `${x}px`;
+    moneyEl.style.top = `${y}px`;
+    
+    container.appendChild(moneyEl);
+    
+    setTimeout(() => moneyEl.remove(), 2000);
+}
+
+// ===== ACHIEVEMENT SYSTEM =====
+const achievements = {
+    firstProperty: { icon: '🏠', title: 'İlk Mülk!', desc: 'İlk mülkünü satın aldın', unlocked: false },
+    fiveProperties: { icon: '🏘️', title: 'Emlakçı', desc: '5 mülk sahibi oldun', unlocked: false },
+    firstHouse: { icon: '🏗️', title: 'İnşaat Başladı', desc: 'İlk evini inşa ettin', unlocked: false },
+    firstHotel: { icon: '🏨', title: 'Otel Kralı', desc: 'İlk otelini inşa ettin', unlocked: false },
+    escapedJail: { icon: '🔓', title: 'Özgürlük', desc: 'Hapishaneden çıktın', unlocked: false },
+    millionaire: { icon: '💎', title: 'Milyoner', desc: '5000₺ biriktirdin', unlocked: false },
+    bankrupter: { icon: '💸', title: 'İflas Ettirici', desc: 'Bir oyuncuyu iflas ettirdin', unlocked: false },
+    luckyRoll: { icon: '🎲', title: 'Şanslı Zar', desc: 'Çift 6 attın', unlocked: false }
+};
+
+function showAchievement(key) {
+    if (achievements[key].unlocked) return;
+    achievements[key].unlocked = true;
+    
+    const container = document.getElementById('achievementContainer');
+    if (!container) return;
+    
+    const achievement = achievements[key];
+    const achievementEl = document.createElement('div');
+    achievementEl.className = 'achievement';
+    
+    achievementEl.innerHTML = `
+        <div class="achievement-content">
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-text">
+                <div class="achievement-title">🏆 ${achievement.title}</div>
+                <div class="achievement-description">${achievement.desc}</div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(achievementEl);
+    
+    // Play sound
+    playSound('achievement');
+    
+    // Auto remove
+    setTimeout(() => {
+        achievementEl.style.animation = 'achievementSlideOut 0.4s ease-in-out';
+        setTimeout(() => achievementEl.remove(), 400);
+    }, 5000);
+}
+
+// Check achievements based on game state
+function checkAchievements(player) {
+    if (!player) return;
+    
+    // First property
+    if (player.properties && player.properties.length === 1) {
+        showAchievement('firstProperty');
+    }
+    
+    // Five properties
+    if (player.properties && player.properties.length === 5) {
+        showAchievement('fiveProperties');
+    }
+    
+    // Millionaire
+    if (player.money >= 5000) {
+        showAchievement('millionaire');
+    }
+}
+
+// ===== SOUND EFFECTS SYSTEM =====
+const sounds = {
+    dice: new Audio('/sounds/dice.mp3'),
+    money: new Audio('/sounds/money.mp3'),
+    buy: new Audio('/sounds/buy.mp3'),
+    card: new Audio('/sounds/card.mp3'),
+    jail: new Audio('/sounds/jail.mp3'),
+    achievement: new Audio('/sounds/achievement.mp3'),
+    auction: new Audio('/sounds/auction.mp3')
+};
+
+// Set volume for all sounds
+Object.values(sounds).forEach(sound => {
+    sound.volume = 0.3;
+});
+
+function playSound(soundName) {
+    if (sounds[soundName]) {
+        sounds[soundName].currentTime = 0;
+        sounds[soundName].play().catch(e => console.log('Sound play failed:', e));
+    }
+}
+
+// ===== STATISTICS SYSTEM =====
+function showStatistics() {
+    const modal = document.getElementById('statisticsModal');
+    const content = document.getElementById('statisticsContent');
+    
+    if (!modal || !content || !gameState) return;
+    
+    const players = gameState.players;
+    
+    // Calculate statistics
+    const stats = players.map(player => {
+        const propertyCount = player.properties ? player.properties.length : 0;
+        const totalHouses = gameState.properties
+            .filter(p => p.owner === player.id)
+            .reduce((sum, p) => sum + (p.houses || 0), 0);
+        
+        return {
+            name: player.name,
+            appearance: player.appearance,
+            color: player.color,
+            money: player.money,
+            propertyCount,
+            totalHouses,
+            inJail: player.inJail,
+            isBankrupt: player.isBankrupt
+        };
+    });
+    
+    // Sort by money
+    stats.sort((a, b) => b.money - a.money);
+    
+    // Generate HTML
+    let html = '<h3 style="margin-bottom: 20px;">💰 Para Durumu</h3>';
+    stats.forEach((stat, index) => {
+        html += `
+            <div class="stat-item" style="border-left: 4px solid ${stat.color}; ${stat.isBankrupt ? 'opacity: 0.5;' : ''}">
+                <div class="stat-label">
+                    <span style="font-size: 1.2em;">${index + 1}. ${stat.appearance} ${stat.name}</span>
+                    ${stat.isBankrupt ? '<span style="color: #ef4444; margin-left: 10px;">💀 İflas</span>' : ''}
+                </div>
+                <div class="stat-value">${stat.money} ${gameState.currency || '₺'}</div>
+            </div>
+        `;
+    });
+    
+    html += '<h3 style="margin: 30px 0 20px;">🏠 Mülk Durumu</h3>';
+    stats.forEach(stat => {
+        if (stat.propertyCount > 0) {
+            html += `
+                <div class="stat-item" style="border-left: 4px solid ${stat.color}">
+                    <div class="stat-label">${stat.appearance} ${stat.name}</div>
+                    <div class="stat-value">${stat.propertyCount} mülk, ${stat.totalHouses} yapı</div>
+                </div>
+            `;
+        }
+    });
+    
+    content.innerHTML = html;
+    modal.style.display = 'flex';
+}
+
+function closeStatisticsModal() {
+    const modal = document.getElementById('statisticsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// ===== AUCTION SYSTEM =====
+let currentAuction = null;
+let auctionTimer = null;
+
+function startAuction(property) {
+    const modal = document.getElementById('auctionModal');
+    if (!modal || !property) return;
+    
+    currentAuction = {
+        property: property,
+        currentBid: 0,
+        highestBidder: null,
+        timeLeft: 30
+    };
+    
+    updateAuctionDisplay();
+    modal.style.display = 'flex';
+    
+    playSound('auction');
+    showToast(`🔨 ${property.name} için açık arttırma başladı!`, 'info', 5000);
+    
+    // Start timer
+    auctionTimer = setInterval(() => {
+        currentAuction.timeLeft--;
+        updateAuctionDisplay();
+        
+        if (currentAuction.timeLeft <= 0) {
+            endAuction();
+        }
+    }, 1000);
+}
+
+function updateAuctionDisplay() {
+    if (!currentAuction) return;
+    
+    const nameEl = document.getElementById('auctionPropertyName');
+    const bidEl = document.getElementById('auctionCurrentBid');
+    const timerEl = document.getElementById('auctionTimer');
+    
+    if (nameEl) nameEl.textContent = currentAuction.property.name;
+    if (bidEl) bidEl.textContent = `₺${currentAuction.currentBid || 'Teklif Yok'}`;
+    if (timerEl) timerEl.textContent = `⏰ ${currentAuction.timeLeft} saniye`;
+}
+
+function placeBid() {
+    const input = document.getElementById('auctionBidInput');
+    const bidAmount = parseInt(input.value);
+    
+    if (!bidAmount || bidAmount <= currentAuction.currentBid) {
+        showToast('❌ Teklif mevcut tekliften yüksek olmalı!', 'error');
+        return;
+    }
+    
+    const currentPlayer = gameState.players[gameState.currentTurn];
+    if (currentPlayer.money < bidAmount) {
+        showToast('❌ Yeterli paran yok!', 'error');
+        return;
+    }
+    
+    currentAuction.currentBid = bidAmount;
+    currentAuction.highestBidder = currentPlayer;
+    currentAuction.timeLeft = Math.max(10, currentAuction.timeLeft); // Reset to 10 seconds minimum
+    
+    updateAuctionDisplay();
+    showToast(`✅ ${currentPlayer.name} - ₺${bidAmount} teklif verdi!`, 'success');
+    playSound('money');
+    
+    input.value = '';
+}
+
+function passAuction() {
+    showToast('👋 Arttırmayı pas geçtin', 'info');
+    closeAuctionModal();
+}
+
+function endAuction() {
+    if (auctionTimer) clearInterval(auctionTimer);
+    
+    if (currentAuction.highestBidder) {
+        const winner = currentAuction.highestBidder;
+        winner.money -= currentAuction.currentBid;
+        currentAuction.property.owner = winner.id;
+        
+        showToast(`🎉 ${winner.name} - ${currentAuction.property.name}'i ₺${currentAuction.currentBid}'e aldı!`, 'success', 6000);
+        playSound('buy');
+    } else {
+        showToast('😔 Kimse teklif vermedi, mülk satılmadı.', 'warning');
+    }
+    
+    closeAuctionModal();
+}
+
+function closeAuctionModal() {
+    const modal = document.getElementById('auctionModal');
+    if (modal) modal.style.display = 'none';
+    if (auctionTimer) clearInterval(auctionTimer);
+    currentAuction = null;
+}
 
 console.log('🎮 Oyun yüklendi ve hazır!');

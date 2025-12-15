@@ -206,6 +206,7 @@
                             <div id="boardName" class="player-count" style="font-size: 0.9em; opacity: 0.8;"></div>
                             <div id="lobbyIdDisplay" class="player-count" style="font-size: 0.85em; opacity: 0.8;"></div>
                             <button id="copyLobbyIdBtn" onclick="copyCurrentLobbyId()" class="btn-ghost" style="width:100%; display:none;">ID Kopyala</button>
+                            <button onclick="showStatistics()" class="btn-primary" style="width: 100%; margin-top: 6px; display: none;" id="statsBtn">📊 İstatistikler</button>
                             <button id="bankruptBtn" onclick="declareBankruptcy()" class="btn-leave" style="width: 100%; margin-top: 6px; display: none; background: linear-gradient(135deg, #ef4444, #dc2626);">💸 İflas Et</button>
                             <button onclick="leaveGame()" class="btn-leave" style="width: 100%; margin-top: 6px;">Çıkış</button>
                         </div>
@@ -612,6 +613,42 @@
 
     <!-- Emoji Effect Container -->
     <div id="emojiEffectContainer" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
+    <!-- Money Animation Container -->
+    <div id="moneyAnimationContainer" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9998;"></div>
+
+    <!-- Achievement Notification Container -->
+    <div id="achievementContainer" style="position: fixed; top: 80px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
+    <!-- Statistics Modal -->
+    <div id="statisticsModal" class="trade-offer-modal" style="display: none;">
+        <div class="trade-offer-overlay" onclick="closeStatisticsModal()"></div>
+        <div class="trade-offer-content" style="max-width: 600px;">
+            <h2 style="margin-top: 0; text-align: center;">📊 Oyun İstatistikleri</h2>
+            <div id="statisticsContent" style="max-height: 400px; overflow-y: auto; padding: 20px;"></div>
+            <button class="btn-primary" onclick="closeStatisticsModal()" style="width: 100%; margin-top: 20px;">Kapat</button>
+        </div>
+    </div>
+
+    <!-- Auction Modal -->
+    <div id="auctionModal" class="trade-offer-modal" style="display: none;">
+        <div class="trade-offer-overlay"></div>
+        <div class="trade-offer-content" style="max-width: 500px;">
+            <h2 style="margin-top: 0; text-align: center;">🔨 Açık Arttırma</h2>
+            <div id="auctionPropertyName" style="text-align: center; font-size: 1.3em; margin: 15px 0; color: #60a5fa;"></div>
+            <div id="auctionCurrentBid" style="text-align: center; font-size: 1.8em; font-weight: bold; margin: 20px 0; color: #22c55e;"></div>
+            <div id="auctionTimer" style="text-align: center; font-size: 1.1em; margin: 15px 0; color: #f59e0b;"></div>
+            <div id="auctionBidders" style="margin: 20px 0; max-height: 150px; overflow-y: auto;"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <input type="number" id="auctionBidInput" placeholder="Teklifiniz..." style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: 2px solid rgba(96,165,250,0.3); border-radius: 8px; color: white; font-size: 1em;">
+                <button class="btn-primary" onclick="placeBid()" style="padding: 12px 20px;">Teklif Ver</button>
+            </div>
+            <button class="btn-ghost" onclick="passAuction()" style="width: 100%; margin-top: 10px;">Pas Geç</button>
+        </div>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="game.js"></script>

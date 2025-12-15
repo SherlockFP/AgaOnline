@@ -285,7 +285,8 @@ socket.on('diceRolled', (data) => {
 
     setTimeout(() => {
         dice1El.textContent = data.dice1;
-        resultEl.textContent = `Zar: ${data.total}`;
+        // Remove the dice result text as requested
+        resultEl.textContent = '';
         dice1El.classList.remove('rolling');
     }, 600);
 
@@ -348,11 +349,13 @@ socket.on('diceRolled', (data) => {
 
     // Auto-end turn after dice roll and actions are complete
     // Wait for animations and possible popups, then auto-end turn
+    // Only end turn if it's still the current player's turn
     setTimeout(() => {
+        // Check if turn has already advanced due to special actions
         if (gameState.players[gameState.currentTurn].id === socket.id) {
             endTurn();
         }
-    }, 4000); // 4 seconds should be enough for most actions
+    }, 5000); // 5 seconds should be enough for most actions
 });
 
 socket.on('propertyBought', (data) => {

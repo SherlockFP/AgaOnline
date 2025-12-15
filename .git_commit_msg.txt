@@ -1,18 +1,21 @@
-﻿fix: Critical bugs and UI improvements
+﻿fix: Critical turn system and event log fixes
 
-## Bug Fixes:
-- **Card Messages**: Fixed card messages not showing actual card text (was showing "kart çekti" instead of real messages like "Banka hatası! Sana ₺200 ödendi")
-- **Turn Advancement**: Fixed turn not advancing when landing on Community Chest in 2-player games
-- **Board Scaling**: Adjusted board text sizes to look good at 90% zoom level
+## Critical Bug Fixes:
+- **Turn Advancement**: Fixed turn not passing properly when landing on Community Chest in 2-player games
+- **Dice Result Text**: Removed unnecessary "Zar: X" text under dice display
+- **Event Log Messages**: Fixed card messages showing actual card content in player's color
+- **Event Log Ordering**: Ensured newest events stay on top, oldest are removed when limit reached
 
-## UI Improvements:
-- **Event Log Design**: Enhanced event log styling with better borders, backgrounds, and hover effects
-- **Board Text**: Made board text slightly larger for better readability
-- **Dice Display**: Updated single die display (removed second die)
+## Game Flow Improvements:
+- **Turn Logic**: Enhanced turn advancement to work correctly for all special spaces
+- **Card Display**: Community Chest and Chance cards now show their actual messages
+- **Event Colors**: Events now display in the color of the player who triggered them
+- **Board Events**: Shortened board event messages for better readability
 
 ## Technical Changes:
-- **Server Card Logic**: Updated server to send proper card message format
-- **Client Event Handling**: Fixed card message display in board events and main event log
-- **Turn Logic**: Ensured turn advancement works correctly after special space landings
+- **Turn Checks**: Added proper validation before ending turns
+- **Message Formatting**: Improved event message extraction and coloring
+- **Dice Display**: Simplified dice display to show only the rolled number
+- **Event Management**: Better event log management with color coding
 
-All card messages now display properly, turn advancement works correctly, and board text is more readable at different zoom levels.
+Turn system now works like proper Monopoly - turns advance correctly after special space actions. Card messages display properly and event log is more readable.

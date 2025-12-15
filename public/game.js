@@ -21,34 +21,14 @@ function initializeBackgroundMusic() {
     if (backgroundAudio) return; // Prevent multiple initializations
     backgroundAudio = new Audio();
     backgroundAudio.loop = true;
-    backgroundAudio.volume = 0.2; // Higher volume for main menu
+    backgroundAudio.volume = 0; // Başlangıçta sessiz
     backgroundAudio.src = '/music/music.mp3';
     backgroundAudio.preload = 'auto';
     loadMusicTracks();
-
-    // Try to play immediately (may be blocked)
-    const tryPlay = () => {
-        backgroundAudio.play().then(() => {
-            isPlayingMusic = true;
-            console.log('Music started automatically');
-        }).catch(e => {
-            console.log('Auto-play blocked, waiting for user interaction:', e);
-            isPlayingMusic = false;
-            // Set up click-to-play for the whole document
-            const startMusic = () => {
-                backgroundAudio.play().then(() => {
-                    isPlayingMusic = true;
-                    document.removeEventListener('click', startMusic);
-                    document.removeEventListener('keydown', startMusic);
-                });
-            };
-            document.addEventListener('click', startMusic, { once: true });
-            document.addEventListener('keydown', startMusic, { once: true });
-        });
-    };
-
-    // Delay to ensure DOM is ready
-    setTimeout(tryPlay, 100);
+    isPlayingMusic = false;
+    
+    // Müzik otomatik başlamasın - kullanıcı slider'ı sağa çekince başlayacak
+    console.log('Müzik hazır - slider ile açabilirsiniz');
 }
 
 // Update music button state
@@ -100,7 +80,19 @@ function pauseBackgroundMusic() {
 // Set music volume
 function setMusicVolume(value) {
     const vol = parseInt(value) / 100;
-    if (backgroundAudio) backgroundAudio.volume = vol;
+    if (backgroundAudio) {
+        backgroundAudio.volume = vol;
+        // Slider sağa çekilince müziği başlat
+        if (vol > 0 && !isPlayingMusic) {
+            backgroundAudio.play().then(() => {
+                isPlayingMusic = true;
+                console.log('Müzik başlatıldı');
+            }).catch(e => console.log('Play failed:', e));
+        } else if (vol === 0) {
+            backgroundAudio.pause();
+            isPlayingMusic = false;
+        }
+    }
     const percent = document.getElementById('volumePercent');
     if (percent) percent.textContent = value;
 }

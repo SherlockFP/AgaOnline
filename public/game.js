@@ -362,12 +362,13 @@ socket.on('diceRolled', (data) => {
         addBoardEvent(`${data.player.name} özel alana geldi`, data.player.color);
     }
 
-    // Animate player movement
-    setTimeout(() => {
+    // Animate player movement - step by step with trail
+    const oldPosition = playerIdx >= 0 ? (data.newPosition - data.total + 40) % 40 : 0;
+    animatePlayerMove(data.player.id, oldPosition, data.newPosition, data.player.color, () => {
         updateGameBoard();
         updateGamePlayersPanel();
         updateTurnDisplay();
-    }, 800);
+    });
 
     // Sıradaki oyuncu ben miyim?
     const isMyTurn = gameState.players[gameState.currentTurn]?.id === socket.id;
@@ -1126,27 +1127,83 @@ function arrangeBoardSpaces() {
     });
 }
 
-function animatePlayerMove(playerId, newPosition) {
+function animatePlayerMove(playerId, startPos, endPos, playerColor, callback) {
     const player = gameState.players.find(p => p.id === playerId);
-    if (!player) return;
+    if (!player) {
+        if (callback) callback();
+        return;
+    }
     
-    // Update gameState position
-    gameState.players.find(p => p.id === playerId).position = newPosition;
+    // Calculate path (handle wrapping around board)
+    let currentPos = startPos;
+    const steps = [];
     
-    // Animate the move
-    const startSpace = document.querySelector(`.board-space[data-id="${player.position}"]`);
-    const endSpace = document.querySelector(`.board-space[data-id="${newPosition}"]`);
-    
-    if (startSpace && endSpace) {
-        const token = startSpace.querySelector(`.player-token[style*="${player.color}"]`);
-        if (token) {
-            token.classList.add('moving');
-            setTimeout(() => {
-                token.classList.remove('moving');
-                updateGameBoard();
-            }, 600);
+    if (endPos >= startPos) {
+        // Forward movement
+        for (let i = startPos + 1; i <= endPos; i++) {
+            steps.push(i);
+        }
+    } else {
+        // Wrapping around (passing GO)
+        for (let i = startPos + 1; i < 40; i++) {
+            steps.push(i);
+        }
+        for (let i = 0; i <= endPos; i++) {
+            steps.push(i);
         }
     }
+    
+    // Animate step by step
+    let stepIndex = 0;
+    const stepDelay = 150; // ms per step
+    
+    function moveNextStep() {
+        if (stepIndex >= steps.length) {
+            // Animation complete
+            player.position = endPos;
+            if (callback) callback();
+            return;
+        }
+        
+        const nextPos = steps[stepIndex];
+        currentPos = nextPos;
+        
+        // Update token position visually
+        const spaces = document.querySelectorAll('.board-space');
+        spaces.forEach(space => {
+            const tokens = space.querySelectorAll('.player-token');
+            tokens.forEach(token => {
+                if (token.dataset.playerId === playerId) {
+                    token.remove();
+                }
+            });
+        });
+        
+        // Add token to new position with moving class
+        const targetSpace = document.querySelector(`.board-space[data-id="${currentPos}"]`);
+        if (targetSpace) {
+            const token = document.createElement('div');
+            token.className = 'player-token moving';
+            token.style.background = playerColor;
+            token.style.borderColor = playerColor;
+            token.title = player.name;
+            token.dataset.playerId = playerId;
+            token.dataset.playerColor = playerColor;
+            token.textContent = player.appearance || '👤';
+            token.style.fontSize = '1.3em';
+            targetSpace.appendChild(token);
+            
+            // Play move sound
+            if (stepIndex === 0 || stepIndex % 3 === 0) {
+                playSound('soundMove');
+            }
+        }
+        
+        stepIndex++;
+        setTimeout(moveNextStep, stepDelay);
+    }
+    
+    moveNextStep();
 }
 
 function updateGameBoard() {

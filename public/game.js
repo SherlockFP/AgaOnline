@@ -1415,9 +1415,10 @@ function updateGameBoard() {
             space.classList.add('owned');
             space.style.opacity = '1';
             // Kutuyu tamamen oyuncu rengiyle doldur
-            space.style.borderBottom = `4px solid ${owner.color}`;
-            space.style.background = `${owner.color}`;
-            space.style.boxShadow = `0 4px 14px ${owner.color}99, 0 0 0 3px ${owner.color} inset, 0 0 20px ${owner.color}66`;
+            space.style.borderBottom = `3px solid ${owner.color}88`;
+            // Subtle owner tint instead of full bright fill
+            space.style.background = `linear-gradient(135deg, ${owner.color}22, rgba(15,23,42,0.18))`;
+            space.style.boxShadow = `0 3px 8px ${owner.color}33, inset 0 0 0 2px rgba(0,0,0,0.12)`;
             
             // Text'leri beyaz yap ki görünsün
             const nameEl = space.querySelector('.space-name');

@@ -810,20 +810,19 @@ body {
 /* boardGlow animasyonu kaldırıldı - göz yormaması için */
 
 .board-space {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
-    border: 2px solid rgba(96, 165, 250, 0.4);
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.96) 0%, rgba(15, 23, 42, 0.99) 100%);
+    border: 1.5px solid rgba(96, 165, 250, 0.26);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 12px 10px; /* slightly bigger tiles */
-    font-size: 1em;
+    padding: 16px 12px; /* larger tiles */
+    font-size: 1.05em;
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), 
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    opacity: 0.85;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    opacity: 0.98;
     overflow: hidden;
     min-width: 0;
     word-wrap: break-word;
@@ -847,7 +846,7 @@ body {
 }
 
 .board-space:hover::before {
-    opacity: 1;
+    opacity: 0.85;
 }
 
 .board-space[style*="cursor: pointer"] {
@@ -855,22 +854,20 @@ body {
 }
 
 .board-space[style*="cursor: pointer"]:hover {
-    background: rgba(96, 165, 250, 0.25);
-    border-color: rgba(96, 165, 250, 0.6);
+    background: rgba(96, 165, 250, 0.12);
+    border-color: rgba(96, 165, 250, 0.36);
     z-index: 10;
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.4);
+    transform: scale(1.03);
+    box-shadow: 0 3px 8px rgba(96, 165, 250, 0.18);
 }
 
 .board-space.corner {
     background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 50%, #7c3aed 100%);
-    border: 3px solid rgba(139, 92, 246, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.45);
     font-weight: 700;
-    font-size: 0.9em;
+    font-size: 0.95em;
     color: white;
-    box-shadow: 0 5px 20px rgba(139, 92, 246, 0.6),
-                inset 0 2px 4px rgba(255, 255, 255, 0.2),
-                0 0 30px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 3px 10px rgba(139, 92, 246, 0.38), inset 0 1px 2px rgba(255, 255, 255, 0.08);
     animation: cornerPulse 3s ease-in-out infinite;
 }
 
@@ -914,9 +911,9 @@ body {
 /* Special space types - Jail / Visit (Silivri) */
 .board-space[data-type="jail"]:not(.owned),
 .board-space[data-type="gotojail"]:not(.owned) {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.08) 50%, rgba(239, 68, 68, 0.06) 100% ) !important;
-    border: 2px solid rgba(239, 68, 68, 0.25) !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.12), inset 0 1px 3px rgba(239, 68, 68, 0.06) !important;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.05) 50%, rgba(239, 68, 68, 0.04) 100% ) !important;
+    border: 1.5px solid rgba(239, 68, 68, 0.18) !important;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08), inset 0 1px 2px rgba(239, 68, 68, 0.04) !important;
     color: #fdecef;
 }
 
@@ -945,26 +942,20 @@ body {
 
 /* Active player space - highlight where players are */
 .board-space.active-player-space {
-    transform: scale(1.08) translateZ(0) !important;
+    transform: scale(1.06) translateZ(0) !important;
     z-index: 15 !important;
-    box-shadow: 0 6px 25px rgba(96, 165, 250, 0.7),
-                0 0 40px rgba(139, 92, 246, 0.5),
-                inset 0 0 20px rgba(96, 165, 250, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.35), 0 0 18px rgba(139, 92, 246, 0.22), inset 0 0 10px rgba(96, 165, 250, 0.12) !important;
     animation: playerSpacePulse 2s ease-in-out infinite;
 }
 
 @keyframes playerSpacePulse {
     0%, 100% {
-        transform: scale(1.08) translateZ(0);
-        box-shadow: 0 6px 25px rgba(96, 165, 250, 0.7),
-                    0 0 40px rgba(139, 92, 246, 0.5),
-                    inset 0 0 20px rgba(96, 165, 250, 0.2);
+        transform: scale(1.06) translateZ(0);
+        box-shadow: 0 4px 12px rgba(96, 165, 250, 0.35), 0 0 18px rgba(139, 92, 246, 0.22), inset 0 0 10px rgba(96, 165, 250, 0.12);
     }
     50% {
-        transform: scale(1.12) translateZ(0);
-        box-shadow: 0 8px 30px rgba(96, 165, 250, 0.9),
-                    0 0 50px rgba(139, 92, 246, 0.7),
-                    inset 0 0 25px rgba(96, 165, 250, 0.3);
+        transform: scale(1.08) translateZ(0);
+        box-shadow: 0 5px 14px rgba(96, 165, 250, 0.45), 0 0 22px rgba(139, 92, 246, 0.3), inset 0 0 12px rgba(96, 165, 250, 0.14);
     }
 }
 

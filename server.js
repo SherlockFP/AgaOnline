@@ -330,7 +330,17 @@ io.on('connection', (socket) => {
     const player = lobby.players.find(p => p.id === socket.id);
     if (player) {
       if (data.appearance) player.appearance = data.appearance;
-      if (data.color) player.color = data.color;
+      
+      // Check if color is already taken by another player
+      if (data.color) {
+        const colorTaken = lobby.players.some(p => p.id !== socket.id && p.color === data.color);
+        if (colorTaken) {
+          socket.emit('error', 'Bu renk başka bir oyuncu tarafından seçildi.');
+          return;
+        }
+        player.color = data.color;
+      }
+      
       io.to(lobbyId).emit('lobbyUpdated', lobby);
     }
   });

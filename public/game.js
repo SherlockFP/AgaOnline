@@ -870,23 +870,55 @@ function updateGoMoney() {
     }
 
     function updateColorSelector(players) {
-            const shouldLock = colorsLocked || (currentLobby && currentLobby.started);
+        const shouldLock = colorsLocked || (currentLobby && currentLobby.started);
         const usedColors = players.map(p => p.color);
-        document.querySelectorAll('.color-btn-large').forEach(btn => {
-            const color = btn.dataset.color;
-            const isTaken = usedColors.includes(color) && color !== selectedColor;
+        
+        // Get current player's color
+        const myPlayer = players.find(p => p.id === socket.id);
+        const myColor = myPlayer ? myPlayer.color : selectedColor;
+        
+        // Update both board center and left panel color buttons
+        document.querySelectorAll('.color-btn-large, #colorPickerPanel button').forEach(btn => {
+            // Get color from data attribute or onclick
+            let color = btn.dataset?.color;
+            if (!color) {
+                const onclick = btn.getAttribute('onclick');
+                const match = onclick?.match(/'(#[a-f0-9]{6})'/i);
+                color = match ? match[1] : null;
+            }
+            if (!color) return;
+            
+            const isTaken = usedColors.includes(color) && color !== myColor;
             const takenBy = isTaken ? players.find(p => p.color === color)?.name : '';
 
             btn.classList.toggle('taken', isTaken);
+            
+            // Visual feedback for taken colors
             if (isTaken) {
-                btn.setAttribute('data-taken-by', takenBy);
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'not-allowed';
+                btn.style.filter = 'grayscale(50%)';
+                btn.title = `${takenBy} seçti`;
+                
+                // Add checkmark for taken colors
+                if (!btn.querySelector('.taken-marker')) {
+                    const marker = document.createElement('div');
+                    marker.className = 'taken-marker';
+                    marker.innerHTML = '✓';
+                    marker.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;';
+                    btn.style.position = 'relative';
+                    btn.appendChild(marker);
+                }
             } else {
-                btn.removeAttribute('data-taken-by');
+                btn.style.opacity = shouldLock ? '0.6' : '1';
+                btn.style.cursor = shouldLock ? 'not-allowed' : 'pointer';
+                btn.style.filter = 'none';
+                btn.title = '';
+                const marker = btn.querySelector('.taken-marker');
+                if (marker) marker.remove();
             }
 
             btn.disabled = isTaken || shouldLock;
-            btn.style.opacity = (isTaken || shouldLock) ? '0.35' : '1';
-            btn.style.cursor = (isTaken || shouldLock) ? 'not-allowed' : 'pointer';
         });
     }
 
@@ -1981,6 +2013,18 @@ socket.on('playerBankrupt', (data) => {
 
 // Select player color from board center
 function selectPlayerColor(color) {
+    // Check if color is already taken
+    if (currentLobby) {
+        const myPlayer = currentLobby.players.find(p => p.id === socket.id);
+        const isTaken = currentLobby.players.some(p => p.color === color && p.id !== socket.id);
+        
+        if (isTaken) {
+            const takenBy = currentLobby.players.find(p => p.color === color);
+            alert(`Bu renk ${takenBy?.name} tarafından seçildi. Lütfen başka renk seçin.`);
+            return;
+        }
+    }
+    
     const preview = document.getElementById('selectedColorPreview');
     if (preview) {
         preview.style.background = `linear-gradient(135deg, ${color}44, ${color}22)`;
@@ -1990,6 +2034,7 @@ function selectPlayerColor(color) {
     }
     
     // Update player color
+    selectedColor = color;
     socket.emit('updatePlayer', { color });
     console.log('🎨 Renk seçildi:', color);
 }

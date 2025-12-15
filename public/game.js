@@ -296,8 +296,9 @@ socket.on('diceRolled', (data) => {
     }, 600);
 
     // Show end turn button to current player after rolling dice
-    if (endTurnBtn) {
-        endTurnBtn.style.display = gameState.players[gameState.currentTurn].id === socket.id ? 'block' : 'none';
+    const isMyTurn = gameState.players[gameState.currentTurn].id === socket.id;
+    if (endTurnBtn && isMyTurn) {
+        endTurnBtn.style.display = 'block';
     }
 
     // Hide roll button after rolling
@@ -323,25 +324,25 @@ socket.on('diceRolled', (data) => {
 
     // Show GO passed message
     if (data.passedGo) {
-        addEvent(`✨ ${data.player.name} BAŞLA'dan geçti ve ${data.currency}${data.goMoney} bonus para aldı!`);
+        addEvent(`✨ ${data.player.name} BAŞLA'dan geçti ve ${data.currency}${data.goMoney} bonus para aldı!`, data.player.color);
         addBoardEvent(`${data.player.name} BAŞLA'dan geçti (+${data.currency}${data.goMoney})`);
     }
 
     // Show card message if chance/chest card
     if (data.cardMessage) {
-        addEvent(`🎴 ${data.cardMessage}`);
+        addEvent(`🎴 ${data.player.name}: ${data.cardMessage}`, data.player.color);
         addBoardEvent(`${data.player.name} ${data.cardMessage}`);
     }
 
     // Show tax message
     if (data.taxMessage) {
-        addEvent(`💸 ${data.taxMessage}`);
+        addEvent(`💸 ${data.taxMessage}`, data.player.color);
         addBoardEvent(`${data.player.name} vergi ödedi`);
     }
 
     // Show special space messages
     if (data.specialMessage) {
-        addEvent(data.specialMessage);
+        addEvent(data.specialMessage, data.player.color);
         addBoardEvent(`${data.player.name} özel alana geldi`);
     }
 
@@ -376,7 +377,7 @@ socket.on('propertyBought', (data) => {
         gameState.players[playerIdx] = { ...gameState.players[playerIdx], ...data.player };
     }
 
-    addEvent(`${data.player.name}, ${data.property.name} mülkünü satın aldı`);
+    addEvent(`${data.player.name}, ${data.property.name} mülkünü satın aldı`, data.player.color);
     addBoardEvent(`${data.player.name} ${data.property.name} aldı`);
     playSound('soundBuy');
     updateGameBoard();
@@ -395,7 +396,7 @@ socket.on('houseBuilt', (data) => {
         gameState.players[playerIdx].money = data.player.money;
     }
 
-    addEvent(`🏠 ${data.message}`);
+    addEvent(`🏠 ${data.message}`, data.player.color);
     playSound('soundBuy');
     updateGameBoard();
     updateOwnedProperties();
@@ -417,7 +418,7 @@ socket.on('houseSold', (data) => {
         gameState.players[playerIdx].money = data.player.money;
     }
 
-    addEvent(`💸 ${data.message}`);
+    addEvent(`💸 ${data.message}`, data.player.color);
     updateGameBoard();
     updateOwnedProperties();
     updateGamePlayersPanel();
@@ -457,11 +458,14 @@ socket.on('turnEnded', (data) => {
         rollBtn.disabled = true;
     }
 
+    // Hide end turn button since turn just changed
     const endTurnBtn = document.getElementById('endTurnBtn');
-    endTurnBtn.style.display = isMyTurn ? 'block' : 'none';
+    endTurnBtn.style.display = 'none';
 
     const diceResult = document.getElementById('diceResult');
     if (diceResult) diceResult.textContent = 'Zarı at';
+    
+    console.log(`✅ Sıra değişti: ${currentPlayer.name} (${data.currentTurn})`);
 });
 
 socket.on('messageReceived', (data) => {
@@ -1369,33 +1373,36 @@ function sellHouse() {
     }
 }
 
-function addEvent(message) {
+function addEvent(message, playerColor = null) {
     // Add to left panel event log
     const eventLog = document.getElementById('eventLog');
     if (eventLog) {
-        // Try to extract player name from message and get their color
-        let playerColor = '#ffffff'; // Default color
-        const players = gameState ? gameState.players : [];
+        // If playerColor not provided, try to extract player name from message and get their color
+        if (!playerColor) {
+            playerColor = '#60a5fa'; // Default accent color
+            const players = gameState ? gameState.players : [];
 
-        // Common message patterns that include player names
-        const playerPatterns = [
-            /^([^,]+),\s/,  // "Player name, mülkünü satın aldı"
-            /^✨\s*([^,]+)\s/,  // "✨ Player name BAŞLA'dan geçti"
-            /^👮\s*([^,]+)\s/,  // "👮 Player name hapishaneden çıktı"
-            /^💸\s*([^,]+)\s/,  // "💸 Player name vergi ödedi"
-            /^🎴\s*([^:]+):/,  // "🎴 Player name: card message"
-            /^💱\s*([^:]+):/,  // "💱 Player name: trade message"
-            /^🏠\s*([^:]+):/,  // "🏠 Player name: house message"
-        ];
+            // Common message patterns that include player names
+            const playerPatterns = [
+                /^([^,]+),\s/,  // "Player name, mülkünü satın aldı"
+                /^✨\s*([^\s]+)/,  // "✨ Player name BAŞLA'dan geçti"
+                /^👮\s*([^\s]+)/,  // "👮 Player name hapishaneden çıktı"
+                /^💸\s*([^\s]+)/,  // "💸 Player name vergi ödedi"
+                /^🎴\s*([^:]+):/,  // "🎴 Player name: card message"
+                /^💱\s*([^:]+):/,  // "💱 Player name: trade message"
+                /^🏠\s*([^\s]+)/,  // "🏠 Player name ev dikti"
+                /^([^\s]+)\s+bought/,  // "Player name bought property"
+            ];
 
-        for (const pattern of playerPatterns) {
-            const match = message.match(pattern);
-            if (match) {
-                const playerName = match[1].trim();
-                const player = players.find(p => p.name === playerName);
-                if (player) {
-                    playerColor = player.color;
-                    break;
+            for (const pattern of playerPatterns) {
+                const match = message.match(pattern);
+                if (match) {
+                    const playerName = match[1].trim();
+                    const player = players.find(p => p.name === playerName);
+                    if (player) {
+                        playerColor = player.color;
+                        break;
+                    }
                 }
             }
         }
@@ -1403,19 +1410,37 @@ function addEvent(message) {
         const item = document.createElement('div');
         item.className = 'event-item';
         item.textContent = message;
+        
+        // Enhanced styling with player color as accent
+        const lighterColor = lightenColor(playerColor, 0.3);
         item.style.cssText = `
-            color: ${playerColor};
-            padding: 6px 8px;
-            border-bottom: 1px solid rgba(96, 165, 250, 0.1);
-            font-weight: 500;
+            background: linear-gradient(90deg, ${playerColor}22, transparent);
+            border-left: 4px solid ${playerColor};
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 0 8px 8px 0;
+            font-weight: 600;
             font-size: 0.9em;
+            color: ${lighterColor};
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
         `;
+
+        // Add hover effect
+        item.addEventListener('mouseenter', () => {
+            item.style.background = `linear-gradient(90deg, ${playerColor}44, transparent)`;
+            item.style.transform = 'translateX(3px)';
+        });
+        item.addEventListener('mouseleave', () => {
+            item.style.background = `linear-gradient(90deg, ${playerColor}22, transparent)`;
+            item.style.transform = 'translateX(0)';
+        });
 
         // Add new message to the top (newest first)
         eventLog.insertBefore(item, eventLog.firstChild);
 
-        // Keep only max 8 messages, remove oldest (bottom)
-        while (eventLog.children.length > 8) {
+        // Keep only max 12 messages, remove oldest (bottom)
+        while (eventLog.children.length > 12) {
             eventLog.removeChild(eventLog.lastChild);
         }
 
@@ -1754,7 +1779,7 @@ function declareBankruptcy() {
 
 // Handle bankruptcy events
 socket.on('playerBankrupt', (data) => {
-    addEvent(`💸 ${data.message}`);
+    addEvent(`💸 ${data.message}`, data.player.color);
     addBoardEvent(`${data.player.name} iflas etti!`);
     
     // Update player state

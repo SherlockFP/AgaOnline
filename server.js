@@ -483,7 +483,12 @@ io.on('connection', (socket) => {
       message: `${player.name} bought ${property.name}`
     });
 
-    lobby.events.push({ type: 'property-bought', player: player.name, property: property.name });
+    lobby.events.push({ 
+      type: 'property-bought', 
+      player: player.name, 
+      playerColor: player.color,
+      property: property.name 
+    });
   });
 
   socket.on('buildHouse', (data) => {
@@ -521,7 +526,13 @@ io.on('connection', (socket) => {
       message: `${player.name} ${property.name} üzerine ${buildType} dikti`
     });
 
-    lobby.events.push({ type: 'house-built', player: player.name, property: property.name, buildType });
+    lobby.events.push({ 
+      type: 'house-built', 
+      player: player.name, 
+      playerColor: player.color,
+      property: property.name, 
+      buildType 
+    });
   });
 
   socket.on('sellHouse', (data) => {
@@ -549,15 +560,27 @@ io.on('connection', (socket) => {
       message: `${player.name} ${property.name} üzerinden ${soldType} sattı`
     });
 
-    lobby.events.push({ type: 'house-sold', player: player.name, property: property.name, soldType });
+    lobby.events.push({ 
+      type: 'house-sold', 
+      player: player.name, 
+      playerColor: player.color,
+      property: property.name, 
+      soldType 
+    });
   });
 
   socket.on('endTurn', () => {
     const lobbyId = playerSockets.get(socket.id);
     const lobby = lobbies.get(lobbyId);
-    if (!lobby) return;
+    if (!lobby || !lobby.started) return;
 
     const currentPlayer = lobby.players[lobby.currentTurn];
+    
+    // Only current player can end their turn
+    if (currentPlayer.id !== socket.id) {
+      socket.emit('errorMessage', 'Sıra sende değil!');
+      return;
+    }
     
     // Check if current player has rolled dice
     if (!currentPlayer.hasRolled && !currentPlayer.inJail) {

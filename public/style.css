@@ -798,8 +798,8 @@ body {
     border: 2px solid rgba(96, 165, 250, 0.2);
     border-radius: 20px;
     display: grid;
-    grid-template-columns: repeat(11, 1fr);
-    grid-template-rows: repeat(11, 1fr);
+    grid-template-columns: 1.02fr repeat(9, 0.96fr) 1.02fr;
+    grid-template-rows: 1.02fr repeat(9, 0.96fr) 1.02fr;
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95);
     position: relative;
     gap: 0px; /* reduce center empty spacing */
@@ -904,11 +904,9 @@ body {
 
 /* Special space types - Community Chest (Kamu Sandığı) */
 .board-space[data-type="chest"]:not(.owned) {
-    background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%) !important;
-    border: 3px solid rgba(34, 197, 94, 0.8) !important;
-    box-shadow: 0 5px 20px rgba(34, 197, 94, 0.5),
-                inset 0 2px 4px rgba(255, 255, 255, 0.2),
-                0 0 30px rgba(34, 197, 94, 0.3) !important;
+    background: linear-gradient(135deg, rgba(22,163,74,0.12) 0%, rgba(21,128,61,0.08) 50%, rgba(22,101,52,0.06) 100%) !important;
+    border: 2px solid rgba(22,163,74,0.25) !important;
+    box-shadow: 0 3px 8px rgba(22,163,74,0.12), inset 0 1px 2px rgba(255,255,255,0.03) !important;
     font-weight: 700;
     color: white;
 }
@@ -924,22 +922,18 @@ body {
 
 /* Special space types - Railroads (Demiryolu) */
 .board-space[data-type="railroad"]:not(.owned) {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%) !important;
-    border: 3px solid rgba(14, 165, 233, 0.8) !important;
-    box-shadow: 0 5px 20px rgba(14, 165, 233, 0.5),
-                inset 0 2px 4px rgba(255, 255, 255, 0.2),
-                0 0 30px rgba(14, 165, 233, 0.3) !important;
+    background: linear-gradient(135deg, rgba(2,132,199,0.12) 0%, rgba(3,105,161,0.08) 50%, rgba(7,89,133,0.06) 100%) !important;
+    border: 2px solid rgba(2,132,199,0.25) !important;
+    box-shadow: 0 3px 8px rgba(2,132,199,0.12), inset 0 1px 2px rgba(255,255,255,0.03) !important;
     font-weight: 700;
     color: white;
 }
 
 /* Special space types - Utilities (Elektrik/Su) */
 .board-space[data-type="utility"]:not(.owned) {
-    background: linear-gradient(135deg, #ca8a04 0%, #a16207 50%, #854d0e 100%) !important;
-    border: 3px solid rgba(250, 204, 21, 0.8) !important;
-    box-shadow: 0 5px 20px rgba(250, 204, 21, 0.5),
-                inset 0 2px 4px rgba(255, 255, 255, 0.2),
-                0 0 30px rgba(250, 204, 21, 0.3) !important;
+    background: linear-gradient(135deg, rgba(6,182,212,0.10) 0%, rgba(6,140,166,0.07) 50%, rgba(5,109,133,0.05) 100%) !important;
+    border: 2px solid rgba(6,182,212,0.22) !important;
+    box-shadow: 0 3px 8px rgba(6,182,212,0.10), inset 0 1px 2px rgba(255,255,255,0.03) !important;
     font-weight: 700;
     color: white;
 }
@@ -1106,8 +1100,8 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 40%;
-    height: 40%;
+    width: 36%;
+    height: 36%;
     background: transparent;
     backdrop-filter: none;
     border: none;

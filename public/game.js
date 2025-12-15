@@ -322,6 +322,10 @@ socket.on('lobbyUpdated', (lobby) => {
 });
 
 socket.on('gameStarted', (lobby) => {
+    // Try to unlock audio early; also bound to first user interaction
+    if (typeof unlockAudio === 'function') {
+        unlockAudio();
+    }
     currentLobby = lobby;
     gameState = lobby;
     gameState.currentTradeOffer = null;  // Initialize trade offer tracking

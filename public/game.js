@@ -924,17 +924,17 @@ function updateGoMoney() {
                 btn.style.filter = 'grayscale(50%)';
                 btn.title = `${takenBy} seçti`;
                 
-                // Add player name label for taken colors
+                // Add player name label INSIDE the color box
                 if (!btn.querySelector('.taken-marker')) {
                     const marker = document.createElement('div');
                     marker.className = 'taken-marker';
-                    marker.innerHTML = `✓ ${takenBy}`;
-                    marker.style.cssText = 'position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; color: white; background: rgba(0,0,0,0.9); padding: 2px 6px; border-radius: 6px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,0.8); pointer-events: none; z-index: 10;';
+                    marker.innerHTML = takenBy;
+                    marker.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; color: white; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.9); pointer-events: none; z-index: 10; text-align: center; width: 90%;';
                     btn.style.position = 'relative';
                     btn.appendChild(marker);
                 }
             } else if (takenByPlayer && takenByPlayer.id === socket.id) {
-                // Show own name for selected color
+                // Show own name for selected color INSIDE the box
                 btn.style.opacity = '1';
                 btn.style.cursor = 'pointer';
                 btn.style.filter = 'none';
@@ -943,8 +943,8 @@ function updateGoMoney() {
                 if (!btn.querySelector('.taken-marker')) {
                     const marker = document.createElement('div');
                     marker.className = 'taken-marker';
-                    marker.innerHTML = `✓ ${takenBy}`;
-                    marker.style.cssText = 'position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #10b981; background: rgba(0,0,0,0.9); padding: 2px 6px; border-radius: 6px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,0.8); pointer-events: none; z-index: 10;';
+                    marker.innerHTML = takenBy;
+                    marker.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; color: white; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.9); pointer-events: none; z-index: 10; text-align: center; width: 90%;';
                     btn.style.position = 'relative';
                     btn.appendChild(marker);
                 }

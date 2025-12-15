@@ -325,6 +325,7 @@ io.on('connection', (socket) => {
       inJail: false,
       jailTurns: 0,
       hasRolled: false,
+      consecutiveDoubles: 0,
       isBankrupt: false,
       freeJailCards: 0
     });
@@ -394,6 +395,44 @@ io.on('connection', (socket) => {
     // Two dice like normal Monopoly
     const dice1 = Math.floor(Math.random() * 6) + 1;
     const dice2 = Math.floor(Math.random() * 6) + 1;
+    const isDoubles = dice1 === dice2;
+
+    // Track consecutive doubles per player
+    currentPlayer.consecutiveDoubles = currentPlayer.consecutiveDoubles || 0;
+    if (isDoubles) {
+      currentPlayer.consecutiveDoubles++;
+    } else {
+      currentPlayer.consecutiveDoubles = 0;
+    }
+
+    // If player rolled three doubles in a row, send to jail immediately (standard Monopoly rule)
+    if (currentPlayer.consecutiveDoubles >= 3) {
+      currentPlayer.position = 10; // Jail position
+      currentPlayer.inJail = true;
+      currentPlayer.jailTurns = 0;
+      currentPlayer.consecutiveDoubles = 0;
+      // Emit diceRolled so clients animate the dice and show jail move
+      io.to(lobbyId).emit('diceRolled', {
+        player: currentPlayer,
+        dice1,
+        dice2,
+        total: dice1 + dice2,
+        newPosition: currentPlayer.position,
+        landedSpace: lobby.properties[currentPlayer.position],
+        cardMessage: null,
+        taxMessage: null,
+        specialMessage: `${currentPlayer.name} üç kez art arda çift attı ve hapise gönderildi!`,
+        rentMessage: null,
+        passedGo: false,
+        goMoney: lobby.gameRules.goMoney,
+        currency: lobby.currency,
+        message: `${currentPlayer.name} üç çift attı ve hapise gönderildi!`,
+        isSpecialSpace: true,
+        isBuyableProperty: false
+      });
+      lobby.events.push({ type: 'gotojail', player: currentPlayer.name, reason: '3 consecutive doubles' });
+      return;
+    }
     const total = dice1 + dice2;
     const oldPosition = currentPlayer.position;
     let newPosition = (currentPlayer.position + total) % 40;

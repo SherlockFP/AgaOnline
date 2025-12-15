@@ -1592,6 +1592,13 @@ function openGiphyPicker() {
     }, 10);
 }
 
+function togglePanel(panelClass) {
+    const panel = document.querySelector('.' + panelClass);
+    if (panel) {
+        panel.classList.toggle('minimized');
+    }
+}
+
 function buildHouse() {
     if (selectedProperty) {
         socket.emit('buildHouse', { propertyId: selectedProperty.id });

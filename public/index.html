@@ -211,8 +211,13 @@
                         </div>
 
                         <div class="panel-section players-section">
-                            <h3>👥 Oyuncular</h3>
-                            <div id="playersList" class="players-list"></div>
+                            <div class="panel-header-toggle">
+                                <h3>👥 Oyuncular</h3>
+                                <button class="btn-toggle-panel" onclick="togglePanel('players-section')" title="Küçült/Genişlet">▲</button>
+                            </div>
+                            <div class="panel-content">
+                                <div id="playersList" class="players-list"></div>
+                            </div>
                         </div>
 
                         <div class="panel-section events-section" style="display: none;">
@@ -303,23 +308,37 @@
                     <!-- Right Panel - Chat & Events -->
                     <div class="right-panel">
                         <div class="panel-section owned-section">
-                            <h3>🏠 Mülklerim</h3>
-                            <div id="ownedPropertiesList" class="owned-list"></div>
+                            <div class="panel-header-toggle">
+                                <h3>🏠 Mülklerim</h3>
+                                <button class="btn-toggle-panel" onclick="togglePanel('owned-section')" title="Küçült/Genişlet">▲</button>
+                            </div>
+                            <div class="panel-content">
+                                <div id="ownedPropertiesList" class="owned-list"></div>
+                            </div>
                         </div>
 
                         <div class="panel-section trade-section">
-                            <h3>💰 Takas Merkezi</h3>
-                            <div id="tradeHistoryList" class="trade-history" style="margin-bottom: 10px; max-height: 120px; overflow: auto;"></div>
-                            <button onclick="openTradeModal()" class="btn-primary" style="width: 100%;">
-                                <span style="font-size: 1.2em;">💱</span> Takas Yap
-                            </button>
+                            <div class="panel-header-toggle">
+                                <h3>💰 Takas Merkezi</h3>
+                                <button class="btn-toggle-panel" onclick="togglePanel('trade-section')" title="Küçült/Genişlet">▲</button>
+                            </div>
+                            <div class="panel-content">
+                                <div id="tradeHistoryList" class="trade-history" style="margin-bottom: 10px; max-height: 120px; overflow: auto;"></div>
+                                <button onclick="openTradeModal()" class="btn-primary" style="width: 100%;">
+                                    <span style="font-size: 1.2em;">💱</span> Takas Yap
+                                </button>
+                            </div>
                         </div>
 
                         <div class="panel-section chat-section">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                <h3 style="margin: 0;">💬 Sohbet</h3>
-                                <button id="emojiBtn" onclick="toggleEmojiPanel()" class="btn-ghost" style="padding: 4px 8px; font-size: 1.2em;" title="Emoji efekt gönder">😀</button>
+                            <div class="panel-header-toggle">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h3 style="margin: 0;">💬 Sohbet</h3>
+                                    <button id="emojiBtn" onclick="toggleEmojiPanel()" class="btn-ghost" style="padding: 4px 8px; font-size: 1.2em;" title="Emoji efekt gönder">😀</button>
+                                </div>
+                                <button class="btn-toggle-panel" onclick="togglePanel('chat-section')" title="Küçült/Genişlet">▲</button>
                             </div>
+                            <div class="panel-content">
                             
                             <!-- Emoji Panel -->
                             <div id="emojiPanel" style="display: none; background: rgba(15, 23, 42, 0.95); border-radius: 8px; padding: 8px; margin-bottom: 8px; max-height: 120px; overflow-y: auto;">
@@ -354,6 +373,7 @@
                             
                             <div id="currentYoutubeMusic" style="display: none; margin-top: 8px; padding: 8px; background: rgba(255, 0, 0, 0.1); border-radius: 6px; border: 1px solid rgba(255, 0, 0, 0.3); font-size: 0.8em; color: rgba(255,255,255,0.9);">
                                 <span id="currentMusicTitle">🎵 Müzik çalıyor...</span>
+                            </div>
                             </div>
                         </div>
                     </div>

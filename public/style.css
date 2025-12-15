@@ -588,16 +588,66 @@ body {
     border: 2px solid rgba(96, 165, 250, 0.2);
     border-radius: 16px;
     padding: 20px;
-    overflow-y: auto;
+    overflow: visible;
     max-height: 400px;
+    transition: all 0.3s ease;
+}
+
+.panel-section.minimized {
+    max-height: 60px;
+    overflow: hidden;
+}
+
+.panel-section.minimized .panel-content {
+    display: none;
+}
+
+.panel-header-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(96, 165, 250, 0.2);
 }
 
 .panel-section h3 {
-    margin-bottom: 15px;
+    margin: 0;
     font-size: 1.2em;
     color: #60a5fa;
-    border-bottom: 2px solid rgba(96, 165, 250, 0.2);
-    padding-bottom: 10px;
+}
+
+.btn-toggle-panel {
+    background: rgba(96, 165, 250, 0.2);
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    border-radius: 6px;
+    color: #60a5fa;
+    cursor: pointer;
+    padding: 6px 10px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    min-width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-toggle-panel:hover {
+    background: rgba(96, 165, 250, 0.3);
+    border-color: rgba(96, 165, 250, 0.6);
+    transform: scale(1.1);
+}
+
+.panel-section.minimized .btn-toggle-panel {
+    transform: rotate(180deg);
+}
+
+.panel-section.minimized .btn-toggle-panel:hover {
+    transform: rotate(180deg) scale(1.1);
+}
+
+.panel-content {
+    transition: all 0.3s ease;
 }
 
 /* Players List */

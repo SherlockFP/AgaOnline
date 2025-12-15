@@ -334,6 +334,12 @@ socket.on('diceRolled', (data) => {
         addBoardEvent(`${data.player.name} vergi ödedi`);
     }
 
+    // Show rent message
+    if (data.rentMessage) {
+        addEvent(`🏠 ${data.rentMessage}`, data.player.color);
+        addBoardEvent(data.rentMessage);
+    }
+
     // Show special space messages
     if (data.specialMessage) {
         addEvent(data.specialMessage, data.player.color);
@@ -347,34 +353,56 @@ socket.on('diceRolled', (data) => {
         updateTurnDisplay();
     }, 800);
 
-    // Check if we landed on a buyable property
+    // Sıradaki oyuncu ben miyim?
+    const isMyTurn = gameState.players[gameState.currentTurn]?.id === socket.id;
+    console.log('🎲 Dice rolled - My turn?', isMyTurn);
+    
+    // Sadece sıradaki oyuncu sıra geçişini kontrol eder
+    if (!isMyTurn) {
+        console.log('⏭️ Not my turn, skipping auto-advance logic');
+        return;
+    }
+    
     const landedOnBuyable = data.isBuyableProperty;
     const isSpecialSpace = data.isSpecialSpace;
-    const isMyTurn = gameState.players[gameState.currentTurn]?.id === socket.id;
+    
+    console.log('🎲 Landed on:', { landedOnBuyable, isSpecialSpace, spaceName: data.landedSpace?.name });
 
-    if (landedOnBuyable && isMyTurn) {
-        // Show property popup
+    if (landedOnBuyable) {
+        // Satın alınabilir mülk - popup göster
+        console.log('🏠 Showing property popup');
         setTimeout(() => {
             showPropertyPopup(data.landedSpace);
         }, 1400);
         
-        // Auto-advance after 12 seconds if not bought
+        // 15 saniye sonra otomatik kapat ve sırayı geçir
         setTimeout(() => {
             const popup = document.getElementById('propertyPopup');
             if (popup && popup.style.display !== 'none') {
+                console.log('⏱️ Auto-closing property popup (15s timeout)');
                 closePopup();
-                socket.emit('advanceTurn');
             }
-        }, 12000);
-    } else if (isSpecialSpace && isMyTurn) {
-        // Auto-advance turn for special spaces after 2.5 seconds
+        }, 15000);
+    } else if (isSpecialSpace) {
+        // Özel kare (vergi, şans, vs) - 3 saniye sonra otomatik sıra geçir
+        console.log('⭐ Special space - auto advancing in 3s');
         setTimeout(() => {
+            console.log('📤 Auto-advancing turn after special space');
             socket.emit('advanceTurn');
-        }, 2500);
+        }, 3000);
+    } else {
+        // Normal durum - 2 saniye sonra sırayı geçir
+        console.log('🔄 Normal space - auto advancing in 2s');
+        setTimeout(() => {
+            console.log('📤 Auto-advancing turn');
+            socket.emit('advanceTurn');
+        }, 2000);
     }
 });
 
 socket.on('propertyBought', (data) => {
+    console.log('🏠 Property bought:', data.property.name);
+    
     // Sync local state with server payload
     const propIdx = gameState.properties.findIndex(p => p.id === data.property.id);
     if (propIdx >= 0) {
@@ -445,36 +473,47 @@ socket.on('houseSold', (data) => {
 });
 
 socket.on('turnEnded', (data) => {
+    console.log('✅ Turn ended, new turn:', data.currentTurn);
     gameState.currentTurn = data.currentTurn;
     const currentPlayer = gameState.players[gameState.currentTurn];
+    
     const gameStatus = document.getElementById('gameStatus');
-    gameStatus.textContent = `Oyun devam ediyor`;
+    if (gameStatus) {
+        gameStatus.textContent = `${currentPlayer.name} sırası`;
+    }
 
     // Update board center turn display
     const turnDisplay = document.getElementById('currentTurnDisplay');
-    updateTurnDisplay();
+    if (turnDisplay) {
+        updateTurnDisplay();
+    }
 
     updateGameBoard();
     updateGamePlayersPanel();
-
+    
+    // Sıradaki oyuncu ben miyim?
+    const isMyTurn = currentPlayer.id === socket.id;
+    console.log('🎯 Is my turn?', isMyTurn, 'My ID:', socket.id, 'Current player:', currentPlayer.id);
+    
     // Check if current player is in jail
     checkJailStatus();
 
-    // Show/hide roll button for current player only
+    // Zar butonunu göster/gizle
     const rollBtn = document.getElementById('rollBtn');
-    const isMyTurn = gameState.players[gameState.currentTurn].id === socket.id;
     const isInJail = currentPlayer && currentPlayer.inJail;
 
-    if (isMyTurn && !isInJail) {
-        rollBtn.style.display = 'block';
-        rollBtn.disabled = false;
-    } else {
-        rollBtn.style.display = 'none';
-        rollBtn.disabled = true;
+    if (rollBtn) {
+        if (isMyTurn && !isInJail) {
+            rollBtn.style.display = 'block';
+            rollBtn.disabled = false;
+        } else {
+            rollBtn.style.display = 'none';
+            rollBtn.disabled = true;
+        }
     }
 
     const diceResult = document.getElementById('diceResult');
-    if (diceResult) diceResult.textContent = 'Zarı at';
+    if (diceResult) diceResult.textContent = '';
     
     console.log(`✅ Sıra değişti: ${currentPlayer.name} (${data.currentTurn})`);
 });

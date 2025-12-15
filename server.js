@@ -434,6 +434,41 @@ io.on('connection', (socket) => {
       lobby.events.push({ type: cardType.toLowerCase(), player: currentPlayer.name, message: card.msg });
     }
 
+    // Check if landed on owned property (pay rent)
+    let rentMessage = null;
+    if (['property', 'railroad', 'utility'].includes(landedSpace.type) && landedSpace.owner && landedSpace.owner !== socket.id) {
+      const owner = lobby.players.find(p => p.id === landedSpace.owner);
+      if (owner && !owner.isBankrupt) {
+        let rentAmount = landedSpace.rent || 0;
+        
+        // Calculate rent based on houses
+        if (landedSpace.houses > 0) {
+          const houseRents = [landedSpace.rent1house, landedSpace.rent2house, landedSpace.rent3house, landedSpace.rent4house, landedSpace.renthotel];
+          rentAmount = houseRents[landedSpace.houses - 1] || rentAmount;
+        }
+        
+        // Pay rent
+        currentPlayer.money -= rentAmount;
+        owner.money += rentAmount;
+        
+        rentMessage = `${currentPlayer.name}, ${owner.name}'in mülküne geldi ve ${lobby.currency}${rentAmount} kira ödedi`;
+        if (landedSpace.houses > 0) {
+          const houseText = landedSpace.houses === 5 ? 'otel' : `${landedSpace.houses} ev`;
+          rentMessage += ` (${houseText})`;
+        }
+        
+        lobby.events.push({ 
+          type: 'rent-paid', 
+          player: currentPlayer.name, 
+          owner: owner.name, 
+          amount: rentAmount,
+          property: landedSpace.name,
+          playerColor: currentPlayer.color,
+          ownerColor: owner.color
+        });
+      }
+    }
+
     // Determine space type for client-side handling
     const isSpecialSpace = ['tax', 'chance', 'chest', 'parking', 'gotojail', 'go', 'jail'].includes(landedSpace.type);
     const isBuyableProperty = ['property', 'railroad', 'utility'].includes(landedSpace.type) && !landedSpace.owner;
@@ -448,6 +483,7 @@ io.on('connection', (socket) => {
       cardMessage,
       taxMessage,
       specialMessage,
+      rentMessage,
       passedGo,
       goMoney: lobby.gameRules.goMoney,
       currency: lobby.currency,
@@ -460,12 +496,19 @@ io.on('connection', (socket) => {
   socket.on('advanceTurn', () => {
     const lobbyId = playerSockets.get(socket.id);
     const lobby = lobbies.get(lobbyId);
-    if (!lobby || !lobby.started) return;
+    if (!lobby || !lobby.started) {
+      console.log('❌ advanceTurn: No lobby or not started');
+      return;
+    }
 
     const currentPlayer = lobby.players[lobby.currentTurn];
+    console.log('📥 advanceTurn received from:', socket.id, 'current player:', currentPlayer.id, 'match:', currentPlayer.id === socket.id);
     
     // Only current player can advance turn
-    if (currentPlayer.id !== socket.id) return;
+    if (currentPlayer.id !== socket.id) {
+      console.log('❌ advanceTurn: Not current player');
+      return;
+    }
     
     // Reset hasRolled flag
     currentPlayer.hasRolled = false;

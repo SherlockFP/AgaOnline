@@ -498,6 +498,9 @@ io.on('connection', (socket) => {
       lobby.events.push({ type: cardType.toLowerCase(), player: currentPlayer.name, message: card.msg });
     }
 
+    // Update newPosition after chance/chest card movements
+    newPosition = currentPlayer.position;
+    
     // Check if landed on owned property (pay rent)
     // Update landedSpace after chance/chest cards that might move player
     const finalPosition = currentPlayer.position;

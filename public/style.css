@@ -6,10 +6,9 @@
 }
 
 /* GPU Acceleration & Performance */
-.game-board, .player-token, .space, .event-item, .board-event-item, 
+.game-board, .player-token, .space, .event-item, .board-event-item,
 .property-card, .modal, .btn, button {
-        --board-scale: 1.15; /* increase board size independently (tiles larger) */
-        --board-scale-inv: 0.8695652174; /* 1 / 1.15 to keep inner text visually same size */
+    will-change: transform, opacity;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     backface-visibility: hidden;
@@ -22,15 +21,10 @@
     --bg-secondary: #0f172a;
     --bg-tertiary: #1e293b;
     --text-primary: #ffffff;
-        transform: translateZ(0) scale(var(--board-scale));
+    --text-secondary: rgba(255, 255, 255, 0.8);
     --accent: #60a5fa;
     --accent-hover: #3b82f6;
-    --board-scale: 0.92; /* scale board to mimic 90% site zoom while keeping page at 100% */
 }
-
-/* simple-mode removed: UI effects are kept unchanged unless toggled elsewhere */
-
-        transform: scale(var(--board-scale-inv));
 body.light-mode {
     --bg-primary: #ffffff;
     --bg-secondary: #f5f5f5;

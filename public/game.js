@@ -605,62 +605,52 @@ socket.on('diceRolled', (data) => {
     // Delay movement to give dice animation time to settle. Start movement after revealDelay + small pause.
     const movementDelay = (typeof revealDelay === 'number' ? revealDelay : 800) + 600;
     setTimeout(() => {
+        // Animate then handle post-move logic (popup, auto-advance) only after token arrives
         animatePlayerMove(data.player.id, startPos, data.newPosition, data.player.color, () => {
             updateGameBoard();
             updateGamePlayersPanel();
             updateTurnDisplay();
+
+            // Now decide next actions (only current player controls advancing)
+            const isMyTurn = gameState.players[gameState.currentTurn]?.id === socket.id;
+            if (!isMyTurn) {
+                console.log('⏭️ Not my turn after move, skipping post-move controls');
+                return;
+            }
+
+            const landedOnBuyable = data.isBuyableProperty;
+            const isSpecialSpace = data.isSpecialSpace;
+
+            console.log('🎲 Post-move landed on:', { landedOnBuyable, isSpecialSpace, spaceName: data.landedSpace?.name });
+
+            if (landedOnBuyable) {
+                // Show purchase popup now that token has arrived
+                console.log('🏠 Showing property popup on arrival');
+                showPropertyPopup(data.landedSpace);
+                // Do NOT auto-advance; waiting for player action
+                return;
+            }
+
+            if (isSpecialSpace) {
+                // If player was sent to jail, advance turn immediately (they won't get to act now)
+                if (data.player && data.player.inJail) {
+                    addEvent(`🔒 ${data.player.name} hapishaneye gönderildi!`, data.player.color);
+                    showToast('🔒 Hapishaneye gönderildin!', 'warning', 2500);
+                    console.log('🔒 Player was jailed; advancing turn');
+                    setTimeout(() => socket.emit('advanceTurn'), 1400);
+                } else {
+                    // Regular special space - short delay then advance
+                    console.log('⭐ Special space - advancing in 3s');
+                    setTimeout(() => socket.emit('advanceTurn'), 3000);
+                }
+                return;
+            }
+
+            // Normal space - advance after short delay
+            console.log('🔄 Normal space - advancing in 2s');
+            setTimeout(() => socket.emit('advanceTurn'), 2000);
         });
     }, movementDelay);
-
-    // Sıradaki oyuncu ben miyim?
-    const isMyTurn = gameState.players[gameState.currentTurn]?.id === socket.id;
-    console.log('🎲 Dice rolled - My turn?', isMyTurn);
-    
-    // Sadece sıradaki oyuncu sıra geçişini kontrol eder
-    if (!isMyTurn) {
-        console.log('⏭️ Not my turn, skipping auto-advance logic');
-        return;
-    }
-    
-    const landedOnBuyable = data.isBuyableProperty;
-    const isSpecialSpace = data.isSpecialSpace;
-    
-    console.log('🎲 Landed on:', { landedOnBuyable, isSpecialSpace, spaceName: data.landedSpace?.name });
-
-    if (landedOnBuyable) {
-        // Satın alınabilir mülk - popup göster
-        console.log('🏠 Showing property popup');
-        setTimeout(() => {
-            showPropertyPopup(data.landedSpace);
-        }, 1400);
-
-        // Otomatik kapatma kaldırıldı: kullanıcı kararıyla kapanacak
-    } else if (isSpecialSpace) {
-        // Special handling: if the player was sent to jail by card/space, don't allow them to continue moving
-        if (data.player && data.player.inJail && isMyTurn) {
-            // Show event and advance turn after movement (player sent to jail -> turn ends)
-            addEvent(`🔒 ${data.player.name} hapishaneye gönderildi!`, data.player.color);
-            showToast('🔒 Hapishaneye gönderildin!', 'warning', 2500);
-            console.log('🔒 Player sent to jail, advancing turn');
-            setTimeout(() => {
-                socket.emit('advanceTurn');
-            }, 1400);
-        } else {
-            // Özel kare (vergi, şans, vs) - 3 saniye sonra otomatik sıra geçir
-            console.log('⭐ Special space - auto advancing in 3s');
-            setTimeout(() => {
-                console.log('📤 Auto-advancing turn after special space');
-                socket.emit('advanceTurn');
-            }, 3000);
-        }
-    } else {
-        // Normal durum - 2 saniye sonra sırayı geçir
-        console.log('🔄 Normal space - auto advancing in 2s');
-        setTimeout(() => {
-            console.log('📤 Auto-advancing turn');
-            socket.emit('advanceTurn');
-        }, 2000);
-    }
 });
 
 socket.on('propertyBought', (data) => {

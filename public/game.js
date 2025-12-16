@@ -1219,6 +1219,8 @@ function initializeBoard() {
         // so country groups appear with the requested palette
         const groupColorMap = {
             'Mısır': 'brown',
+            'MISIR': 'brown',
+            'Misir': 'brown',
             'Türkiye': 'red',
             'Almanya': 'darkblue',
             'İtalya': 'green',

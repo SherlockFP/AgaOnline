@@ -2418,6 +2418,9 @@ socket.on('jailReleased', (data) => {
     showToast(`🔓 Hapishaneden çıktın!`, 'success', 4000);
     showAchievement('escapedJail');
 
+    // Ensure jail modal is closed when player is released
+    closeJailModal();
+
     if (data.dice1 && data.dice2) {
         // Player rolled doubles and moved
         setTimeout(() => {

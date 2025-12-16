@@ -916,14 +916,15 @@ body {
 .board-space.property::after {
     content: '';
     position: absolute;
-    left: 4px;
-    right: 4px;
-    top: 6px;
-    height: 14px; /* slightly taller for a nicer visual */
-    border-radius: 10px;
+    /* stretch a bit more so band can slightly overlap the name area */
+    left: 2px;
+    right: 2px;
+    top: 4px; /* move up slightly so it can sit under the name */
+    height: 20px; /* larger band to be visible over the tile */
+    border-radius: 12px;
     background: transparent;
     opacity: 0;
-    transition: background 180ms ease, opacity 180ms ease, transform 180ms ease;
+    transition: background 160ms ease, opacity 160ms ease, transform 160ms ease;
     transform: translateY(-2px);
     pointer-events: none;
     z-index: 1; /* keep the owner band behind the name/group text */
@@ -1317,20 +1318,20 @@ body {
 }
 
 .dice {
-    width: 60px;
-    height: 60px;
+    width: 52px; /* slightly smaller box */
+    height: 52px; /* slightly smaller box */
     background: linear-gradient(145deg, #ffffff, #e5e7eb);
     border: 2px solid rgba(15, 23, 42, 0.2);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5em;
+    font-size: 1.3em; /* adjusted for smaller box */
     font-weight: 800;
     color: #1f2937;
     box-shadow: 
-        0 10px 25px rgba(0, 0, 0, 0.3),
-        0 6px 12px rgba(0, 0, 0, 0.2),
+        0 8px 20px rgba(0, 0, 0, 0.28),
+        0 5px 10px rgba(0, 0, 0, 0.18),
         inset 0 2px 4px rgba(255, 255, 255, 0.9),
         inset 0 -2px 4px rgba(0, 0, 0, 0.1);
     animation: diceFloat 3s ease-in-out infinite;
@@ -1398,12 +1399,12 @@ body {
 }
 
 /* Use CSS content to show dice pips based on data-value */
-.dice[data-value="1"]::after { content: '⚀'; font-size: 2.5em; }
-.dice[data-value="2"]::after { content: '⚁'; font-size: 2.5em; }
-.dice[data-value="3"]::after { content: '⚂'; font-size: 2.5em; }
-.dice[data-value="4"]::after { content: '⚃'; font-size: 2.5em; }
-.dice[data-value="5"]::after { content: '⚄'; font-size: 2.5em; }
-.dice[data-value="6"]::after { content: '⚅'; font-size: 2.5em; }
+.dice[data-value="1"]::after { content: '⚀'; font-size: 2.2em; }
+.dice[data-value="2"]::after { content: '⚁'; font-size: 2.2em; }
+.dice[data-value="3"]::after { content: '⚂'; font-size: 2.2em; }
+.dice[data-value="4"]::after { content: '⚃'; font-size: 2.2em; }
+.dice[data-value="5"]::after { content: '⚄'; font-size: 2.2em; }
+.dice[data-value="6"]::after { content: '⚅'; font-size: 2.2em; }
 
 .dice::after {
     position: absolute;

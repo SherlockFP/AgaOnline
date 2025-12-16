@@ -386,6 +386,20 @@ function playSound(soundType) {
             osc.start(now);
             osc.stop(now + 0.05);
         }
+        else if (soundType === 'yourTurn') {
+            // Subtle single soft bell to indicate it's your turn
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            const now = audioContext.currentTime;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, now);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.start(now);
+            osc.stop(now + 0.45);
+        }
     } catch (e) {
         console.log('Sound failed:', e);
     }
@@ -1497,6 +1511,10 @@ function updateTurnDisplay() {
     const cp = gameState.players[gameState.currentTurn];
     const dot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${cp.color};border:1px solid #fff"></span>`;
     turnDisplay.innerHTML = `${dot} Sıra: ${cp.appearance} ${cp.name}`;
+    // Play a subtle sound when the turn becomes yours
+    if (cp && cp.id === socket.id) {
+        try { playSound('yourTurn'); } catch (e) {}
+    }
 }
 
 function initializeBoard() {
@@ -2467,19 +2485,17 @@ function addEvent(message, playerColor = null) {
             item.style.transform = 'translateX(0)';
         });
 
-        // Add new message to the bottom (oldest at top, newest at bottom)
-        eventLog.appendChild(item);
+        // Add new message to the top (newest first)
+        eventLog.insertBefore(item, eventLog.firstChild);
 
-        // Keep only max 5 messages, remove oldest (top)
+        // Keep only max 5 messages, remove oldest (bottom)
         const MAX_EVENTS = 5;
         while (eventLog.children.length > MAX_EVENTS) {
-            eventLog.removeChild(eventLog.firstChild);
+            eventLog.removeChild(eventLog.lastChild);
         }
 
-        // Auto-scroll to bottom so newest message is visible
-        setTimeout(() => {
-            eventLog.scrollTop = eventLog.scrollHeight;
-        }, 30);
+        // Scroll to top to show new message
+        eventLog.scrollTop = 0;
     }
 }
 

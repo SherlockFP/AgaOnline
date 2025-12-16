@@ -907,14 +907,14 @@ body {
 .board-space.property::after {
     content: '';
     position: absolute;
-    left: 6px;
-    right: 6px;
+    left: 4px;
+    right: 4px;
     top: 6px;
-    height: 10px;
-    border-radius: 8px;
+    height: 14px; /* slightly taller for a nicer visual */
+    border-radius: 10px;
     background: transparent;
     opacity: 0;
-    transition: background 220ms ease, opacity 220ms ease, transform 220ms ease;
+    transition: background 180ms ease, opacity 180ms ease, transform 180ms ease;
     transform: translateY(-2px);
     pointer-events: none;
     z-index: 1; /* keep the owner band behind the name/group text */
@@ -1129,6 +1129,7 @@ body {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    z-index: 60; /* ensure tokens sit above group badges and owner bands */
 }
 
 @keyframes tokenFloat {
@@ -1141,7 +1142,7 @@ body {
 }
 
 .player-token.moving {
-    animation: playerMove 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: playerMove 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .player-token.moving::after {
@@ -1152,7 +1153,7 @@ body {
     border-radius: 50%;
     background: inherit;
     opacity: 0.6;
-    animation: tokenTrail 0.6s ease-out infinite;
+    animation: tokenTrail 0.32s ease-out infinite;
     pointer-events: none;
     z-index: -1;
 }

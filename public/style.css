@@ -956,6 +956,12 @@ body {
     color: #ffffff;
 }
 
+/* Ensure Birleşik Krallık label and name are readable (white) */
+.board-space.group-birlesik-krallik .space-group,
+.board-space.group-birlesik-krallik .space-name {
+    color: #ffffff !important;
+}
+
 /* Special space types - Community Chest (Kamu Sandığı) */
 .board-space[data-type="chest"]:not(.owned) {
     /* Community chest - toned down green */
@@ -1077,6 +1083,11 @@ body {
     color: #fbbf24;
     font-weight: 700;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Slightly reduce text inside property cards for better balance */
+.property-card {
+    font-size: 0.95em;
 }
 
 .house-indicator {

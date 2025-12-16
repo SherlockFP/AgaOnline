@@ -1233,6 +1233,12 @@ function initializeBoard() {
             space.classList.add(groupColorMap[prop.group]);
         }
 
+        // Add a slug class for the group so we can target specific country labels in CSS
+        if (prop.group) {
+            const slug = prop.group.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, '-').replace(/[^a-zA-Z0-9\-]/g, '').toLowerCase();
+            if (slug) space.classList.add(`group-${slug}`);
+        }
+
         if (prop.type === 'go' || prop.type === 'jail' || prop.type === 'parking' || prop.type === 'gotojail') {
             space.classList.add('corner');
         } else if (prop.type === 'property') {

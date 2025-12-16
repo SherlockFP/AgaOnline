@@ -1402,6 +1402,61 @@ function animatePlayerMove(playerId, startPos, endPos, playerColor, callback) {
     moveNextStep();
 }
 
+// Helper: move local player to a specific board index (animates and updates state)
+function moveTo(index) {
+    if (!gameState) return;
+    const player = gameState.players.find(p => p.id === socket.id);
+    if (!player) return;
+    const start = player.position;
+    const end = ((index % 40) + 40) % 40;
+    animatePlayerMove(player.id, start, end, player.color, () => {
+        // after animation, refresh board
+        updateGameBoard();
+    });
+}
+
+// Helper: move local player back N steps
+function moveBack(steps) {
+    if (!gameState) return;
+    const player = gameState.players.find(p => p.id === socket.id);
+    if (!player) return;
+    const start = player.position;
+    const end = ((start - steps) % 40 + 40) % 40;
+    animatePlayerMove(player.id, start, end, player.color, () => updateGameBoard());
+}
+
+// Helper: find next space matching predicate from current player's position
+function findNextFromCurrent(predicate) {
+    if (!gameState) return -1;
+    const player = gameState.players.find(p => p.id === socket.id);
+    if (!player) return -1;
+    const start = player.position;
+    for (let i = 1; i < 40; i++) {
+        const idx = (start + i) % 40;
+        const prop = gameState.properties[idx];
+        if (prop && predicate(prop)) return idx;
+    }
+    return -1;
+}
+
+// Move to nearest railroad (demiryolu)
+function goToNearestRailroad() {
+    const idx = findNextFromCurrent(p => p.type === 'railroad');
+    if (idx >= 0) moveTo(idx);
+}
+
+// Move to nearest chance/chest card space (type 'chance' or 'chest')
+function goToNearestCard() {
+    const idx = findNextFromCurrent(p => p.type === 'chance' || p.type === 'chest');
+    if (idx >= 0) moveTo(idx);
+}
+
+// Generic: go to nearest space by type string (e.g., 'railroad','chance')
+function goToNearest(type) {
+    const idx = findNextFromCurrent(p => p.type === type);
+    if (idx >= 0) moveTo(idx);
+}
+
 function updateGameBoard() {
     // Update player positions on board
     const spaces = document.querySelectorAll('.board-space');

@@ -1303,35 +1303,15 @@ body {
 }
 
 .player-token.moving {
-    animation: playerMove 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* Quick walk/tap animation for movement without creating glow on the tile */
+    animation: playerWalk 0.22s linear both;
 }
 
-.player-token.moving::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: inherit;
-    opacity: 0.6;
-    animation: tokenTrail 0.32s ease-out infinite;
-    pointer-events: none;
-    z-index: -1;
-}
-
-@keyframes tokenTrail {
-    0% {
-        transform: scale(1);
-        opacity: 0.6;
-    }
-    50% {
-        transform: scale(1.8);
-        opacity: 0.3;
-    }
-    100% {
-        transform: scale(2.5);
-        opacity: 0;
-    }
+@keyframes playerWalk {
+    0% { transform: translate(-50%, 0) translateZ(0) scale(1); }
+    30% { transform: translate(-50%, -3px) translateZ(0) scale(1.02); }
+    60% { transform: translate(-50%, 0) translateZ(0) scale(0.99); }
+    100% { transform: translate(-50%, 0) translateZ(0) scale(1); }
 }
 
 /* Property color classes removed - will use owner color instead */

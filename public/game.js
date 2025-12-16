@@ -1113,7 +1113,7 @@ function createLobby() {
     }
     // Use host settings panel values (do not prompt with browser prompts)
     const maxPlayers = parseInt(document.getElementById('lobbyMaxPlayers')?.value) || 12;
-    const requiredPlayers = parseInt(document.getElementById('lobbyRequiredPlayers')?.value) || 2;
+    const requiredPlayers = parseInt(document.getElementById('lobbyRequiredPlayers')?.value) || 1;
     const password = document.getElementById('lobbyPassword')?.value || null;
 
     socket.emit('createLobby', {
@@ -1273,7 +1273,7 @@ function updateLobbyUI() {
     if (currentLobby.host === socket.id && !currentLobby.started) {
         startBtn.style.display = 'block';
         // Disable start until requiredPlayers reached
-        const required = currentLobby.requiredPlayers || 2;
+        const required = currentLobby.requiredPlayers || 1;
         startBtn.disabled = currentLobby.players.length < required;
     } else if (startBtn) {
         startBtn.style.display = 'none';
@@ -1284,7 +1284,7 @@ function updateLobbyUI() {
     const reqIn = document.getElementById('lobbyRequiredPlayers');
     const pwIn = document.getElementById('lobbyPassword');
     if (maxIn) maxIn.value = currentLobby.maxPlayers || 12;
-    if (reqIn) reqIn.value = currentLobby.requiredPlayers || 2;
+    if (reqIn) reqIn.value = currentLobby.requiredPlayers || 1;
     if (pwIn) pwIn.value = currentLobby.password || '';
 
     // Show setup panel only to host
@@ -1327,7 +1327,7 @@ function submitLobbySettings() {
     const pwIn = document.getElementById('lobbyPassword');
     const settings = {};
     if (maxIn) settings.maxPlayers = parseInt(maxIn.value) || 12;
-    if (reqIn) settings.requiredPlayers = parseInt(reqIn.value) || 2;
+    if (reqIn) settings.requiredPlayers = parseInt(reqIn.value) || 1;
     if (pwIn) settings.password = pwIn.value ? pwIn.value : null;
     socket.emit('updateLobbySettings', settings);
     addEvent('🛠️ Ev sahibi ayarları güncelledi');
@@ -1725,9 +1725,9 @@ function animatePlayerMove(playerId, startPos, endPos, playerColor, callback, in
         }
     }
     
-    // Animate step by step
+    // Animate step by step (short delay for a quick walk feel)
     let stepIndex = 0;
-    const stepDelay = 150; // ms per step
+    const stepDelay = 90; // ms per step (faster movement)
     
     function moveNextStep() {
         if (stepIndex >= steps.length) {

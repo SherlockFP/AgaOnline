@@ -74,10 +74,10 @@ function buildBoard(names) {
 // Scale property prices and rents according to game economy
 function applyEconomyScale(lobby) {
   if (lobby._pricesScaled) return;
-  const baseMoney = 2000;
+  const baseMoney = 2500;
   const initial = lobby.gameRules?.initialMoney || baseMoney;
-  // Increase a bit even for 2000 base to make prices less cheap
-  const extraBoost = 1.4;
+  // Increase prices a bit more to make rents and costs feel heavier
+  const extraBoost = 1.5;
   const scale = Math.max(1, (initial / baseMoney) * extraBoost);
   lobby.properties = lobby.properties.map(p => {
     const np = { ...p };
@@ -137,12 +137,12 @@ const boards = {
     currency: '$',
     properties: buildBoard([
       '🌍 BAŞLA / MAAŞ', 'Kahire', 'Topluluk', 'İskenderiye', 'Gelir Vergisi', 'Afrika Hattı',
-      'İstanbul', 'Şans', 'Ankara', 'İzmir', 'Hapishane (Ziyaret)', 'Roma',
+      'İstanbul', 'Şans', 'Ankara', 'İzmir', 'Hapishane (Ziyaret)', 'Moskova',
       'Elektrik Şirketi', 'Milano', 'Venedik', 'Avrupa Hattı', 'Londra', 'Topluluk',
       'Manchester', 'Birmingham', 'Ücretsiz Park', 'Berlin', 'Şans', 'Münih',
       'Hamburg', 'Pasifik Hattı', 'Paris', 'Marsilya', 'Su İşleri', 'Lyon',
       'Hapishaneye Git', 'Şanghay', 'Pekin', 'Topluluk', 'Shenzhen', 'Kuzey Asya Hattı',
-      'Şans', 'New York', 'Lüks Vergisi', 'Los Angeles'
+      'Şans', 'Pekin', 'Lüks Vergisi', 'Tokyo'
     ])
   },
   istanbul: {
@@ -255,7 +255,7 @@ io.on('connection', (socket) => {
         name: data.playerName,
         appearance: data.appearance || '👤',
         color: data.color || '#ef4444',
-        money: 2000,
+        money: 2500,
         position: 0,
         properties: [],
         inJail: false,
@@ -268,8 +268,8 @@ io.on('connection', (socket) => {
       diceHistory: [],
       properties: cloneBoardProperties(board),
       gameRules: {
-        initialMoney: 2000,
-        goMoney: 200,
+        initialMoney: 2500,
+        goMoney: 250,
         taxFree: false
       },
       events: []
@@ -373,7 +373,7 @@ io.on('connection', (socket) => {
     applyEconomyScale(lobby);
     
     // Set initial money for all players based on game rules
-    const initialMoney = lobby.gameRules.initialMoney || 2000;
+    const initialMoney = lobby.gameRules.initialMoney || 2500;
     lobby.players.forEach(player => {
       player.money = initialMoney;
     });
@@ -442,7 +442,7 @@ io.on('connection', (socket) => {
     // Check if passed GO
     let passedGo = false;
     if (oldPosition + total >= 40) {
-      currentPlayer.money += lobby.gameRules.goMoney || 200;
+      currentPlayer.money += lobby.gameRules.goMoney || 250;
       passedGo = true;
       lobby.events.push({ type: 'pass-go', player: currentPlayer.name, amount: lobby.gameRules.goMoney });
     }
@@ -513,7 +513,7 @@ io.on('connection', (socket) => {
       // Handle special card effects
       if (card.goToStart) {
         currentPlayer.position = 0;
-        currentPlayer.money += lobby.gameRules.goMoney || 200;
+        currentPlayer.money += lobby.gameRules.goMoney || 250;
         cardMessage = `${cardType}: ${card.msg}`;
       } else if (card.goToJail) {
         currentPlayer.position = 10;
@@ -743,7 +743,7 @@ io.on('connection', (socket) => {
     if (property.houses === undefined) property.houses = 0;
     if (property.houses >= 5) return;
 
-    const houseCost = Math.floor(property.price / 2);
+    const houseCost = Math.ceil(property.price * 0.6);
     if (player.money < houseCost) return;
 
     player.money -= houseCost;
@@ -777,7 +777,7 @@ io.on('connection', (socket) => {
     if (!property || property.owner !== socket.id) return;
     if (!property.houses || property.houses <= 0) return;
 
-    const houseCost = Math.floor(property.price / 2);
+    const houseCost = Math.ceil(property.price * 0.6);
     const sellPrice = Math.floor(houseCost / 2);
     
     player.money += sellPrice;

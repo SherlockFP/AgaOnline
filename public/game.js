@@ -162,6 +162,42 @@ function loadDarkModePreference() {
 window.addEventListener('DOMContentLoaded', loadDarkModePreference);
 // (dark mode loader above)
 
+// Name prompt modal helpers (replace native prompt)
+let _pendingNameCallback = null;
+function showNameModal(prefill) {
+    const modal = document.getElementById('namePromptModal');
+    const input = document.getElementById('namePromptInput');
+    if (!modal || !input) return;
+    input.value = prefill || document.getElementById('playerNameInput')?.value || '';
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 100);
+}
+function hideNameModal(cancel = false) {
+    const modal = document.getElementById('namePromptModal');
+    if (modal) modal.style.display = 'none';
+    if (cancel && _pendingNameCallback && typeof _pendingNameCallback === 'function') {
+        const cb = _pendingNameCallback;
+        _pendingNameCallback = null;
+        cb(null);
+    }
+}
+function confirmNameModal() {
+    const input = document.getElementById('namePromptInput');
+    if (!input) return hideNameModal();
+    const val = input.value.trim();
+    hideNameModal();
+    if (_pendingNameCallback && typeof _pendingNameCallback === 'function') {
+        const cb = _pendingNameCallback;
+        _pendingNameCallback = null;
+        cb(val);
+    }
+}
+
+function requestPlayerName(callback) {
+    _pendingNameCallback = callback;
+    showNameModal();
+}
+
 // Sound effect function using Web Audio API
 function playSound(soundType) {
     try {
@@ -503,13 +539,17 @@ socket.on('diceRolled', (data) => {
         addBoardEvent(`${data.player.name} özel alana geldi`, data.player.color);
     }
 
-    // Animate player movement - use the actual previous position when available
+    // Animate player movement - start shortly AFTER dice animation finishes
     const startPos = (typeof prevPlayerPosition === 'number') ? prevPlayerPosition : (playerIdx >= 0 ? (data.newPosition - data.total + 40) % 40 : 0);
-    animatePlayerMove(data.player.id, startPos, data.newPosition, data.player.color, () => {
-        updateGameBoard();
-        updateGamePlayersPanel();
-        updateTurnDisplay();
-    });
+    // Delay movement to give dice animation time to settle. Dice rolling timeout above is 800ms,
+    // start movement ~200ms after that so total ~1s after roll click.
+    setTimeout(() => {
+        animatePlayerMove(data.player.id, startPos, data.newPosition, data.player.color, () => {
+            updateGameBoard();
+            updateGamePlayersPanel();
+            updateTurnDisplay();
+        });
+    }, 1000); // 1000ms total from the socket event; aligns with dice animation end + small pause
 
     // Sıradaki oyuncu ben miyim?
     const isMyTurn = gameState.players[gameState.currentTurn]?.id === socket.id;
@@ -535,12 +575,23 @@ socket.on('diceRolled', (data) => {
 
         // Otomatik kapatma kaldırıldı: kullanıcı kararıyla kapanacak
     } else if (isSpecialSpace) {
-        // Özel kare (vergi, şans, vs) - 3 saniye sonra otomatik sıra geçir
-        console.log('⭐ Special space - auto advancing in 3s');
-        setTimeout(() => {
-            console.log('📤 Auto-advancing turn after special space');
-            socket.emit('advanceTurn');
-        }, 3000);
+        // Special handling: if the player was sent to jail by card/space, don't allow them to continue moving
+        if (data.player && data.player.inJail && isMyTurn) {
+            // Show event and advance turn after movement (player sent to jail -> turn ends)
+            addEvent(`🔒 ${data.player.name} hapishaneye gönderildi!`, data.player.color);
+            showToast('🔒 Hapishaneye gönderildin!', 'warning', 2500);
+            console.log('🔒 Player sent to jail, advancing turn');
+            setTimeout(() => {
+                socket.emit('advanceTurn');
+            }, 1400);
+        } else {
+            // Özel kare (vergi, şans, vs) - 3 saniye sonra otomatik sıra geçir
+            console.log('⭐ Special space - auto advancing in 3s');
+            setTimeout(() => {
+                console.log('📤 Auto-advancing turn after special space');
+                socket.emit('advanceTurn');
+            }, 3000);
+        }
     } else {
         // Normal durum - 2 saniye sonra sırayı geçir
         console.log('🔄 Normal space - auto advancing in 2s');
@@ -728,6 +779,8 @@ socket.on('messageReceived', (data) => {
 });
 
 socket.on('error', (message) => {
+    // Reset joining flag in case join attempt failed
+    isJoiningLobby = false;
     alert('Hata: ' + message);
 });
 
@@ -824,21 +877,26 @@ function quickJoinLobby(lobbyId) {
     
     const playerName = document.getElementById('playerNameInput').value.trim();
     let nameToUse = playerName;
-    if (!nameToUse) {
-        const prompted = window.prompt('Lütfen bir takma ad girin (nick):');
-        if (!prompted) return; // user cancelled
-        nameToUse = prompted.trim();
+    const proceedJoin = (resolvedName) => {
+        if (!resolvedName) return; // cancelled
+        nameToUse = resolvedName.trim();
         if (!nameToUse) return;
         document.getElementById('playerNameInput').value = nameToUse;
+        isJoiningLobby = true;
+        socket.emit('joinLobby', {
+            lobbyId,
+            playerName: nameToUse,
+            appearance: selectedAppearance,
+            color: selectedColor
+        });
+    };
+
+    if (!nameToUse) {
+        requestPlayerName(proceedJoin);
+        return;
     }
-    
-    isJoiningLobby = true;
-    socket.emit('joinLobby', {
-        lobbyId,
-        playerName: nameToUse,
-        appearance: selectedAppearance,
-        color: selectedColor
-    });
+
+    proceedJoin(nameToUse);
 }
 
 function joinRandomLobby() {
@@ -888,12 +946,30 @@ function joinLobby() {
     const lobbyId = document.getElementById('lobbyIdInput').value.trim();
     let lobbyToUse = lobbyId;
     let playerName = document.getElementById('playerNameInput').value.trim();
+    const proceedJoin = (resolvedName) => {
+        if (typeof resolvedName === 'string') {
+            playerName = resolvedName.trim();
+            if (!playerName) return;
+            document.getElementById('playerNameInput').value = playerName;
+        }
+
+        if (!lobbyToUse) {
+            alert('Lobi ID yazmalısın');
+            return;
+        }
+
+        isJoiningLobby = true;
+        socket.emit('joinLobby', {
+            lobbyId: lobbyToUse,
+            playerName,
+            appearance: selectedAppearance,
+            color: selectedColor
+        });
+    };
+
     if (!playerName) {
-        const prompted = window.prompt('Lütfen bir takma ad girin (nick):');
-        if (!prompted) return;
-        playerName = prompted.trim();
-        if (!playerName) return;
-        document.getElementById('playerNameInput').value = playerName;
+        requestPlayerName(proceedJoin);
+        return;
     }
     if (!lobbyToUse) {
         alert('Lobi ID yazmalısın');
@@ -1030,7 +1106,7 @@ function updateGamePlayersPanel() {
 
 function startGame() {
     const rules = {
-        initialMoney: parseInt(document.getElementById('initialMoneySlider')?.value) || 2000,
+        initialMoney: parseInt(document.getElementById('initialMoneySlider')?.value) || 2500,
         taxFree: document.getElementById('ruleTaxFree')?.checked || false,
         goMoney: parseInt(document.getElementById('goMoneySlider')?.value) || 200
     };
@@ -1042,12 +1118,12 @@ function updateRules() {
 }
 
 function updateInitialMoney() {
-    const value = document.getElementById('initialMoneySlider')?.value || 2000;
+    const value = document.getElementById('initialMoneySlider')?.value || 2500;
     document.getElementById('initialMoney').textContent = value;
 }
 
 function updateGoMoney() {
-    const value = document.getElementById('goMoneySlider')?.value || 200;
+    const value = document.getElementById('goMoneySlider')?.value || 250;
     document.getElementById('goMoney').textContent = value;
 }
 
@@ -1552,6 +1628,41 @@ function updateGameBoard() {
             if (nameEl) nameEl.style.color = '#ffffff';
             if (priceEl) priceEl.style.color = '#ffffff';
             if (priceEl) priceEl.style.display = 'none';
+            
+            // Render houses / hotel on the board space
+            const existingStruct = space.querySelector('.space-structures');
+            if (existingStruct) existingStruct.remove();
+            const structures = document.createElement('div');
+            structures.className = 'space-structures';
+            structures.style.position = 'absolute';
+            structures.style.bottom = '6px';
+            structures.style.left = '50%';
+            structures.style.transform = 'translateX(-50%)';
+            structures.style.display = 'flex';
+            structures.style.gap = '4px';
+            structures.style.zIndex = '6';
+            if (prop.houses && prop.houses > 0) {
+                if (prop.houses === 5) {
+                    const hotel = document.createElement('div');
+                    hotel.className = 'hotel-icon';
+                    hotel.textContent = '🏨';
+                    hotel.style.fontSize = '14px';
+                    hotel.style.lineHeight = '1';
+                    structures.appendChild(hotel);
+                } else {
+                    for (let i = 0; i < 4; i++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'house-dot';
+                        dot.style.width = '8px';
+                        dot.style.height = '8px';
+                        dot.style.borderRadius = '2px';
+                        dot.style.background = i < prop.houses ? (prop.ownerColor || '#16a34a') : 'rgba(255,255,255,0.06)';
+                        dot.style.border = '1px solid rgba(0,0,0,0.12)';
+                        structures.appendChild(dot);
+                    }
+                }
+                space.appendChild(structures);
+            }
         } else if (prop) {
             space.classList.remove('owned');
             space.style.opacity = '1';
@@ -1767,6 +1878,7 @@ function refreshTradeLists() {
 function rollDice() {
     const rollBtn = document.getElementById('rollBtn');
     rollBtn.disabled = true;
+    try { playSound('dice'); } catch (e) { console.log('Dice sound failed', e); }
     socket.emit('rollDice');
     setTimeout(() => {
         rollBtn.disabled = false;
@@ -1793,6 +1905,23 @@ function showPropertyPopup(property) {
     }
 
     nameEl.textContent = property.name;
+
+    // Render visual house / hotel indicators in popup
+    const structuresEl = document.getElementById('propStructures');
+    if (structuresEl) {
+        let structuresHTML = '';
+        const houses = property.houses || 0;
+        if (houses === 5) {
+            structuresHTML = `<span class="hotel-icon">🏨</span>`;
+        } else {
+            // render 4 slots, some filled
+            for (let i = 1; i <= 4; i++) {
+                if (i <= houses) structuresHTML += `<span class="house-dot"></span>`;
+                else structuresHTML += `<span class="house-dot empty"></span>`;
+            }
+        }
+        structuresEl.innerHTML = structuresHTML;
+    }
 
     let detailsHTML = '';
     if (property.color) {
@@ -1850,7 +1979,7 @@ function showPropertyPopup(property) {
         const groupSize = gameState.properties.filter(p => (p.group || p.color) === groupKey && p.type === 'property').length;
         const hasMonopoly = myProps.length === groupSize;
 
-        const houseCost = Math.floor(property.price / 2);
+        const houseCost = Math.ceil((property.price || 0) * 0.6);
         const canBuild = hasMonopoly && (property.houses || 0) < 5 && currentPlayer.money >= houseCost;
         const canSell = (property.houses || 0) > 0;
         
@@ -1885,6 +2014,7 @@ function showReadOnlyProperty(property) {
     const detailsEl = document.getElementById('roPropDetails');
     if (!popup || !nameEl || !detailsEl) return;
     nameEl.textContent = property.name;
+    const roStructuresEl = document.getElementById('roPropStructures');
     let html = '';
     if (property.group) html += `<div class="property-detail"><span>Ülke:</span><span>${property.group}</span></div>`;
     if (property.color) html += `<div class="property-detail"><span>Renk:</span><span style="color:${property.color}">●●●</span></div>`;
@@ -1896,6 +2026,19 @@ function showReadOnlyProperty(property) {
     if (property.houses) {
         const houseText = property.houses === 5 ? '🏨 Otel' : `🏠 ${property.houses} Ev`;
         html += `<div class="property-detail"><span>Yapı:</span><span>${houseText}</span></div>`;
+    }
+    // Render visual structures for readonly popup
+    if (roStructuresEl) {
+        let structuresHTML = '';
+        const houses = property.houses || 0;
+        if (houses === 5) {
+            structuresHTML = `<span class="hotel-icon">🏨</span>`;
+        } else {
+            for (let i = 1; i <= 4; i++) {
+                structuresHTML += (i <= houses) ? `<span class="house-dot"></span>` : `<span class="house-dot empty"></span>`;
+            }
+        }
+        roStructuresEl.innerHTML = structuresHTML;
     }
     detailsEl.innerHTML = html;
     popup.style.display = 'flex';
@@ -2253,6 +2396,7 @@ function payJailFine() {
 }
 
 function rollForJail() {
+    try { playSound('dice'); } catch (e) { console.log('Dice sound failed', e); }
     socket.emit('rollForJail');
     closeJailModal();
 }

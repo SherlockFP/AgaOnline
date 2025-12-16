@@ -243,12 +243,12 @@
                                     <input type="checkbox" id="ruleNoAuctions" onchange="updateRules()"> Müzayede Yok
                                 </label>
                                 <label style="margin-top: 10px;">
-                                    Başlangıç Parası: ₺<span id="initialMoney">2000</span>
-                                    <input type="range" id="initialMoneySlider" min="500" max="10000" step="100" value="2000" onchange="updateInitialMoney()" class="money-slider" style="margin-top: 8px; width: 100%;">
+                                    Başlangıç Parası: ₺<span id="initialMoney">2500</span>
+                                    <input type="range" id="initialMoneySlider" min="500" max="10000" step="100" value="2500" onchange="updateInitialMoney()" class="money-slider" style="margin-top: 8px; width: 100%;">
                                 </label>
                                 <label title="Start">
-                                    🌍 ₺<span id="goMoney">200</span>
-                                    <input type="range" id="goMoneySlider" min="100" max="1000" step="50" value="200" onchange="updateGoMoney()" class="money-slider" style="margin-top: 8px; width: 100%;">
+                                    🌍 ₺<span id="goMoney">250</span>
+                                    <input type="range" id="goMoneySlider" min="100" max="1000" step="50" value="250" onchange="updateGoMoney()" class="money-slider" style="margin-top: 8px; width: 100%;">
                                 </label>
                                 <label>
                                     Ev Fiyat Çarpanı: x<span id="houseMultiplier">0.5</span>
@@ -400,6 +400,7 @@
     <div id="propertyPopup" class="property-popup" style="display: none;">
         <div class="popup-content">
             <h2 id="propName"></h2>
+            <div id="propStructures" class="prop-structures" aria-hidden="true" style="margin-bottom:8px;"></div>
             <div id="propDetails" class="property-details"></div>
             <div id="buildSection" class="build-section" style="display: none;">
                 <button id="buildHouseBtn" class="btn-build" onclick="buildHouse()">🏠 Ev Dik</button>
@@ -412,10 +413,25 @@
         </div>
     </div>
 
+    <!-- In-page Name Prompt Modal (used instead of browser prompt) -->
+    <div id="namePromptModal" class="trade-offer-modal" style="display:none;">
+        <div class="trade-offer-overlay" onclick="hideNameModal(true)" style="cursor:pointer;"></div>
+        <div class="trade-offer-content" style="max-width:420px; text-align:center;">
+            <h3 style="margin-top:0;">Oyuncu Adı Gir</h3>
+            <p style="color: rgba(255,255,255,0.8); font-size:0.95em;">Lütfen bir takma ad gir ve devam et.</p>
+            <input id="namePromptInput" type="text" maxlength="20" placeholder="Takma ad..." class="input-field" style="margin:12px 0; width:100%;">
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+                <button class="btn-ghost" onclick="hideNameModal(true)">İptal</button>
+                <button class="btn-primary" onclick="confirmNameModal()">Devam</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Readonly Property Popup -->
     <div id="roPropertyPopup" class="property-popup" style="display: none;">
         <div class="popup-content">
             <h2 id="roPropName"></h2>
+            <div id="roPropStructures" class="prop-structures" aria-hidden="true" style="margin-bottom:8px;"></div>
             <div id="roPropDetails" class="property-details"></div>
             <div class="popup-actions">
                 <button onclick="closeRoPopup()" class="btn-close">Kapat</button>

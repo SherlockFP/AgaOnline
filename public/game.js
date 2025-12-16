@@ -2027,7 +2027,9 @@ function updateOwnedProperties() {
         // Mülkün kendi rengini colorDot için kullan
         const colorDot = prop.color ? `<span class="prop-dot" style="background:${prop.color}"></span>` : '<span class="prop-dot" style="background: #94a3b8"></span>';
         const rentText = prop.rent && prop.rent.length ? `Kira: ₺${prop.rent[0]}` : 'Kira: -';
-        const priceText = prop.price ? `₺${prop.price}` : '-';
+        // Hide price for owned railroads/utilities
+        const hidePriceOwned = prop.owner && (prop.type === 'railroad' || prop.type === 'utility');
+        const priceText = (prop.price && !hidePriceOwned) ? `${gameState?.currency || '₺'}${prop.price}` : '-';
         
         // Kartın arka planını ve border'ını oyuncu rengine göre ayarla
         item.style.background = `linear-gradient(135deg, ${playerColor}22, ${playerColor}08)`;
@@ -2199,7 +2201,9 @@ function showPropertyPopup(property) {
         detailsHTML += `<div class="property-detail"><span>Ülke:</span><span>${property.group}</span></div>`;
     }
     if (property.price) {
-        detailsHTML += `<div class="property-detail"><span>Fiyat:</span><span style="color: #fbbf24; font-weight: 700;">₺${property.price}</span></div>`;
+        // Hide price for owned special lines (railroad/utility) as requested
+        const hidePrice = property.owner && (property.type === 'railroad' || property.type === 'utility');
+        if (!hidePrice) detailsHTML += `<div class="property-detail"><span>Fiyat:</span><span style="color: #fbbf24; font-weight: 700;">${gameState?.currency || '₺'}${property.price}</span></div>`;
     }
     if (property.rent && property.rent.length > 0) {
         detailsHTML += `<div class="property-detail"><span>Temel Kira:</span><span>₺${property.rent[0]}</span></div>`;
@@ -2286,7 +2290,9 @@ function showReadOnlyProperty(property) {
     let html = '';
     if (property.group) html += `<div class="property-detail"><span>Ülke:</span><span>${property.group}</span></div>`;
     if (property.color) html += `<div class="property-detail"><span>Renk:</span><span style="color:${property.color}">●●●</span></div>`;
-    if (property.price) html += `<div class="property-detail"><span>Fiyat:</span><span>₺${property.price}</span></div>`;
+    // Hide price for owned special lines (railroad/utility)
+    const hidePriceRO = property.owner && (property.type === 'railroad' || property.type === 'utility');
+    if (property.price && !hidePriceRO) html += `<div class="property-detail"><span>Fiyat:</span><span>${gameState?.currency || '₺'}${property.price}</span></div>`;
     if (property.owner) {
         const owner = gameState.players.find(p => p.id === property.owner);
         html += `<div class="property-detail"><span>Sahibi:</span><span>${owner?.appearance || ''} ${owner?.name || ''}</span></div>`;
@@ -3264,7 +3270,7 @@ socket.on('youtubeMusicPlay', (data) => {
                     },
                     events: {
                         'onReady': (event) => {
-                            event.target.setVolume(50);
+                            event.target.setVolume(18);
                             event.target.playVideo();
                             showCurrentMusic(videoId, playerName);
                         },
@@ -3280,7 +3286,7 @@ socket.on('youtubeMusicPlay', (data) => {
     } else {
         // Player exists, just load new video
         currentYoutubePlayer.loadVideoById(videoId);
-        currentYoutubePlayer.setVolume(50);
+        currentYoutubePlayer.setVolume(18);
         showCurrentMusic(videoId, playerName);
     }
 });

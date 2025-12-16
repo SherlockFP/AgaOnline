@@ -587,25 +587,42 @@ io.on('connection', (socket) => {
     if (finalLandedSpace && ['property', 'railroad', 'utility'].includes(finalLandedSpace.type) && finalLandedSpace.owner && finalLandedSpace.owner !== socket.id) {
       const owner = lobby.players.find(p => p.id === finalLandedSpace.owner);
       if (owner && !owner.isBankrupt) {
-        let rentAmount = finalLandedSpace.rent || 0;
-        
-        // Calculate rent based on houses
-        if (finalLandedSpace.houses > 0) {
-          const houseRents = [finalLandedSpace.rent1house, finalLandedSpace.rent2house, finalLandedSpace.rent3house, finalLandedSpace.rent4house, finalLandedSpace.renthotel];
-          rentAmount = houseRents[finalLandedSpace.houses - 1] || rentAmount;
+        let rentAmount = 0;
+
+        // Special handling for railroads
+        if (finalLandedSpace.type === 'railroad') {
+          const ownerRailroads = lobby.properties.filter(p => p.owner === owner.id && p.type === 'railroad').length;
+          const rrTable = [25, 50, 100, 200];
+          rentAmount = rrTable[Math.max(0, Math.min(3, ownerRailroads - 1))] || 25;
         }
-        
+
+        // Special handling for utilities
+        else if (finalLandedSpace.type === 'utility') {
+          const ownerUtilities = lobby.properties.filter(p => p.owner === owner.id && p.type === 'utility').length;
+          const multiplier = ownerUtilities === 1 ? 4 : 10;
+          rentAmount = total * multiplier;
+        }
+
+        // Regular property with houses
+        else {
+          rentAmount = finalLandedSpace.rent || 0;
+          if (finalLandedSpace.houses > 0) {
+            const houseRents = [finalLandedSpace.rent1house, finalLandedSpace.rent2house, finalLandedSpace.rent3house, finalLandedSpace.rent4house, finalLandedSpace.renthotel];
+            rentAmount = houseRents[finalLandedSpace.houses - 1] || rentAmount;
+          }
+        }
+
         // Pay rent only if both players have enough money
-        if (currentPlayer.money >= rentAmount) {
+        if (currentPlayer.money >= rentAmount && rentAmount > 0) {
           currentPlayer.money -= rentAmount;
           owner.money += rentAmount;
-          
+
           rentMessage = `${currentPlayer.name}, ${owner.name}'in mülküne geldi ve ${lobby.currency}${rentAmount} kira ödedi`;
           if (finalLandedSpace.houses > 0) {
             const houseText = finalLandedSpace.houses === 5 ? 'otel' : `${finalLandedSpace.houses} ev`;
             rentMessage += ` (${houseText})`;
           }
-          
+
           lobby.events.push({ 
             type: 'rent-paid', 
             player: currentPlayer.name, 
@@ -1242,6 +1259,12 @@ io.on('connection', (socket) => {
     const player = lobby.players.find(p => p.id === socket.id);
     if (!player) return;
 
+    // Only host may start music
+    if (lobby.host !== socket.id) {
+      socket.emit('errorMessage', 'Sadece ev sahibi müzik başlatabilir.');
+      return;
+    }
+
     // Broadcast to all players in lobby
     io.to(lobbyId).emit('youtubeMusicPlay', {
       videoId: data.videoId,
@@ -1249,7 +1272,7 @@ io.on('connection', (socket) => {
       playerId: socket.id
     });
 
-    console.log(`🎵 ${player.name} started YouTube music in lobby ${lobbyId}`);
+    console.log(`🎵 ${player.name} (host) started YouTube music in lobby ${lobbyId}`);
   });
 
   socket.on('stopYoutubeMusic', () => {
@@ -1260,13 +1283,19 @@ io.on('connection', (socket) => {
     const player = lobby.players.find(p => p.id === socket.id);
     if (!player) return;
 
+    // Only host may stop music
+    if (lobby.host !== socket.id) {
+      socket.emit('errorMessage', 'Sadece ev sahibi müziği durdurabilir.');
+      return;
+    }
+
     // Broadcast to all players in lobby
     io.to(lobbyId).emit('youtubeMusicStop', {
       playerName: player.name,
       playerId: socket.id
     });
 
-    console.log(`🎵 ${player.name} stopped YouTube music in lobby ${lobbyId}`);
+    console.log(`🎵 ${player.name} (host) stopped YouTube music in lobby ${lobbyId}`);
   });
 
   socket.on('disconnect', () => {

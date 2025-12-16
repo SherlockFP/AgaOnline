@@ -1425,15 +1425,23 @@ function updateGameBoard() {
             const owner = gameState.players.find(p => p.id === prop.owner);
             space.classList.add('owned');
             space.style.opacity = '1';
-            // Only show the thin owner band at the top of the tile
-            if (owner && owner.color) {
-                space.style.setProperty('--owner-band-color', owner.color);
-            }
 
-            // Ensure we don't change the whole tile's base color — only the band
-            space.style.removeProperty('background');
-            space.style.removeProperty('boxShadow');
-            space.style.removeProperty('borderBottom');
+            // Special types (chance/chest/railroad/utility): fill whole tile with owner color
+            const specialTypes = ['chance', 'chest', 'railroad', 'utility'];
+            if (owner && owner.color && specialTypes.includes(prop.type)) {
+                space.style.background = `linear-gradient(135deg, ${hexToRgba(owner.color, 0.36)} 0%, ${hexToRgba(owner.color, 0.18)} 55%, rgba(15,23,42,0.06) 100%)`;
+                space.style.boxShadow = `0 8px 26px ${hexToRgba(owner.color, 0.18)}, inset 0 0 0 2px rgba(0,0,0,0.12)`;
+                space.style.borderBottom = `4px solid ${hexToRgba(owner.color, 0.9)}`;
+            } else {
+                // Regular properties: only show the thin owner band at the top of the tile
+                if (owner && owner.color) {
+                    space.style.setProperty('--owner-band-color', owner.color);
+                }
+                // Ensure we don't change the whole tile's base color — only the band
+                space.style.removeProperty('background');
+                space.style.removeProperty('boxShadow');
+                space.style.removeProperty('borderBottom');
+            }
 
             // Make tile text readable
             const nameEl = space.querySelector('.space-name');

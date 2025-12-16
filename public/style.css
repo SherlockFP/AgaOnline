@@ -538,6 +538,14 @@ body {
 }
 
 .game-status {
+
+/* Flying token - used for smooth teleport animation */
+.player-token.flying {
+    position: fixed;
+    pointer-events: none;
+    transform: translate(0,0);
+    opacity: 0.98;
+}
     padding: 10px 20px;
     background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0.1));
     border: 2px solid rgba(96, 165, 250, 0.4);

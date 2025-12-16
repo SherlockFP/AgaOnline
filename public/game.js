@@ -100,7 +100,11 @@ let _diceAudio = {
     modInterval: null
 };
 
+// Toggle for dice sound (default off per user request)
+let diceSoundEnabled = false;
+
 function startDiceRollSound() {
+    if (!diceSoundEnabled) return;
     try {
         if (_diceAudio.osc) return; // already running
         const ctx = _diceAudio.ctx || new (window.AudioContext || window.webkitAudioContext)();
@@ -141,6 +145,7 @@ function startDiceRollSound() {
 }
 
 function stopDiceRollSound() {
+    if (!diceSoundEnabled) return;
     try {
         if (!_diceAudio.osc) return;
         const ctx = _diceAudio.ctx;
@@ -669,6 +674,86 @@ socket.on('diceRolled', (data) => {
         }, true);
     }, movementDelay);
 });
+
+// Smooth 'fly' animation for token movement (teleport visually but animated)
+function flyPlayerToken(playerId, endPos, playerColor, callback) {
+    if (!gameState) { if (callback) callback(); return; }
+    const player = gameState.players.find(p => p.id === playerId);
+    if (!player) { if (callback) callback(); return; }
+
+    const sourceEl = document.querySelector(`.player-token[data-player-id="${playerId}"]`);
+    const targetSpace = document.querySelector(`.board-space[data-id="${endPos}"]`);
+    if (!targetSpace) { player.position = endPos; if (callback) callback(); return; }
+
+    // Create flying token
+    const fly = document.createElement('div');
+    fly.className = 'player-token flying';
+    fly.style.background = playerColor;
+    fly.style.borderColor = playerColor;
+    fly.textContent = getInitials(player.name, player.appearance) || '👤';
+
+    // Determine start rect
+    let startRect = null;
+    if (sourceEl) startRect = sourceEl.getBoundingClientRect();
+    else {
+        const currentSpace = document.querySelector(`.board-space[data-id="${player.position}"]`);
+        if (currentSpace) startRect = currentSpace.getBoundingClientRect();
+    }
+    const endRect = targetSpace.getBoundingClientRect();
+
+    // Append to body as fixed positioned element
+    document.body.appendChild(fly);
+    const size = Math.max(26, Math.min(40, startRect ? Math.min(startRect.width, startRect.height) : 32));
+    fly.style.width = `${size}px`;
+    fly.style.height = `${size}px`;
+    fly.style.lineHeight = `${size}px`;
+
+    const startX = startRect ? startRect.left + startRect.width/2 - size/2 : endRect.left + endRect.width/2 - size/2;
+    const startY = startRect ? startRect.top + startRect.height/2 - size/2 : endRect.top + endRect.height/2 - size/2;
+    fly.style.left = `${startX}px`;
+    fly.style.top = `${startY}px`;
+    fly.style.position = 'fixed';
+    fly.style.transition = 'transform 0.55s cubic-bezier(.22,.9,.24,1), opacity 0.25s';
+    fly.style.zIndex = 9999;
+
+    // Force layout then animate
+    requestAnimationFrame(() => {
+        const dx = (endRect.left + endRect.width/2) - (startX + size/2);
+        const dy = (endRect.top + endRect.height/2) - (startY + size/2);
+        fly.style.transform = `translate(${dx}px, ${dy}px) scale(1)`;
+        fly.style.opacity = '1';
+    });
+
+    // After transition, place token in target space DOM
+    const cleanup = () => {
+        try { fly.remove(); } catch (e) {}
+        // Remove any previous tokens for this player in board DOM
+        const spaces = document.querySelectorAll('.board-space');
+        spaces.forEach(space => {
+            const tokens = space.querySelectorAll('.player-token');
+            tokens.forEach(token => { if (token.dataset.playerId === playerId) token.remove(); });
+        });
+        // Append token to target space
+        const token = document.createElement('div');
+        token.className = 'player-token';
+        token.style.background = playerColor;
+        token.style.borderColor = playerColor;
+        token.title = player.name;
+        token.dataset.playerId = playerId;
+        token.dataset.playerColor = playerColor;
+        token.textContent = getInitials(player.name, player.appearance) || '👤';
+        token.style.fontSize = '0.78rem';
+        targetSpace.appendChild(token);
+
+        // Update internal position and callback
+        player.position = endPos;
+        if (callback) callback();
+    };
+
+    fly.addEventListener('transitionend', cleanup, { once: true });
+    // Fallback cleanup
+    setTimeout(cleanup, 800);
+}
 
 socket.on('propertyBought', (data) => {
     console.log('🏠 Property bought:', data.property.name);

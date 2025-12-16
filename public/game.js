@@ -1189,7 +1189,8 @@ function updateLobbyUI() {
     });
 
     const playerCount = document.getElementById('playerCount');
-    playerCount.textContent = `Oyuncu: ${currentLobby.players.length}/12`;
+    const maxPlayers = currentLobby.maxPlayers || 12;
+    playerCount.textContent = `Oyuncu: ${currentLobby.players.length}/${maxPlayers}`;
 
     const boardNameEl = document.getElementById('boardName');
     if (boardNameEl && currentLobby.boardName) {
@@ -1214,10 +1215,20 @@ function updateLobbyUI() {
     const startBtn = document.getElementById('startBtn');
     if (currentLobby.host === socket.id && !currentLobby.started) {
         startBtn.style.display = 'block';
-        startBtn.disabled = currentLobby.players.length < 1;
+        // Disable start until requiredPlayers reached
+        const required = currentLobby.requiredPlayers || 2;
+        startBtn.disabled = currentLobby.players.length < required;
     } else if (startBtn) {
         startBtn.style.display = 'none';
     }
+
+    // Populate lobby settings inputs if present
+    const maxIn = document.getElementById('lobbyMaxPlayers');
+    const reqIn = document.getElementById('lobbyRequiredPlayers');
+    const pwIn = document.getElementById('lobbyPassword');
+    if (maxIn) maxIn.value = currentLobby.maxPlayers || 12;
+    if (reqIn) reqIn.value = currentLobby.requiredPlayers || 2;
+    if (pwIn) pwIn.value = currentLobby.password || '';
 
     // Show setup panel only to host
     const setupPanel = document.getElementById('setupPanel');
@@ -1250,6 +1261,26 @@ function updateLobbyUI() {
         const gameMusicControl = document.querySelector('.game-music-control');
         if (gameMusicControl) gameMusicControl.style.display = 'none';
     }
+}
+
+function submitLobbySettings() {
+    if (!currentLobby) return;
+    const maxIn = document.getElementById('lobbyMaxPlayers');
+    const reqIn = document.getElementById('lobbyRequiredPlayers');
+    const pwIn = document.getElementById('lobbyPassword');
+    const settings = {};
+    if (maxIn) settings.maxPlayers = parseInt(maxIn.value) || 12;
+    if (reqIn) settings.requiredPlayers = parseInt(reqIn.value) || 2;
+    if (pwIn) settings.password = pwIn.value ? pwIn.value : null;
+    socket.emit('updateLobbySettings', settings);
+    addEvent('🛠️ Ev sahibi ayarları güncelledi');
+}
+
+function clearLobbyPassword() {
+    const pwIn = document.getElementById('lobbyPassword');
+    if (!pwIn) return;
+    pwIn.value = '';
+    submitLobbySettings();
 }
 
 function updateGamePlayersPanel() {

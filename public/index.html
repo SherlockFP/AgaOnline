@@ -258,6 +258,23 @@
                                     Tur Süre Limiti: <span id="turnTimeLimit">60</span> saniye
                                     <input type="range" id="turnTimeLimitSlider" min="30" max="180" step="10" value="60" onchange="updateTurnTimeLimit()" class="money-slider" style="margin-top: 8px; width: 100%;">
                                 </label>
+                                <hr style="margin:12px 0; opacity:0.06;">
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <label style="flex:1;">Maks Oyuncu
+                                        <input id="lobbyMaxPlayers" type="number" min="2" max="50" value="12" style="width:100%; margin-top:6px; padding:6px; border-radius:6px;">
+                                    </label>
+                                    <label style="flex:1;">Gerekli Oyuncu
+                                        <input id="lobbyRequiredPlayers" type="number" min="2" max="50" value="2" style="width:100%; margin-top:6px; padding:6px; border-radius:6px;">
+                                    </label>
+                                </div>
+                                <label style="margin-top:8px; display:block;">
+                                    Lobi Şifresi
+                                    <input id="lobbyPassword" type="password" placeholder="Boş ise şifre yok" style="width:100%; margin-top:6px; padding:8px; border-radius:8px;">
+                                </label>
+                                <div style="margin-top:8px; display:flex; gap:8px;">
+                                    <button class="btn-primary" onclick="submitLobbySettings()" style="flex:1;">Ayarları Kaydet</button>
+                                    <button class="btn-ghost" onclick="clearLobbyPassword()" style="flex:1;">Şifreyi Kaldır</button>
+                                </div>
                             </div>
                         </div>
                     </div>

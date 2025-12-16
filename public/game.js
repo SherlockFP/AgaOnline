@@ -1832,8 +1832,17 @@ function updateGameBoard() {
             const nameEl = space.querySelector('.space-name');
             const priceEl = space.querySelector('.space-price');
             if (nameEl) nameEl.style.color = '#ffffff';
-            if (priceEl) priceEl.style.color = '#ffffff';
-            if (priceEl) priceEl.style.display = 'none';
+            if (priceEl) {
+                priceEl.style.color = '#ffffff';
+                // For special types (railroad/utility/chance/chest) keep the price/label
+                // visible to avoid layout shift when the tile is filled with owner color.
+                const specialTypes = ['chance', 'chest', 'railroad', 'utility'];
+                if (specialTypes.includes(prop.type)) {
+                    priceEl.style.display = '';
+                } else {
+                    priceEl.style.display = 'none';
+                }
+            }
             
             // Render houses / hotel on the board space
             const existingStruct = space.querySelector('.space-structures');

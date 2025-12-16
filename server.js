@@ -226,10 +226,12 @@ function cloneBoardProperties(board) {
   const setGroup = (indexes, name) => indexes.forEach(i => { if (b[i] && b[i].type === 'property') b[i].group = name; });
   setGroup([1,3], 'Mısır');
   setGroup([6,8,9], 'Türkiye');
-  setGroup([11,13,14], 'Birleşik Krallık');
-  setGroup([16,18,19], 'İtalya');
+  // swap UK and Italy groups: place Italy where UK was, and UK where Italy was
+  setGroup([11,13,14], 'İtalya');
+  setGroup([16,18,19], 'Birleşik Krallık');
   setGroup([21,23,24], 'Almanya');
-  setGroup([26,27,29], 'İspanya');
+  // replace Spain group with France
+  setGroup([26,27,29], 'Fransa');
   setGroup([31,32,34], 'Çin');
   setGroup([37,39], 'Amerika');
 })();

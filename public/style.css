@@ -827,8 +827,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 18px 12px; /* slightly increased for a subtle larger feel */
-    font-size: 1.00em; /* very slightly larger base font-size */
+    padding: 20px 14px; /* increased slightly for a subtle larger feel */
+    font-size: 1.02em; /* very slightly larger base font-size */
     text-align: center;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -946,6 +946,15 @@ body {
 .board-space.green .space-group { background: #22c55e; }
 .board-space.darkblue .space-group { background: #1d4ed8; }
 .board-space.purple .space-group { background: #8b5cf6; color: #ffffff; }
+
+/* MISIR (brown) - use neutral gray frame rather than red for better contrast */
+.board-space.brown {
+    border-color: rgba(128,128,128,0.30) !important;
+}
+.board-space.brown .space-group {
+    border-color: rgba(0,0,0,0.12);
+    color: #ffffff;
+}
 
 /* Special space types - Community Chest (Kamu Sandığı) */
 .board-space[data-type="chest"]:not(.owned) {

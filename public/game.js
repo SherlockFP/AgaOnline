@@ -105,25 +105,36 @@ function startDiceRollSound() {
         if (_diceAudio.osc) return; // already running
         const ctx = _diceAudio.ctx || new (window.AudioContext || window.webkitAudioContext)();
         _diceAudio.ctx = ctx;
+        // Softer continuous roll: use triangle wave + lowpass + lower gain
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.value = 200;
-        gain.gain.value = 0.0001;
+        const lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 1400; // remove harsh highs
+
+        osc.type = 'triangle';
+        const baseFreq = 180;
+        osc.frequency.value = baseFreq;
+        gain.gain.value = 0.00005;
+
+        // Routing: osc -> gain -> lowpass -> destination
         osc.connect(gain);
-        gain.connect(ctx.destination);
-        // small fade-in
-        gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.05);
+        gain.connect(lp);
+        lp.connect(ctx.destination);
+
+        // gentle fade-in to a much lower level than before
+        gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.08);
         osc.start();
         _diceAudio.osc = osc;
         _diceAudio.gain = gain;
+        _diceAudio.filter = lp;
 
-        // modulate frequency randomly to mimic dice rattle
+        // modulate frequency gently to mimic dice rattle (narrower range)
         _diceAudio.modInterval = setInterval(() => {
             if (!_diceAudio.osc) return;
-            const f = 200 + Math.random() * 900;
+            const f = baseFreq + (Math.random() * 120 - 60); // +-60Hz
             try { _diceAudio.osc.frequency.setValueAtTime(f, ctx.currentTime); } catch (e) {}
-        }, 80);
+        }, 120);
     } catch (e) {
         console.log('Dice roll sound failed', e);
     }
@@ -133,16 +144,21 @@ function stopDiceRollSound() {
     try {
         if (!_diceAudio.osc) return;
         const ctx = _diceAudio.ctx;
-        // fade out
-        _diceAudio.gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+        // gentle fade out
+        try {
+            _diceAudio.gain.gain.cancelScheduledValues(ctx.currentTime);
+            _diceAudio.gain.gain.linearRampToValueAtTime(0.00005, ctx.currentTime + 0.12);
+        } catch (e) {}
         setTimeout(() => {
             try { _diceAudio.osc.stop(); } catch (e) {}
             try { _diceAudio.osc.disconnect(); } catch (e) {}
             try { _diceAudio.gain.disconnect(); } catch (e) {}
-        }, 150);
+            try { _diceAudio.filter.disconnect(); } catch (e) {}
+        }, 180);
         clearInterval(_diceAudio.modInterval);
         _diceAudio.osc = null;
         _diceAudio.gain = null;
+        _diceAudio.filter = null;
         _diceAudio.modInterval = null;
     } catch (e) {
         console.log('stopDiceRollSound error', e);
@@ -606,6 +622,7 @@ socket.on('diceRolled', (data) => {
     const movementDelay = (typeof revealDelay === 'number' ? revealDelay : 800) + 600;
     setTimeout(() => {
         // Animate then handle post-move logic (popup, auto-advance) only after token arrives
+        // Use instant move (no step-by-step) to prevent slow / buggy board animation
         animatePlayerMove(data.player.id, startPos, data.newPosition, data.player.color, () => {
             updateGameBoard();
             updateGamePlayersPanel();
@@ -649,7 +666,7 @@ socket.on('diceRolled', (data) => {
             // Normal space - advance after short delay
             console.log('🔄 Normal space - advancing in 2s');
             setTimeout(() => socket.emit('advanceTurn'), 2000);
-        });
+        }, true);
     }, movementDelay);
 });
 
@@ -1450,9 +1467,37 @@ function arrangeBoardSpaces() {
     });
 }
 
-function animatePlayerMove(playerId, startPos, endPos, playerColor, callback) {
+function animatePlayerMove(playerId, startPos, endPos, playerColor, callback, instant = false) {
     const player = gameState.players.find(p => p.id === playerId);
     if (!player) {
+        if (callback) callback();
+        return;
+    }
+    // If instant move requested, teleport token to destination without step animation
+    if (instant) {
+        // Remove any existing tokens for this player
+        const spaces = document.querySelectorAll('.board-space');
+        spaces.forEach(space => {
+            const tokens = space.querySelectorAll('.player-token');
+            tokens.forEach(token => {
+                if (token.dataset.playerId === playerId) token.remove();
+            });
+        });
+        // Place token directly on target space
+        const targetSpace = document.querySelector(`.board-space[data-id="${endPos}"]`);
+        if (targetSpace) {
+            const token = document.createElement('div');
+            token.className = 'player-token';
+            token.style.background = playerColor;
+            token.style.borderColor = playerColor;
+            token.title = player.name;
+            token.dataset.playerId = playerId;
+            token.dataset.playerColor = playerColor;
+            token.textContent = getInitials(player.name, player.appearance) || '👤';
+            token.style.fontSize = '0.78rem';
+            targetSpace.appendChild(token);
+        }
+        player.position = endPos;
         if (callback) callback();
         return;
     }

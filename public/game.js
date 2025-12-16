@@ -2536,17 +2536,17 @@ function addEvent(message, playerColor = null) {
             item.style.transform = 'translateX(0)';
         });
 
-        // Add new message to the top (newest first)
-        eventLog.insertBefore(item, eventLog.firstChild);
+        // Add new message to the bottom (oldest -> newest) so history stays
+        eventLog.appendChild(item);
 
-        // Keep only max 5 messages, remove oldest (bottom)
+        // Keep only max 5 messages, remove oldest (top)
         const MAX_EVENTS = 5;
         while (eventLog.children.length > MAX_EVENTS) {
-            eventLog.removeChild(eventLog.lastChild);
+            eventLog.removeChild(eventLog.firstChild);
         }
 
-        // Scroll to top to show new message
-        eventLog.scrollTop = 0;
+        // Scroll to bottom to show newest message
+        eventLog.scrollTop = eventLog.scrollHeight;
     }
 }
 
@@ -3236,10 +3236,10 @@ function showEmojiEffect(emoji, playerName, playerColor) {
     
     container.appendChild(emojiEl);
     
-    // Remove after animation (7 seconds)
+    // Remove after animation (12 seconds) — increased so popups stay visible longer
     setTimeout(() => {
         emojiEl.remove();
-    }, 7000);
+    }, 12000);
 }
 
 // YouTube Music Functions

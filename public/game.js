@@ -2731,8 +2731,9 @@ function payJailFine() {
 }
 
 function rollForJail() {
-    try { playSound('dice'); } catch (e) { console.log('Dice sound failed', e); }
-    socket.emit('rollForJail');
+    // Roll-for-jail is deprecated/disabled by design; advise player to pay or wait.
+    addEvent('🎲 Çift zar atma artık desteklenmiyor. Ceza öde veya 2 tur bekle.');
+    socket.emit('errorMessage', 'Çift zar ile hapisten çıkma özelliği devre dışı bırakıldı.');
     closeJailModal();
 }
 
@@ -2817,7 +2818,7 @@ function showJailModal(player) {
     const jailCardCount = document.getElementById('jailCardCount');
     
     if (modal && turnsLeftEl) {
-        const turnsLeft = Math.max(0, 3 - (player.jailTurns || 0));
+        const turnsLeft = Math.max(0, 2 - (player.jailTurns || 0));
         turnsLeftEl.textContent = `Kalan tur: ${turnsLeft}`;
         
         // Show/hide jail card button based on card count

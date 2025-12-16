@@ -264,7 +264,7 @@
                                         <input id="lobbyMaxPlayers" type="number" min="2" max="50" value="12" style="width:100%; margin-top:6px; padding:6px; border-radius:6px;">
                                     </label>
                                     <label style="flex:1;">Gerekli Oyuncu
-                                        <input id="lobbyRequiredPlayers" type="number" min="2" max="50" value="2" style="width:100%; margin-top:6px; padding:6px; border-radius:6px;">
+                                        <input id="lobbyRequiredPlayers" type="number" min="1" max="50" value="1" style="width:100%; margin-top:6px; padding:6px; border-radius:6px;">
                                     </label>
                                 </div>
                                 <label style="margin-top:8px; display:block;">
@@ -444,6 +444,20 @@
         </div>
     </div>
 
+    <!-- In-page Lobby Password Prompt Modal -->
+    <div id="passwordPromptModal" class="trade-offer-modal" style="display:none;">
+        <div class="trade-offer-overlay" onclick="hidePasswordModal(true)" style="cursor:pointer;"></div>
+        <div class="trade-offer-content" style="max-width:420px; text-align:center;">
+            <h3 style="margin-top:0;">Lobi Şifresi Gir</h3>
+            <p style="color: rgba(255,255,255,0.8); font-size:0.95em;">Bu lobi için şifre girin.</p>
+            <input id="passwordPromptInput" type="password" maxlength="50" placeholder="Lobi şifresi..." class="input-field" style="margin:12px 0; width:100%;">
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+                <button class="btn-ghost" onclick="hidePasswordModal(true)">İptal</button>
+                <button class="btn-primary" onclick="confirmPasswordModal()">Gönder</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Readonly Property Popup -->
     <div id="roPropertyPopup" class="property-popup" style="display: none;">
         <div class="popup-content">
@@ -577,7 +591,6 @@
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button id="useJailCardBtn" class="btn-success" onclick="useJailCard()" style="width: 100%; display: none; background: linear-gradient(135deg, #10b981, #059669); font-weight: 700;">🎫 Pardon Kartı Kullan (<span id="jailCardCount">0</span> adet)</button>
                 <button class="btn-primary" onclick="payJailFine()" style="width: 100%;">💰 100 TL Öde</button>
-                <button class="btn-secondary" onclick="rollForJail()" style="width: 100%;">🎲 Çift Zar At</button>
                 <button class="btn-ghost" onclick="closeJailModal()" style="width: 100%;">⏳ Bekle (Otomatik çıkış)</button>
             </div>
         </div>

@@ -269,7 +269,7 @@ io.on('connection', (socket) => {
       properties: cloneBoardProperties(board),
       // Lobby settings
       maxPlayers: data.maxPlayers || 12,
-      requiredPlayers: data.requiredPlayers || 2,
+      requiredPlayers: data.requiredPlayers || 1,
       password: data.password || null,
       gameRules: {
         initialMoney: 2500,
@@ -296,7 +296,7 @@ io.on('connection', (socket) => {
       boardName: lobby.boardName,
       hasPassword: !!lobby.password,
       maxPlayers: lobby.maxPlayers || 12,
-      requiredPlayers: lobby.requiredPlayers || 2
+      requiredPlayers: lobby.requiredPlayers || 1
     })).filter(l => !l.started && l.playerCount < (l.maxPlayers || 12));
     socket.emit('lobbiesList', availableLobbies);
   });
@@ -605,10 +605,17 @@ io.on('connection', (socket) => {
 
         // Regular property with houses
         else {
-          rentAmount = finalLandedSpace.rent || 0;
-          if (finalLandedSpace.houses > 0) {
-            const houseRents = [finalLandedSpace.rent1house, finalLandedSpace.rent2house, finalLandedSpace.rent3house, finalLandedSpace.rent4house, finalLandedSpace.renthotel];
-            rentAmount = houseRents[finalLandedSpace.houses - 1] || rentAmount;
+          if (Array.isArray(finalLandedSpace.rent) && finalLandedSpace.rent.length > 0) {
+            const houses = finalLandedSpace.houses || 0;
+            // If there are houses/hotel, pick corresponding rent index (5 means hotel, use last entry)
+            if (houses > 0) {
+              const idx = Math.min(houses, finalLandedSpace.rent.length - 1);
+              rentAmount = finalLandedSpace.rent[idx];
+            } else {
+              rentAmount = finalLandedSpace.rent[0];
+            }
+          } else {
+            rentAmount = Number(finalLandedSpace.rent) || 0;
           }
         }
 
@@ -692,11 +699,12 @@ io.on('connection', (socket) => {
     // Handle jail logic
     if (currentPlayer.inJail) {
       currentPlayer.jailTurns++;
-      if (currentPlayer.jailTurns >= 3) {
+      // Auto-release after 2 rounds now (as requested)
+      if (currentPlayer.jailTurns >= 2) {
         currentPlayer.inJail = false;
         currentPlayer.jailTurns = 0;
-        lobby.events.push({ type: 'jail-released', player: currentPlayer.name, reason: '3 tur doldu' });
-        io.to(lobbyId).emit('jailReleased', { player: currentPlayer, reason: '3 tur bekledin' });
+        lobby.events.push({ type: 'jail-released', player: currentPlayer.name, reason: '2 tur doldu' });
+        io.to(lobbyId).emit('jailReleased', { player: currentPlayer, reason: '2 tur bekledin' });
       }
     }
     
@@ -765,7 +773,7 @@ io.on('connection', (socket) => {
     }
 
     if (typeof settings.maxPlayers === 'number') lobby.maxPlayers = Math.max(2, Math.min(50, Math.floor(settings.maxPlayers)));
-    if (typeof settings.requiredPlayers === 'number') lobby.requiredPlayers = Math.max(2, Math.min(lobby.maxPlayers || 12, Math.floor(settings.requiredPlayers)));
+    if (typeof settings.requiredPlayers === 'number') lobby.requiredPlayers = Math.max(1, Math.min(lobby.maxPlayers || 12, Math.floor(settings.requiredPlayers)));
     if (settings.password === '' || settings.password === null) lobby.password = null;
     else if (typeof settings.password === 'string') lobby.password = settings.password;
 
@@ -874,16 +882,16 @@ io.on('connection', (socket) => {
     currentPlayer.hasRolled = false;
 
     // Handle jail logic
-    if (currentPlayer.inJail) {
-      currentPlayer.jailTurns++;
-      // Auto-release after 3 turns
-      if (currentPlayer.jailTurns >= 3) {
-        currentPlayer.inJail = false;
-        currentPlayer.jailTurns = 0;
-        lobby.events.push({ type: 'jail-released', player: currentPlayer.name, reason: '3 tur doldu' });
-        io.to(lobbyId).emit('jailReleased', { player: currentPlayer, reason: '3 tur bekledin' });
+      if (currentPlayer.inJail) {
+        currentPlayer.jailTurns++;
+        // Auto-release after 2 turns (consistent path)
+        if (currentPlayer.jailTurns >= 2) {
+          currentPlayer.inJail = false;
+          currentPlayer.jailTurns = 0;
+          lobby.events.push({ type: 'jail-released', player: currentPlayer.name, reason: '2 tur doldu' });
+          io.to(lobbyId).emit('jailReleased', { player: currentPlayer, reason: '2 tur bekledin' });
+        }
       }
-    }
 
     // Move to next player (skip bankrupt players)
     let nextTurn = (lobby.currentTurn + 1) % lobby.players.length;

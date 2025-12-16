@@ -61,11 +61,13 @@
     text-align: center;
     font-weight: 800;
     line-height: 1.05;
-    /* Scale font responsively but clamp to a readable size */
-    font-size: clamp(0.7rem, 1.6vw, 1rem);
+    /* Make tile names more legible: slightly larger minimum and responsive scaling */
+    font-size: clamp(0.85rem, 2.2vw, 1.1rem);
     word-break: break-word;
     hyphens: auto;
     transform-origin: center center;
+    color: var(--text-primary);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.6);
 }
 .board-space .space-group {
     margin-top: 4px;
@@ -581,10 +583,11 @@ body {
 
 /* ===== GAME SCREEN ===== */
 .game-container {
-    width: 100%;
+    font-size: 1rem; /* slightly larger popup text for readability */
     height: 100%;
     display: flex;
     flex-direction: column;
+    .property-popup .property-details .property-detail { font-size: 0.98rem; }
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
@@ -894,7 +897,7 @@ body {
 .board-space .space-group,
 .board-space .space-price {
     display: inline-block;
-    transform: scale(0.97); /* inverse of board scale (approx) so text appears same size */
+    transform: none; /* avoid shrinking text — keep readable */
     transform-origin: center center;
 }
 

@@ -1210,9 +1210,24 @@ function initializeBoard() {
         const space = document.createElement('div');
         space.className = 'board-space';
 
-        // Add color class for properties
+        // Add color class for properties (base template)
         if (prop.color) {
             space.classList.add(prop.color);
+        }
+
+        // Override color class based on group mapping for Dünya board
+        // so country groups appear with the requested palette
+        const groupColorMap = {
+            'Mısır': 'brown',
+            'Türkiye': 'red',
+            'Almanya': 'darkblue',
+            'İtalya': 'green',
+            'Fransa': 'pink'
+        };
+        if (prop.group && groupColorMap[prop.group]) {
+            // remove any known color classes
+            ['brown','lightblue','pink','orange','red','yellow','green','darkblue'].forEach(c => space.classList.remove(c));
+            space.classList.add(groupColorMap[prop.group]);
         }
 
         if (prop.type === 'go' || prop.type === 'jail' || prop.type === 'parking' || prop.type === 'gotojail') {

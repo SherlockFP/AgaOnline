@@ -2460,8 +2460,18 @@ socket.on('jailRollFailed', (data) => {
 // Check if current player is in jail and show jail modal
 function checkJailStatus() {
     const currentPlayer = gameState.players[gameState.currentTurn];
+    // Only show the jail modal if it's your turn AND you're actually serving a jail turn
+    // (i.e. jailTurns > 0). This prevents the modal from appearing immediately when
+    // a player is sent to jail; their turn is advanced and the modal appears when
+    // the jailed player's turn comes up again.
     if (currentPlayer && currentPlayer.id === socket.id && currentPlayer.inJail) {
-        showJailModal(currentPlayer);
+        const turns = currentPlayer.jailTurns || 0;
+        if (turns > 0) {
+            showJailModal(currentPlayer);
+        } else {
+            // If jailTurns === 0, the player was just sent to jail this round; don't show modal now.
+            console.log('🔒 Player in jail but jailTurns=0; skipping modal until their next turn');
+        }
     }
 }
 

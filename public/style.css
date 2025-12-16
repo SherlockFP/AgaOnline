@@ -887,19 +887,53 @@ body {
 }
 
 .board-space.property {
-    border-top: 10px solid;
-    border-top-color: inherit;
+    position: relative;
+    /* top band hidden by default; category color shown inside the tile */
+    border-top: none;
+}
+
+/* Top owner band (hidden until owned) */
+.board-space.property::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 6px;
+    height: 10px;
+    border-radius: 8px;
+    background: transparent;
+    opacity: 0;
+    transition: background 220ms ease, opacity 220ms ease, transform 220ms ease;
+    transform: translateY(-2px);
+    pointer-events: none;
+}
+
+.board-space.property.owned::after {
+    opacity: 1;
+    transform: translateY(0);
+    background: var(--owner-band-color, rgba(255,255,255,0.9));
+}
+
+/* Category label inside tile */
+.board-space .space-group {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.78em;
+    font-weight: 800;
+    color: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,0.04);
 }
 
 /* Property color bands */
-.board-space.brown { border-top-color: #8b4513; }
-.board-space.lightblue { border-top-color: #38bdf8; }
-.board-space.pink { border-top-color: #ec4899; }
-.board-space.orange { border-top-color: #fb923c; }
-.board-space.red { border-top-color: #ef4444; }
-.board-space.yellow { border-top-color: #facc15; }
-.board-space.green { border-top-color: #22c55e; }
-.board-space.darkblue { border-top-color: #1d4ed8; }
+.board-space.brown .space-group { background: #8b4513; }
+.board-space.lightblue .space-group { background: #38bdf8; color: #052f3a; }
+.board-space.pink .space-group { background: #ec4899; }
+.board-space.orange .space-group { background: #fb923c; color: #522b03; }
+.board-space.red .space-group { background: #ef4444; }
+.board-space.yellow .space-group { background: #facc15; color: #2a2a00; }
+.board-space.green .space-group { background: #22c55e; }
+.board-space.darkblue .space-group { background: #1d4ed8; }
 
 /* Special space types - Community Chest (Kamu Sandığı) */
 .board-space[data-type="chest"]:not(.owned) {

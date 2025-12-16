@@ -1425,24 +1425,28 @@ function updateGameBoard() {
             const owner = gameState.players.find(p => p.id === prop.owner);
             space.classList.add('owned');
             space.style.opacity = '1';
-            // Kutuyu tamamen oyuncu rengiyle doldur
-            // More visible owner tint while keeping it elegant
-            space.style.borderBottom = `4px solid ${hexToRgba(owner.color, 0.95)}`;
-            space.style.background = `linear-gradient(135deg, ${hexToRgba(owner.color, 0.28)} 0%, ${hexToRgba(owner.color, 0.14)} 55%, rgba(15,23,42,0.12) 100%)`;
-            space.style.boxShadow = `0 6px 18px ${hexToRgba(owner.color, 0.18)}, inset 0 0 0 2px rgba(0,0,0,0.14)`;
-            
-            // Text'leri beyaz yap ki görünsün
+            // Only show the thin owner band at the top of the tile
+            if (owner && owner.color) {
+                space.style.setProperty('--owner-band-color', owner.color);
+            }
+
+            // Ensure we don't change the whole tile's base color — only the band
+            space.style.removeProperty('background');
+            space.style.removeProperty('boxShadow');
+            space.style.removeProperty('borderBottom');
+
+            // Make tile text readable
             const nameEl = space.querySelector('.space-name');
             const priceEl = space.querySelector('.space-price');
             if (nameEl) nameEl.style.color = '#ffffff';
             if (priceEl) priceEl.style.color = '#ffffff';
-            
-            // Hide price when property is owned
             if (priceEl) priceEl.style.display = 'none';
         } else if (prop) {
             space.classList.remove('owned');
             space.style.opacity = '1';
             space.style.borderBottom = 'none';
+            // remove owner band color when unowned
+            space.style.removeProperty('--owner-band-color');
             // Default colors per type when unowned
             let defaultBg = '';
             let defaultShadow = '';

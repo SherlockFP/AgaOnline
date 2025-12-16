@@ -2394,7 +2394,22 @@ function addEvent(message, playerColor = null) {
 
         const item = document.createElement('div');
         item.className = 'event-item';
-        item.textContent = message;
+
+        // Escape HTML to avoid injection, then highlight amounts
+        function escapeHtml(str) {
+            return str.replace(/[&"'<>]/g, function (s) {
+                return ({ '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' })[s];
+            });
+        }
+
+        const escaped = escapeHtml(message);
+        // Highlight currency amounts (e.g., ₺200 or 200) to make tax/amounts visible
+        const highlighted = escaped.replace(/(₺\s?\d[\d\.,]*)/g, '<span class="event-amount">$1</span>').replace(/(?<!>)(\b\d{1,3}(?:[\.,]\d{3})*(?:[\.,]\d+)?\b)(?![^<]*>)/g, (m, p1) => {
+            // Avoid double-wrapping already wrapped amounts
+            if (/^<span class=/.test(p1)) return p1;
+            return `<span class="event-amount">${p1}</span>`;
+        });
+        item.innerHTML = highlighted;
         
         // Enhanced styling with player color as accent
         const lighterColor = lightenColor(playerColor, 0.3);
@@ -2421,16 +2436,19 @@ function addEvent(message, playerColor = null) {
             item.style.transform = 'translateX(0)';
         });
 
-        // Add new message to the top (newest first)
-        eventLog.insertBefore(item, eventLog.firstChild);
+        // Add new message to the bottom (oldest at top, newest at bottom)
+        eventLog.appendChild(item);
 
-        // Keep only max 12 messages, remove oldest (bottom)
-        while (eventLog.children.length > 12) {
-            eventLog.removeChild(eventLog.lastChild);
+        // Keep only max 5 messages, remove oldest (top)
+        const MAX_EVENTS = 5;
+        while (eventLog.children.length > MAX_EVENTS) {
+            eventLog.removeChild(eventLog.firstChild);
         }
 
-        // Scroll to top to show new message
-        eventLog.scrollTop = 0;
+        // Auto-scroll to bottom so newest message is visible
+        setTimeout(() => {
+            eventLog.scrollTop = eventLog.scrollHeight;
+        }, 30);
     }
 }
 

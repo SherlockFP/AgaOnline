@@ -92,6 +92,63 @@ function playBackgroundMusic() {
     updateMusicButton();
 }
 
+// Dice rolling sound using WebAudio (continuous during roll)
+let _diceAudio = {
+    ctx: null,
+    osc: null,
+    gain: null,
+    modInterval: null
+};
+
+function startDiceRollSound() {
+    try {
+        if (_diceAudio.osc) return; // already running
+        const ctx = _diceAudio.ctx || new (window.AudioContext || window.webkitAudioContext)();
+        _diceAudio.ctx = ctx;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = 200;
+        gain.gain.value = 0.0001;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        // small fade-in
+        gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.05);
+        osc.start();
+        _diceAudio.osc = osc;
+        _diceAudio.gain = gain;
+
+        // modulate frequency randomly to mimic dice rattle
+        _diceAudio.modInterval = setInterval(() => {
+            if (!_diceAudio.osc) return;
+            const f = 200 + Math.random() * 900;
+            try { _diceAudio.osc.frequency.setValueAtTime(f, ctx.currentTime); } catch (e) {}
+        }, 80);
+    } catch (e) {
+        console.log('Dice roll sound failed', e);
+    }
+}
+
+function stopDiceRollSound() {
+    try {
+        if (!_diceAudio.osc) return;
+        const ctx = _diceAudio.ctx;
+        // fade out
+        _diceAudio.gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+        setTimeout(() => {
+            try { _diceAudio.osc.stop(); } catch (e) {}
+            try { _diceAudio.osc.disconnect(); } catch (e) {}
+            try { _diceAudio.gain.disconnect(); } catch (e) {}
+        }, 150);
+        clearInterval(_diceAudio.modInterval);
+        _diceAudio.osc = null;
+        _diceAudio.gain = null;
+        _diceAudio.modInterval = null;
+    } catch (e) {
+        console.log('stopDiceRollSound error', e);
+    }
+}
+
 // Pause background music
 function pauseBackgroundMusic() {
     if (backgroundAudio) backgroundAudio.pause();
@@ -437,18 +494,23 @@ socket.on('diceRolled', (data) => {
     const resultEl = document.getElementById('diceResult');
     const endTurnBtn = document.getElementById('endTurnBtn');
 
-    // Animate both dice
+    // Ensure rolling visuals & audio are active while server calculates
     dice1El.classList.add('rolling');
+    dice2El.style.display = 'flex';
     dice2El.classList.add('rolling');
-    dice2El.style.display = 'flex'; // Show second die
+    startDiceRollSound();
 
+    // Reveal dice after a longer, satisfying roll duration
+    const revealDelay = 1400; // ms
     setTimeout(() => {
         dice1El.setAttribute('data-value', data.dice1);
         dice2El.setAttribute('data-value', data.dice2);
         resultEl.textContent = `Toplam: ${data.total}`;
         dice1El.classList.remove('rolling');
         dice2El.classList.remove('rolling');
-    }, 800);
+        // stop rolling sound when values revealed
+        stopDiceRollSound();
+    }, revealDelay);
 
     // Hide roll button after rolling
     const rollBtn = document.getElementById('rollBtn');
@@ -459,8 +521,7 @@ socket.on('diceRolled', (data) => {
     const statusEl = document.getElementById('gameStatus');
     if (statusEl) statusEl.textContent = `${data.player.name} sırası`;
 
-    // Play dice sound
-    playSound('dice');
+    // (rolling sound handled by startDiceRollSound/stopDiceRollSound)
     
     // Check for lucky double 6
     if (data.dice1 === 6 && data.dice2 === 6) {
@@ -541,15 +602,15 @@ socket.on('diceRolled', (data) => {
 
     // Animate player movement - start shortly AFTER dice animation finishes
     const startPos = (typeof prevPlayerPosition === 'number') ? prevPlayerPosition : (playerIdx >= 0 ? (data.newPosition - data.total + 40) % 40 : 0);
-    // Delay movement to give dice animation time to settle. Dice rolling timeout above is 800ms,
-    // start movement ~200ms after that so total ~1s after roll click.
+    // Delay movement to give dice animation time to settle. Start movement after revealDelay + small pause.
+    const movementDelay = (typeof revealDelay === 'number' ? revealDelay : 800) + 600;
     setTimeout(() => {
         animatePlayerMove(data.player.id, startPos, data.newPosition, data.player.color, () => {
             updateGameBoard();
             updateGamePlayersPanel();
             updateTurnDisplay();
         });
-    }, 1000); // 1000ms total from the socket event; aligns with dice animation end + small pause
+    }, movementDelay);
 
     // Sıradaki oyuncu ben miyim?
     const isMyTurn = gameState.players[gameState.currentTurn]?.id === socket.id;
@@ -1878,11 +1939,15 @@ function refreshTradeLists() {
 function rollDice() {
     const rollBtn = document.getElementById('rollBtn');
     rollBtn.disabled = true;
-    try { playSound('dice'); } catch (e) { console.log('Dice sound failed', e); }
+    // Start visual + audio rolling feedback immediately
+    const dice1El = document.getElementById('dice1');
+    const dice2El = document.getElementById('dice2');
+    if (dice1El) dice1El.classList.add('rolling');
+    if (dice2El) { dice2El.style.display = 'flex'; dice2El.classList.add('rolling'); }
+    startDiceRollSound();
     socket.emit('rollDice');
-    setTimeout(() => {
-        rollBtn.disabled = false;
-    }, 2000);
+    // keep button disabled until server responds / movement finishes; safety fallback
+    setTimeout(() => { if (rollBtn) rollBtn.disabled = false; }, 5000);
 }
 
 // endTurn function removed - auto-advancement handled by server

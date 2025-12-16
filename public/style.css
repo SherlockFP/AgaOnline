@@ -573,7 +573,7 @@ body {
     grid-template-columns: 280px 1fr 280px;
     gap: 15px;
     padding: 15px;
-    overflow: hidden;
+    overflow: visible; /* allow board to overflow if needed so bottom row isn't clipped */
 }
 
 /* ===== PANELS ===== */
@@ -790,7 +790,8 @@ body {
     /* Tighter limits so board squares fit alongside side panels */
     width: min(78vw, 86vh);
     max-width: calc(100vw - 420px);
-    max-height: calc(100vh - 120px);
+    /* reduce max height so board sits comfortably below header and panels */
+    max-height: calc(100vh - 200px);
     aspect-ratio: 1;
     position: relative;
     will-change: transform;

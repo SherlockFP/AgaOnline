@@ -26,19 +26,7 @@
     --accent-hover: #3b82f6;
 }
 
-/* Simple Mode: minimal UI, no animations, no shadows, muted colors */
-body.simple-mode {
-    --bg-primary: #f8f8f8;
-    --bg-secondary: #f3f3f3;
-    --bg-tertiary: #eeeeee;
-    --text-primary: #111111;
-    --text-secondary: #444444;
-    --accent: #888888;
-    --accent-hover: #666666;
-    background: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
-}
-
+/* Simple Mode: minimal UI, no animations, no shadows — keep existing theme colors */
 body.simple-mode * {
     animation: none !important;
     transition: none !important;
@@ -52,14 +40,14 @@ body.simple-mode .menu-container,
 body.simple-mode .lobbies-panel,
 body.simple-mode .panel-section,
 body.simple-mode .board-wrapper,
-body.simple-mode .game-music-control { background: #ffffff !important; border: 1px solid #ddd !important; }
+body.simple-mode .game-music-control { background: transparent !important; border: none !important; }
 
 body.simple-mode .btn-primary,
 body.simple-mode .btn-action-primary,
 body.simple-mode .btn-mini,
-body.simple-mode .btn-ghost { background: #f0f0f0 !important; color: var(--text-primary) !important; border: 1px solid #ddd !important; box-shadow: none !important; }
+body.simple-mode .btn-ghost { background: transparent !important; color: inherit !important; border: none !important; box-shadow: none !important; }
 
-body.simple-mode .monopoly-board .board-space { background: #fff !important; border: 1px solid #e0e0e0 !important; }
+body.simple-mode .monopoly-board .board-space { background: transparent !important; border: 1px solid rgba(0,0,0,0.06) !important; }
 body.simple-mode .monopoly-board { box-shadow: none !important; }
 body.simple-mode .chat-messages, body.simple-mode .players-list, body.simple-mode .event-log { background: transparent !important; }
 body.simple-mode #emojiPanel, body.simple-mode .btn-gif-small, body.simple-mode #emojiBtn { display: none !important; }

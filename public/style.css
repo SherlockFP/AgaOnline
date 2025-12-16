@@ -823,7 +823,10 @@ body {
 }
 
 .board-wrapper {
-    width: min(98vh, 98vw);
+    /* Limit width to viewport minus panels so board fits on smaller screens */
+    width: min(82vw, 88vh);
+    max-width: calc(100vw - 320px);
+    max-height: calc(100vh - 120px);
     aspect-ratio: 1;
     position: relative;
     will-change: transform;
@@ -835,13 +838,14 @@ body {
     height: 100%;
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
     border: 3px solid rgba(96, 165, 250, 0.22);
-    border-radius: 18px;
+    border-radius: 14px;
     display: grid;
-    grid-template-columns: 1.20fr repeat(9, 1fr) 1.20fr;
-    grid-template-rows: 1.20fr repeat(9, 1fr) 1.20fr;
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95);
+    /* Reduce corner fraction to shrink empty center region */
+    grid-template-columns: 0.95fr repeat(9, 1fr) 0.95fr;
+    grid-template-rows: 0.95fr repeat(9, 1fr) 0.95fr;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
     position: relative;
-    gap: 0px; /* reduce center empty spacing */
+    gap: 0px;
     will-change: transform;
     transform: translateZ(0);
 }
@@ -1179,20 +1183,36 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 36%;
-    height: 36%;
+    /* shrink center to reduce gap between tiles */
+    width: 28%;
+    height: 28%;
     background: transparent;
     backdrop-filter: none;
     border: none;
     border-radius: 0;
-    padding: 8px;
+    padding: 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     z-index: 50;
     box-shadow: none;
+}
+
+/* Responsive tweaks: further reduce board size on narrower screens */
+@media (max-width: 1200px) {
+    .board-wrapper { width: min(92vw, 86vh); max-width: calc(100vw - 120px); }
+    .monopoly-board { grid-template-columns: 0.9fr repeat(9, 1fr) 0.9fr; grid-template-rows: 0.9fr repeat(9, 1fr) 0.9fr; }
+    .board-center { width: 32%; height: 32%; }
+    .board-space { padding: 18px 12px; font-size: 1em; }
+}
+
+@media (max-width: 800px) {
+    .board-wrapper { width: min(94vw, 84vh); max-width: calc(100vw - 80px); }
+    .monopoly-board { grid-template-columns: 0.8fr repeat(9, 1fr) 0.8fr; grid-template-rows: 0.8fr repeat(9, 1fr) 0.8fr; }
+    .board-center { width: 36%; height: 36%; }
+    .board-space { padding: 12px 8px; font-size: 0.95em; }
 }
 
 .board-event-display {

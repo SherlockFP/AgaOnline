@@ -137,10 +137,10 @@ const boards = {
     currency: '$',
     properties: buildBoard([
       '🌍 BAŞLA / MAAŞ', 'Kahire', 'Topluluk', 'İskenderiye', 'Gelir Vergisi', 'Afrika Hattı',
-      'İstanbul', 'Şans', 'Ankara', 'İzmir', 'Hapishane (Ziyaret)', 'Londra',
-      'Elektrik Şirketi', 'Manchester', 'Birmingham', 'Avrupa Hattı', 'Roma', 'Topluluk',
-      'Milano', 'Venedik', 'Ücretsiz Park', 'Berlin', 'Şans', 'Münih',
-      'Hamburg', 'Pasifik Hattı', 'Madrid', 'Barselona', 'Su İşleri', 'Valensiya',
+      'İstanbul', 'Şans', 'Ankara', 'İzmir', 'Hapishane (Ziyaret)', 'Roma',
+      'Elektrik Şirketi', 'Milano', 'Venedik', 'Avrupa Hattı', 'Londra', 'Topluluk',
+      'Manchester', 'Birmingham', 'Ücretsiz Park', 'Berlin', 'Şans', 'Münih',
+      'Hamburg', 'Pasifik Hattı', 'Paris', 'Marsilya', 'Su İşleri', 'Lyon',
       'Hapishaneye Git', 'Şanghay', 'Pekin', 'Topluluk', 'Shenzhen', 'Kuzey Asya Hattı',
       'Şans', 'New York', 'Lüks Vergisi', 'Los Angeles'
     ])

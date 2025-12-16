@@ -942,6 +942,7 @@ body {
 .board-space.yellow .space-group { background: #facc15; color: #2a2a00; }
 .board-space.green .space-group { background: #22c55e; }
 .board-space.darkblue .space-group { background: #1d4ed8; }
+.board-space.purple .space-group { background: #8b5cf6; color: #ffffff; }
 
 /* Special space types - Community Chest (Kamu Sandığı) */
 .board-space[data-type="chest"]:not(.owned) {

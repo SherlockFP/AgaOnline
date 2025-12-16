@@ -1222,7 +1222,8 @@ function initializeBoard() {
             'Türkiye': 'red',
             'Almanya': 'darkblue',
             'İtalya': 'green',
-            'Fransa': 'pink'
+            'Fransa': 'pink',
+            'Çin': 'purple'
         };
         if (prop.group && groupColorMap[prop.group]) {
             // remove any known color classes

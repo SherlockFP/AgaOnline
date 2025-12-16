@@ -470,6 +470,14 @@ socket.on('lobbyUpdated', (lobby) => {
     }
     
     console.log('👥 Lobi güncellendi');
+    // If we're in an active game, sync authoritative gameState with lobby updates
+    if (gameState && (gameState.id === lobby.id || lobby.started)) {
+        gameState = lobby;
+        updateGameBoard();
+        updateGamePlayersPanel();
+        updateOwnedProperties();
+        updateTurnDisplay();
+    }
 });
 
 socket.on('gameStarted', (lobby) => {
@@ -1619,7 +1627,9 @@ function initializeBoard() {
         }
         
         const groupLabel = prop.group ? `<div class="space-group">${prop.group}</div>` : '';
-        space.innerHTML = `<div class="space-name">${groupIcon}${prop.name}</div>${groupLabel}${prop.price > 0 ? `<div class="space-price">₺${prop.price}</div>` : ''}${houseIndicator}`;
+        // Show price on board only when property is unowned
+        const showBoardPrice = prop.price > 0 && !prop.owner;
+        space.innerHTML = `<div class="space-name">${groupIcon}${prop.name}</div>${groupLabel}${showBoardPrice ? `<div class="space-price">${gameState?.currency || '₺'}${prop.price}</div>` : ''}${houseIndicator}`;
 
         board.appendChild(space);
     });

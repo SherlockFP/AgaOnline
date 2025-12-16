@@ -27,11 +27,14 @@
     align-items: center;
     justify-content: center;
     width: 100%;
+    height: 100vh; /* ensure vertical centering works reliably */
     pointer-events: auto;
 }
 .property-popup .popup-content {
     width: 420px;
     max-width: calc(100% - 40px);
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
     background: linear-gradient(180deg, rgba(12,18,30,0.96), rgba(8,12,20,0.98));
     border: 1px solid rgba(96,165,250,0.08);
     padding: 18px;
@@ -925,8 +928,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px 16px; /* increased slightly more for a subtle larger feel */
-    font-size: 1.06em; /* tiny bump to base font-size */
+    padding: 12px 8px; /* reduced padding to prevent large tiles pushing text */
+    font-size: 0.95em; /* slightly reduced base font */
     text-align: center;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -935,7 +938,7 @@ body {
     overflow: hidden;
     min-width: 0;
     word-wrap: break-word;
-    line-height: 1.2;
+    line-height: 1.05;
     border-radius: 8px;
     contain: layout paint;
     will-change: transform, opacity;
@@ -1167,9 +1170,14 @@ body {
     margin-bottom: 2px;
     color: white;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(0, 0, 0, 1);
-    font-size: 0.80em;
-    letter-spacing: 0.3px;
-    line-height: 1.2;
+    /* Clamp size so very long names scale down on narrow boards */
+    font-size: clamp(0.55rem, 1.0vw + 0.4rem, 0.86rem);
+    letter-spacing: 0.2px;
+    line-height: 1.05;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .space-group {

@@ -27,6 +27,17 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+// Utility: get initials (2 letters) from player name, fallback to short appearance
+function getInitials(name, appearance) {
+    if (appearance && typeof appearance === 'string' && appearance.length <= 2) return appearance;
+    if (!name) return (appearance && appearance.length <= 2) ? appearance : '';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+    const first = parts[0][0] || '';
+    const last = parts[parts.length-1][0] || '';
+    return (first + last).toUpperCase();
+}
+
 // Initialize background music
 function initializeBackgroundMusic() {
     if (backgroundAudio) return; // Prevent multiple initializations
@@ -1337,8 +1348,8 @@ function animatePlayerMove(playerId, startPos, endPos, playerColor, callback) {
             token.title = player.name;
             token.dataset.playerId = playerId;
             token.dataset.playerColor = playerColor;
-            token.textContent = player.appearance || '👤';
-            token.style.fontSize = '1.3em';
+            token.textContent = getInitials(player.name, player.appearance) || '👤';
+            token.style.fontSize = '0.78rem';
             targetSpace.appendChild(token);
             
             // Play move sound
@@ -1402,9 +1413,9 @@ function updateGameBoard() {
             token.title = player.name;
             token.dataset.playerId = player.id;
             token.dataset.playerColor = player.color;
-            // Show avatar instead of initial
-            token.textContent = player.appearance || '👤';
-            token.style.fontSize = '1.3em';
+            // Show player initials (fits inside small circular token)
+            token.textContent = getInitials(player.name, player.appearance) || '👤';
+            token.style.fontSize = '0.78rem';
             space.appendChild(token);
             
             // Add active-player-space class to highlight the space where a player is

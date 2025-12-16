@@ -24,6 +24,7 @@
     --text-secondary: rgba(255, 255, 255, 0.8);
     --accent: #60a5fa;
     --accent-hover: #3b82f6;
+    --board-scale: 0.92; /* scale board to mimic 90% site zoom while keeping page at 100% */
 }
 
 /* simple-mode removed: UI effects are kept unchanged unless toggled elsewhere */
@@ -795,7 +796,8 @@ body {
     aspect-ratio: 1;
     position: relative;
     will-change: transform;
-    transform: translateZ(0);
+    transform-origin: center center;
+    transform: translateZ(0) scale(var(--board-scale));
 }
 
 .monopoly-board {
@@ -1176,7 +1178,7 @@ body {
 }
 
 @media (max-width: 800px) {
-    .board-wrapper { width: min(96vw, 82vh); max-width: calc(100vw - 60px); }
+    .board-wrapper { width: min(96vw, 82vh); max-width: calc(100vw - 60px); --board-scale: 1; }
     .monopoly-board { grid-template-columns: 0.75fr repeat(9, 1fr) 0.75fr; grid-template-rows: 0.75fr repeat(9, 1fr) 0.75fr; }
     .board-center { width: 38%; height: 38%; }
     .board-space { padding: 10px 6px; font-size: 0.9em; }

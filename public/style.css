@@ -917,12 +917,20 @@ body {
     transition: background 220ms ease, opacity 220ms ease, transform 220ms ease;
     transform: translateY(-2px);
     pointer-events: none;
+    z-index: 1; /* keep the owner band behind the name/group text */
 }
 
 .board-space.property.owned::after {
     opacity: 1;
     transform: translateY(0);
     background: var(--owner-band-color, rgba(255,255,255,0.9));
+}
+
+/* Ensure space name and group badges stay above owner color band */
+.board-space .space-name,
+.board-space .space-group {
+    position: relative;
+    z-index: 6;
 }
 
 /* Category label inside tile */

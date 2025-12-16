@@ -785,10 +785,10 @@ body {
 .board-wrapper {
     /* Board sizing tuned to fit alongside panels and header */
     /* Increase board area so tiles are larger while keeping side panels visible */
-    width: min(86vw, 94vh);
-    max-width: calc(100vw - 240px);
+    width: min(90vw, 96vh);
+    max-width: calc(100vw - 180px);
     /* reduce max height so board sits comfortably below header and panels */
-    max-height: calc(100vh - 120px);
+    max-height: calc(100vh - 110px);
     aspect-ratio: 1;
     position: relative;
     will-change: transform;
@@ -824,7 +824,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 34px 22px; /* increase inner padding so tile areas feel larger */
+    padding: 38px 24px; /* slightly larger inner padding so tile areas feel larger */
     font-size: 1.02em; /* base tile font-size */
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1048,11 +1048,11 @@ body {
 
 .space-group {
     margin-top: 2px;
-    font-size: 0.64em; /* smaller category label */
+    font-size: 0.58em; /* slightly smaller category label */
     color: #ffffff;
-    background: rgba(96,165,250,0.25);
-    border: 1px solid rgba(96,165,250,0.45);
-    padding: 1px 6px;
+    background: rgba(96,165,250,0.22);
+    border: 1px solid rgba(96,165,250,0.38);
+    padding: 1px 5px;
     border-radius: 10px;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0, 0, 0, 0.8);

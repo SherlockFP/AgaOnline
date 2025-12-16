@@ -787,11 +787,11 @@ body {
 }
 
 .board-wrapper {
-    /* Tighter limits so board squares fit alongside side panels */
-    width: min(78vw, 86vh);
-    max-width: calc(100vw - 420px);
+    /* Board sizing tuned to fit alongside panels and header */
+    width: min(74vw, 86vh);
+    max-width: calc(100vw - 360px);
     /* reduce max height so board sits comfortably below header and panels */
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 160px);
     aspect-ratio: 1;
     position: relative;
     will-change: transform;
@@ -805,16 +805,16 @@ body {
     border: 3px solid rgba(96, 165, 250, 0.22);
     border-radius: 14px;
     display: grid;
-    /* Further reduce corner fraction so tiles enlarge and center shrinks */
-    grid-template-columns: 0.85fr repeat(9, 1fr) 0.85fr;
-    grid-template-rows: 0.85fr repeat(9, 1fr) 0.85fr;
+    /* Use equal grid cells so corner/side tiles keep consistent size */
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.8);
     position: relative;
     gap: 0px;
     will-change: transform;
     transform: translateZ(0);
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible; /* allow tiles to render fully */
 }
 
 /* boardGlow animasyonu kaldırıldı - göz yormaması için */
@@ -826,8 +826,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 28px; /* increased tile padding for readability */
-    font-size: 1.12em; /* base tile font-size (reduced) */
+    padding: 28px 18px; /* tuned padding so tiles fit */
+    font-size: 1.02em; /* base tile font-size */
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;

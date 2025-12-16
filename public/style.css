@@ -793,10 +793,19 @@ body {
     position: relative;
     will-change: transform;
     transform-origin: center center;
-    transform: translateZ(0) scale(var(--board-scale, 1));
+    transform: translateZ(0) scale(var(--board-scale, 1.03));
     box-sizing: border-box;
     padding: 8px; /* keep a small inner gap so tiles don't touch frame */
     overflow: hidden; /* prevent enlarged tiles from spilling outside */
+}
+
+/* Keep inner space text visually unchanged when board is scaled up */
+.board-space .space-name,
+.board-space .space-group,
+.board-space .space-price {
+    display: inline-block;
+    transform: scale(0.97); /* inverse of board scale (approx) so text appears same size */
+    transform-origin: center center;
 }
 
 .monopoly-board {

@@ -823,15 +823,19 @@ function quickJoinLobby(lobbyId) {
     }
     
     const playerName = document.getElementById('playerNameInput').value.trim();
-    if (!playerName) {
-        alert('İsmini yazmalısın');
-        return;
+    let nameToUse = playerName;
+    if (!nameToUse) {
+        const prompted = window.prompt('Lütfen bir takma ad girin (nick):');
+        if (!prompted) return; // user cancelled
+        nameToUse = prompted.trim();
+        if (!nameToUse) return;
+        document.getElementById('playerNameInput').value = nameToUse;
     }
     
     isJoiningLobby = true;
     socket.emit('joinLobby', {
         lobbyId,
-        playerName,
+        playerName: nameToUse,
         appearance: selectedAppearance,
         color: selectedColor
     });
@@ -882,15 +886,23 @@ function joinLobby() {
     }
     
     const lobbyId = document.getElementById('lobbyIdInput').value.trim();
-    const playerName = document.getElementById('playerNameInput').value.trim();
-    if (!playerName || !lobbyId) {
-        alert('İsim ve lobi ID yazmalısın');
+    let lobbyToUse = lobbyId;
+    let playerName = document.getElementById('playerNameInput').value.trim();
+    if (!playerName) {
+        const prompted = window.prompt('Lütfen bir takma ad girin (nick):');
+        if (!prompted) return;
+        playerName = prompted.trim();
+        if (!playerName) return;
+        document.getElementById('playerNameInput').value = playerName;
+    }
+    if (!lobbyToUse) {
+        alert('Lobi ID yazmalısın');
         return;
     }
-    
+
     isJoiningLobby = true;
     socket.emit('joinLobby', {
-        lobbyId,
+        lobbyId: lobbyToUse,
         playerName,
         appearance: selectedAppearance,
         color: selectedColor

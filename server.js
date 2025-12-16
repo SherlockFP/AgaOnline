@@ -267,6 +267,10 @@ io.on('connection', (socket) => {
       currentTurn: 0,
       diceHistory: [],
       properties: cloneBoardProperties(board),
+      // Lobby settings
+      maxPlayers: data.maxPlayers || 12,
+      requiredPlayers: data.requiredPlayers || 2,
+      password: data.password || null,
       gameRules: {
         initialMoney: 2500,
         goMoney: 250,
@@ -289,8 +293,11 @@ io.on('connection', (socket) => {
       hostName: lobby.players[0]?.name || 'Unknown',
       playerCount: lobby.players.length,
       started: lobby.started,
-      boardName: lobby.boardName
-    })).filter(l => !l.started && l.playerCount < 12);
+      boardName: lobby.boardName,
+      hasPassword: !!lobby.password,
+      maxPlayers: lobby.maxPlayers || 12,
+      requiredPlayers: lobby.requiredPlayers || 2
+    })).filter(l => !l.started && l.playerCount < (l.maxPlayers || 12));
     socket.emit('lobbiesList', availableLobbies);
   });
 
@@ -300,9 +307,17 @@ io.on('connection', (socket) => {
       socket.emit('error', 'Lobby not found');
       return;
     }
+    // Check password if set
+    if (lobby.password) {
+      if (!data.password || data.password !== lobby.password) {
+        socket.emit('error', 'Lobi şifresi yanlış veya eksik');
+        return;
+      }
+    }
 
-    if (lobby.players.length >= 12) {
-      socket.emit('error', 'Lobby is full');
+    const maxPlayers = lobby.maxPlayers || 12;
+    if (lobby.players.length >= maxPlayers) {
+      socket.emit('error', 'Lobi dolu');
       return;
     }
     
@@ -720,6 +735,25 @@ io.on('connection', (socket) => {
       playerColor: player.color,
       property: property.name 
     });
+  });
+
+  // Host-only: update lobby settings (maxPlayers, requiredPlayers, password)
+  socket.on('updateLobbySettings', (settings) => {
+    const lobbyId = playerSockets.get(socket.id);
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby) return;
+    if (lobby.host !== socket.id) {
+      socket.emit('error', 'Sadece ev sahibi ayarları değiştirebilir');
+      return;
+    }
+
+    if (typeof settings.maxPlayers === 'number') lobby.maxPlayers = Math.max(2, Math.min(50, Math.floor(settings.maxPlayers)));
+    if (typeof settings.requiredPlayers === 'number') lobby.requiredPlayers = Math.max(2, Math.min(lobby.maxPlayers || 12, Math.floor(settings.requiredPlayers)));
+    if (settings.password === '' || settings.password === null) lobby.password = null;
+    else if (typeof settings.password === 'string') lobby.password = settings.password;
+
+    io.to(lobbyId).emit('lobbyUpdated', lobby);
+    console.log(`🔧 Lobby ${lobbyId} settings updated by host`);
   });
 
   socket.on('buildHouse', (data) => {
@@ -1240,16 +1274,89 @@ io.on('connection', (socket) => {
     if (lobbyId) {
       const lobby = lobbies.get(lobbyId);
       if (lobby) {
-        lobby.players = lobby.players.filter(p => p.id !== socket.id);
-        if (lobby.players.length === 0) {
-          lobbies.delete(lobbyId);
-        } else {
-          io.to(lobbyId).emit('lobbyUpdated', lobby);
+        const idx = lobby.players.findIndex(p => p.id === socket.id);
+        const wasCurrent = idx === lobby.currentTurn;
+
+        if (idx !== -1) {
+          // Remove the player from the list
+          lobby.players.splice(idx, 1);
+
+          // If no players left, remove the lobby
+          if (lobby.players.length === 0) {
+            lobbies.delete(lobbyId);
+          } else {
+            // Adjust currentTurn index to remain valid
+            if (wasCurrent) {
+              // If the disconnected player was current, keep the same index number
+              // which now points to the next player in the array (or wrap to 0)
+              lobby.currentTurn = lobby.currentTurn % lobby.players.length;
+            } else if (idx < lobby.currentTurn) {
+              // Shift current index left because earlier player was removed
+              lobby.currentTurn = Math.max(0, lobby.currentTurn - 1);
+            }
+
+            // Skip bankrupt players and ensure currentTurn points to an active player
+            let attempts = 0;
+            while (lobby.players[lobby.currentTurn] && lobby.players[lobby.currentTurn].isBankrupt && attempts < lobby.players.length) {
+              lobby.currentTurn = (lobby.currentTurn + 1) % lobby.players.length;
+              attempts++;
+            }
+
+            io.to(lobbyId).emit('lobbyUpdated', lobby);
+
+            // If the disconnected player was the current turn, notify clients that turn moved
+            if (wasCurrent && lobby.started) {
+              io.to(lobbyId).emit('turnEnded', { currentTurn: lobby.currentTurn });
+              lobby.events.push({ type: 'player-disconnected', playerId: socket.id, message: 'Oyuncu ayrıldı, sıra diğer oyuncuya geçti.' });
+              console.log(`➡️ Disconnected current player removed; new turn: ${lobby.players[lobby.currentTurn].name}`);
+            }
+          }
         }
       }
     }
     playerSockets.delete(socket.id);
     console.log('❌ Player disconnected:', socket.id);
+  });
+
+  // Allow an explicit leave action from client (e.g., user clicked "leave")
+  socket.on('leaveLobby', () => {
+    const lobbyId = playerSockets.get(socket.id);
+    if (!lobbyId) return;
+    const lobby = lobbies.get(lobbyId);
+    if (!lobby) return;
+
+    const idx = lobby.players.findIndex(p => p.id === socket.id);
+    const wasCurrent = idx === lobby.currentTurn;
+    if (idx !== -1) {
+      lobby.players.splice(idx, 1);
+    }
+
+    if (lobby.players.length === 0) {
+      lobbies.delete(lobbyId);
+    } else {
+      if (wasCurrent) {
+        lobby.currentTurn = lobby.currentTurn % lobby.players.length;
+      } else if (idx < lobby.currentTurn) {
+        lobby.currentTurn = Math.max(0, lobby.currentTurn - 1);
+      }
+
+      // Skip bankrupt players
+      let attempts = 0;
+      while (lobby.players[lobby.currentTurn] && lobby.players[lobby.currentTurn].isBankrupt && attempts < lobby.players.length) {
+        lobby.currentTurn = (lobby.currentTurn + 1) % lobby.players.length;
+        attempts++;
+      }
+
+      io.to(lobbyId).emit('lobbyUpdated', lobby);
+      if (wasCurrent && lobby.started) {
+        io.to(lobbyId).emit('turnEnded', { currentTurn: lobby.currentTurn });
+        lobby.events.push({ type: 'player-left', playerId: socket.id, message: 'Oyuncu oyundan ayrıldı, sıra diğer oyuncuya geçti.' });
+      }
+    }
+
+    playerSockets.delete(socket.id);
+    socket.leave(lobbyId);
+    console.log('🏃 Player left lobby:', socket.id);
   });
 });
 

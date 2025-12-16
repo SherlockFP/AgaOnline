@@ -1036,11 +1036,18 @@ function quickJoinLobby(lobbyId) {
         if (!nameToUse) return;
         document.getElementById('playerNameInput').value = nameToUse;
         isJoiningLobby = true;
+        // Check if lobby requires a password
+        const lobbyInfo = (availableLobbies || []).find(l => l.id === lobbyId);
+        let pw = null;
+        if (lobbyInfo && lobbyInfo.hasPassword) {
+            pw = prompt('Lobi şifresi giriniz:');
+        }
         socket.emit('joinLobby', {
             lobbyId,
             playerName: nameToUse,
             appearance: selectedAppearance,
-            color: selectedColor
+            color: selectedColor,
+            password: pw
         });
     };
 
@@ -1082,11 +1089,22 @@ function createLobby() {
         alert('İsmini yazmalısın');
         return;
     }
+    // Ask optional lobby settings (simple prompts)
+    const maxPlayersInput = prompt('Lobi için maksimum oyuncu sayısı (varsayılan 12):', '12');
+    const requiredPlayersInput = prompt('Oyun başlaması için gerekli minimum oyuncu sayısı (varsayılan 2):', '2');
+    const passwordInput = prompt('Lobi şifresi (boş bırakırsan şifre olmaz):', '');
+
+    const maxPlayers = parseInt(maxPlayersInput) || 12;
+    const requiredPlayers = parseInt(requiredPlayersInput) || 2;
+
     socket.emit('createLobby', {
         playerName,
         appearance: selectedAppearance,
         color: selectedColor,
-        boardKey
+        boardKey,
+        maxPlayers,
+        requiredPlayers,
+        password: passwordInput || null
     });
 }
 
@@ -1128,13 +1146,20 @@ function joinLobby() {
         alert('Lobi ID yazmalısın');
         return;
     }
+    // If lobby requires a password, prompt for it
+    const lobbyInfo = (availableLobbies || []).find(l => l.id === lobbyToUse);
+    let pw = null;
+    if (lobbyInfo && lobbyInfo.hasPassword) {
+        pw = prompt('Lobi şifresi giriniz:');
+    }
 
     isJoiningLobby = true;
     socket.emit('joinLobby', {
         lobbyId: lobbyToUse,
         playerName,
         appearance: selectedAppearance,
-        color: selectedColor
+        color: selectedColor,
+        password: pw
     });
     showScreen('gameScreen');
 }

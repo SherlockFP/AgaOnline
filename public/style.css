@@ -827,8 +827,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px 14px; /* increased slightly for a subtle larger feel */
-    font-size: 1.02em; /* very slightly larger base font-size */
+    padding: 22px 15px; /* increased very slightly for a subtle larger feel */
+    font-size: 1.04em; /* tiny bump to base font-size */
     text-align: center;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;

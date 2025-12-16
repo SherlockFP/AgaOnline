@@ -824,7 +824,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 40px 28px; /* increased tile padding for readability */
-    font-size: 1.22em; /* larger text for readability */
+    font-size: 1.12em; /* base tile font-size (reduced) */
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -1017,13 +1017,13 @@ body {
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
     border: 2px solid;
     border-color: inherit;
     border-radius: 50%;
-    font-size: 0.8em;
+    font-size: 0.7em;
     font-weight: 900;
     color: inherit;
     display: flex;
@@ -1040,18 +1040,18 @@ body {
     margin-bottom: 2px;
     color: white;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(0, 0, 0, 1);
-    font-size: 0.92em;
+    font-size: 0.80em;
     letter-spacing: 0.3px;
     line-height: 1.2;
 }
 
 .space-group {
     margin-top: 2px;
-    font-size: 0.86em;
+    font-size: 0.76em;
     color: #ffffff;
     background: rgba(96,165,250,0.35);
     border: 1px solid rgba(96,165,250,0.6);
-    padding: 4px 10px;
+    padding: 2px 8px;
     border-radius: 10px;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0, 0, 0, 0.8);
@@ -1059,7 +1059,7 @@ body {
 }
 
 .space-price {
-    font-size: 0.78em;
+    font-size: 0.62em;
     color: #fbbf24;
     font-weight: 700;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);

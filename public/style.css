@@ -785,10 +785,10 @@ body {
 .board-wrapper {
     /* Board sizing tuned to fit alongside panels and header */
     /* Increase board area so tiles are larger while keeping side panels visible */
-    width: min(90vw, 96vh);
-    max-width: calc(100vw - 180px);
+    width: min(96vw, 98vh);
+    max-width: calc(100vw - 120px);
     /* reduce max height so board sits comfortably below header and panels */
-    max-height: calc(100vh - 110px);
+    max-height: calc(100vh - 90px);
     aspect-ratio: 1;
     position: relative;
     will-change: transform;
@@ -1199,14 +1199,14 @@ body {
 
 /* Responsive tweaks: further reduce board size on narrower screens */
 @media (max-width: 1200px) {
-    .board-wrapper { width: min(90vw, 84vh); max-width: calc(100vw - 120px); }
+    .board-wrapper { width: min(94vw, 88vh); max-width: calc(100vw - 100px); }
     .monopoly-board { grid-template-columns: 0.85fr repeat(9, 1fr) 0.85fr; grid-template-rows: 0.85fr repeat(9, 1fr) 0.85fr; }
     .board-center { width: 30%; height: 30%; }
     .board-space { padding: 16px 10px; font-size: 1.02em; }
 }
 
 @media (max-width: 800px) {
-    .board-wrapper { width: min(96vw, 82vh); max-width: calc(100vw - 60px); --board-scale: 1; }
+    .board-wrapper { width: min(96vw, 86vh); max-width: calc(100vw - 60px); --board-scale: 1; }
     .monopoly-board { grid-template-columns: 0.75fr repeat(9, 1fr) 0.75fr; grid-template-rows: 0.75fr repeat(9, 1fr) 0.75fr; }
     .board-center { width: 38%; height: 38%; }
     .board-space { padding: 10px 6px; font-size: 0.9em; }

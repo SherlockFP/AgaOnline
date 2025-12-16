@@ -784,7 +784,7 @@ body {
 }
 
 .board-wrapper {
-    width: min(94vh, 94vw);
+    width: min(98vh, 98vw);
     aspect-ratio: 1;
     position: relative;
     will-change: transform;
@@ -798,8 +798,8 @@ body {
     border: 3px solid rgba(96, 165, 250, 0.22);
     border-radius: 18px;
     display: grid;
-    grid-template-columns: 1.08fr repeat(9, 1fr) 1.08fr;
-    grid-template-rows: 1.08fr repeat(9, 1fr) 1.08fr;
+    grid-template-columns: 1.20fr repeat(9, 1fr) 1.20fr;
+    grid-template-rows: 1.20fr repeat(9, 1fr) 1.20fr;
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95);
     position: relative;
     gap: 0px; /* reduce center empty spacing */
@@ -816,8 +816,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 26px 18px; /* increase tile padding for readability */
-    font-size: 1.06em; /* slightly larger text for readability */
+    padding: 30px 22px; /* increase tile padding for readability */
+    font-size: 1.12em; /* larger text for readability */
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -937,9 +937,10 @@ body {
 
 /* Special space types - Community Chest (Kamu Sandığı) */
 .board-space[data-type="chest"]:not(.owned) {
-    background: linear-gradient(135deg, rgba(22,163,74,0.12) 0%, rgba(21,128,61,0.08) 50%, rgba(22,101,52,0.06) 100%) !important;
-    border: 2px solid rgba(22,163,74,0.25) !important;
-    box-shadow: 0 3px 8px rgba(22,163,74,0.12), inset 0 1px 2px rgba(255,255,255,0.03) !important;
+    /* Community chest - toned down green */
+    background: linear-gradient(135deg, rgba(18,140,60,0.10) 0%, rgba(16,115,50,0.07) 50%, rgba(14,95,42,0.05) 100%) !important;
+    border: 2px solid rgba(18,140,60,0.18) !important;
+    box-shadow: 0 6px 14px rgba(18,140,60,0.06), inset 0 2px 4px rgba(18,140,60,0.03) !important;
     font-weight: 700;
     color: white;
 }
@@ -958,6 +959,15 @@ body {
     background: linear-gradient(135deg, rgba(2,132,199,0.12) 0%, rgba(3,105,161,0.08) 50%, rgba(7,89,133,0.06) 100%) !important;
     border: 2px solid rgba(2,132,199,0.25) !important;
     box-shadow: 0 3px 8px rgba(2,132,199,0.12), inset 0 1px 2px rgba(255,255,255,0.03) !important;
+    font-weight: 700;
+    color: white;
+}
+
+/* Special space types - Chance (Şans) */
+.board-space[data-type="chance"]:not(.owned) {
+    background: linear-gradient(135deg, rgba(251,146,60,0.12) 0%, rgba(240,130,48,0.08) 50%, rgba(226,110,36,0.06) 100%) !important;
+    border: 2px solid rgba(251,146,60,0.22) !important;
+    box-shadow: 0 6px 14px rgba(251,146,60,0.08), inset 0 2px 4px rgba(251,146,60,0.04) !important;
     font-weight: 700;
     color: white;
 }

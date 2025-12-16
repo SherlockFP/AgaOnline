@@ -637,8 +637,8 @@ socket.on('diceRolled', (data) => {
 
     // Animate player movement - start shortly AFTER dice animation finishes
     const startPos = (typeof prevPlayerPosition === 'number') ? prevPlayerPosition : (playerIdx >= 0 ? (data.newPosition - data.total + 40) % 40 : 0);
-    // Delay movement to give dice animation time to settle. Start movement after revealDelay + small pause.
-    const movementDelay = (typeof revealDelay === 'number' ? revealDelay : 800) + 600;
+    // Delay movement to give dice animation time to settle. Start movement almost immediately after reveal.
+    const movementDelay = (typeof revealDelay === 'number' ? revealDelay : 800) + 80;
     setTimeout(() => {
         // Animate then handle post-move logic (popup, auto-advance) only after token arrives
         // Use instant move (no step-by-step) to prevent slow / buggy board animation
@@ -1103,13 +1103,10 @@ function createLobby() {
         alert('İsmini yazmalısın');
         return;
     }
-    // Ask optional lobby settings (simple prompts)
-    const maxPlayersInput = prompt('Lobi için maksimum oyuncu sayısı (varsayılan 12):', '12');
-    const requiredPlayersInput = prompt('Oyun başlaması için gerekli minimum oyuncu sayısı (varsayılan 2):', '2');
-    const passwordInput = prompt('Lobi şifresi (boş bırakırsan şifre olmaz):', '');
-
-    const maxPlayers = parseInt(maxPlayersInput) || 12;
-    const requiredPlayers = parseInt(requiredPlayersInput) || 2;
+    // Use host settings panel values (do not prompt with browser prompts)
+    const maxPlayers = parseInt(document.getElementById('lobbyMaxPlayers')?.value) || 12;
+    const requiredPlayers = parseInt(document.getElementById('lobbyRequiredPlayers')?.value) || 2;
+    const password = document.getElementById('lobbyPassword')?.value || null;
 
     socket.emit('createLobby', {
         playerName,
@@ -1118,7 +1115,7 @@ function createLobby() {
         boardKey,
         maxPlayers,
         requiredPlayers,
-        password: passwordInput || null
+        password: password || null
     });
 }
 
@@ -1160,22 +1157,60 @@ function joinLobby() {
         alert('Lobi ID yazmalısın');
         return;
     }
-    // If lobby requires a password, prompt for it
+    // If lobby requires a password, ask via in-page modal (no browser prompt)
     const lobbyInfo = (availableLobbies || []).find(l => l.id === lobbyToUse);
-    let pw = null;
-    if (lobbyInfo && lobbyInfo.hasPassword) {
-        pw = prompt('Lobi şifresi giriniz:');
-    }
+    const proceedWithPassword = (pw) => {
+        isJoiningLobby = true;
+        socket.emit('joinLobby', {
+            lobbyId: lobbyToUse,
+            playerName,
+            appearance: selectedAppearance,
+            color: selectedColor,
+            password: pw
+        });
+        showScreen('gameScreen');
+    };
 
-    isJoiningLobby = true;
-    socket.emit('joinLobby', {
-        lobbyId: lobbyToUse,
-        playerName,
-        appearance: selectedAppearance,
-        color: selectedColor,
-        password: pw
-    });
-    showScreen('gameScreen');
+    if (lobbyInfo && lobbyInfo.hasPassword) {
+        requestLobbyPassword((entered) => {
+            if (entered === null) {
+                isJoiningLobby = false;
+                return;
+            }
+            proceedWithPassword(entered);
+        });
+    } else {
+        proceedWithPassword(null);
+    }
+}
+
+// In-page lobby password prompt helpers
+let _pendingPasswordCallback = null;
+function showPasswordModal() {
+    const modal = document.getElementById('passwordPromptModal');
+    const input = document.getElementById('passwordPromptInput');
+    if (!modal || !input) return;
+    input.value = '';
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 80);
+}
+function hidePasswordModal(cancel = false) {
+    const modal = document.getElementById('passwordPromptModal');
+    if (modal) modal.style.display = 'none';
+    if (cancel && _pendingPasswordCallback) {
+        const cb = _pendingPasswordCallback; _pendingPasswordCallback = null; cb(null);
+    }
+}
+function confirmPasswordModal() {
+    const input = document.getElementById('passwordPromptInput');
+    if (!input) return hidePasswordModal(true);
+    const val = input.value.trim();
+    hidePasswordModal();
+    if (_pendingPasswordCallback) { const cb = _pendingPasswordCallback; _pendingPasswordCallback = null; cb(val || null); }
+}
+function requestLobbyPassword(callback) {
+    _pendingPasswordCallback = callback;
+    showPasswordModal();
 }
 
 function leaveGame() {

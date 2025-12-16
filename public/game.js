@@ -160,29 +160,7 @@ function loadDarkModePreference() {
 
 // Call on load
 window.addEventListener('DOMContentLoaded', loadDarkModePreference);
-// Load simple mode preference on startup
-window.addEventListener('DOMContentLoaded', loadSimpleModePreference);
-
-// Toggle Simple Mode: apply/remove `simple-mode` class and persist setting
-function toggleSimpleMode() {
-    const body = document.body;
-    const enabled = body.classList.toggle('simple-mode');
-    try { localStorage.setItem('simpleMode', enabled); } catch (e) {}
-    const btn = document.getElementById('simpleModeToggleBtn');
-    if (btn) btn.textContent = enabled ? 'Sade Mod: Açık' : 'Sade Mod: Kapalı';
-}
-
-function loadSimpleModePreference() {
-    try {
-        const saved = localStorage.getItem('simpleMode');
-        const enabled = saved === 'true';
-        if (enabled) document.body.classList.add('simple-mode');
-        const btn = document.getElementById('simpleModeToggleBtn');
-        if (btn) btn.textContent = enabled ? 'Sade Mod: Açık' : 'Sade Mod: Kapalı';
-    } catch (e) {
-        // ignore
-    }
-}
+// (dark mode loader above)
 
 // Sound effect function using Web Audio API
 function playSound(soundType) {

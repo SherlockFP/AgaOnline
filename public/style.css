@@ -787,9 +787,9 @@ body {
 }
 
 .board-wrapper {
-    /* Limit width to viewport minus panels so board fits on smaller screens */
-    width: min(82vw, 88vh);
-    max-width: calc(100vw - 320px);
+    /* Tighter limits so board squares fit alongside side panels */
+    width: min(78vw, 86vh);
+    max-width: calc(100vw - 420px);
     max-height: calc(100vh - 120px);
     aspect-ratio: 1;
     position: relative;
@@ -804,14 +804,16 @@ body {
     border: 3px solid rgba(96, 165, 250, 0.22);
     border-radius: 14px;
     display: grid;
-    /* Reduce corner fraction to shrink empty center region */
-    grid-template-columns: 0.95fr repeat(9, 1fr) 0.95fr;
-    grid-template-rows: 0.95fr repeat(9, 1fr) 0.95fr;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
+    /* Further reduce corner fraction so tiles enlarge and center shrinks */
+    grid-template-columns: 0.85fr repeat(9, 1fr) 0.85fr;
+    grid-template-rows: 0.85fr repeat(9, 1fr) 0.85fr;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.8);
     position: relative;
     gap: 0px;
     will-change: transform;
     transform: translateZ(0);
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* boardGlow animasyonu kaldırıldı - göz yormaması için */
@@ -1166,17 +1168,17 @@ body {
 
 /* Responsive tweaks: further reduce board size on narrower screens */
 @media (max-width: 1200px) {
-    .board-wrapper { width: min(92vw, 86vh); max-width: calc(100vw - 120px); }
-    .monopoly-board { grid-template-columns: 0.9fr repeat(9, 1fr) 0.9fr; grid-template-rows: 0.9fr repeat(9, 1fr) 0.9fr; }
-    .board-center { width: 32%; height: 32%; }
-    .board-space { padding: 18px 12px; font-size: 1em; }
+    .board-wrapper { width: min(90vw, 84vh); max-width: calc(100vw - 120px); }
+    .monopoly-board { grid-template-columns: 0.85fr repeat(9, 1fr) 0.85fr; grid-template-rows: 0.85fr repeat(9, 1fr) 0.85fr; }
+    .board-center { width: 30%; height: 30%; }
+    .board-space { padding: 16px 10px; font-size: 1.02em; }
 }
 
 @media (max-width: 800px) {
-    .board-wrapper { width: min(94vw, 84vh); max-width: calc(100vw - 80px); }
-    .monopoly-board { grid-template-columns: 0.8fr repeat(9, 1fr) 0.8fr; grid-template-rows: 0.8fr repeat(9, 1fr) 0.8fr; }
-    .board-center { width: 36%; height: 36%; }
-    .board-space { padding: 12px 8px; font-size: 0.95em; }
+    .board-wrapper { width: min(96vw, 82vh); max-width: calc(100vw - 60px); }
+    .monopoly-board { grid-template-columns: 0.75fr repeat(9, 1fr) 0.75fr; grid-template-rows: 0.75fr repeat(9, 1fr) 0.75fr; }
+    .board-center { width: 38%; height: 38%; }
+    .board-space { padding: 10px 6px; font-size: 0.9em; }
 }
 
 .board-event-display {

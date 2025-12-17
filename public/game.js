@@ -668,9 +668,9 @@ socket.on('diceRolled', (data) => {
             console.log('🎲 Post-move landed on:', { landedOnBuyable, isSpecialSpace, spaceName: data.landedSpace?.name });
 
             if (landedOnBuyable) {
-                // Show purchase popup now that token has arrived
-                console.log('🏠 Showing property popup on arrival');
-                showPropertyPopup(data.landedSpace);
+                // Show purchase popup shortly after token arrival for a smoother feel
+                console.log('🏠 Showing property popup on arrival (delayed)');
+                setTimeout(() => showPropertyPopup(data.landedSpace), 350);
                 // Do NOT auto-advance; waiting for player action
                 return;
             }
@@ -1733,57 +1733,87 @@ function animatePlayerMove(playerId, startPos, endPos, playerColor, callback, in
         }
     }
     
-    // Animate step by step (short delay for a quick walk feel)
+    // Smooth animation: create a flying token and tween it across each tile
+    const stepDuration = 140; // ms per step for smooth feeling
     let stepIndex = 0;
-    const stepDelay = 90; // ms per step (faster movement)
-    
-    function moveNextStep() {
+
+    // Determine start rect
+    const currentSpaceEl = document.querySelector(`.board-space[data-id="${startPos}"]`);
+    const startRect = currentSpaceEl ? currentSpaceEl.getBoundingClientRect() : null;
+
+    // Create flying token
+    const fly = document.createElement('div');
+    fly.className = 'player-token flying';
+    fly.style.background = playerColor;
+    fly.style.borderColor = playerColor;
+    fly.textContent = getInitials(player.name, player.appearance) || '👤';
+    fly.style.position = 'fixed';
+    fly.style.zIndex = 9999;
+    fly.style.transition = `transform ${stepDuration}ms cubic-bezier(.22,.9,.24,1)`;
+    document.body.appendChild(fly);
+
+    const initialSize = Math.max(26, Math.min(40, startRect ? Math.min(startRect.width, startRect.height) : 32));
+    fly.style.width = `${initialSize}px`;
+    fly.style.height = `${initialSize}px`;
+    fly.style.lineHeight = `${initialSize}px`;
+
+    const startX = startRect ? startRect.left + startRect.width/2 - initialSize/2 : 0;
+    const startY = startRect ? startRect.top + startRect.height/2 - initialSize/2 : 0;
+    fly.style.left = `${startX}px`;
+    fly.style.top = `${startY}px`;
+
+    function moveStep() {
         if (stepIndex >= steps.length) {
-            // Animation complete
+            // Finished: cleanup and append final token to board
+            try { fly.remove(); } catch (e) {}
+            const targetSpace = document.querySelector(`.board-space[data-id="${endPos}"]`);
+            // Remove any existing tokens for this player
+            document.querySelectorAll('.board-space').forEach(space => {
+                space.querySelectorAll('.player-token').forEach(t => { if (t.dataset.playerId === playerId) t.remove(); });
+            });
+            if (targetSpace) {
+                const token = document.createElement('div');
+                token.className = 'player-token';
+                token.style.background = playerColor;
+                token.style.borderColor = playerColor;
+                token.title = player.name;
+                token.dataset.playerId = playerId;
+                token.dataset.playerColor = playerColor;
+                token.textContent = getInitials(player.name, player.appearance) || '👤';
+                token.style.fontSize = '0.78rem';
+                targetSpace.appendChild(token);
+            }
             player.position = endPos;
             if (callback) callback();
             return;
         }
-        
+
         const nextPos = steps[stepIndex];
-        currentPos = nextPos;
-        
-        // Update token position visually
-        const spaces = document.querySelectorAll('.board-space');
-        spaces.forEach(space => {
-            const tokens = space.querySelectorAll('.player-token');
-            tokens.forEach(token => {
-                if (token.dataset.playerId === playerId) {
-                    token.remove();
-                }
-            });
-        });
-        
-        // Add token to new position with moving class
-        const targetSpace = document.querySelector(`.board-space[data-id="${currentPos}"]`);
-        if (targetSpace) {
-            const token = document.createElement('div');
-            token.className = 'player-token moving';
-            token.style.background = playerColor;
-            token.style.borderColor = playerColor;
-            token.title = player.name;
-            token.dataset.playerId = playerId;
-            token.dataset.playerColor = playerColor;
-            token.textContent = getInitials(player.name, player.appearance) || '👤';
-            token.style.fontSize = '0.78rem';
-            targetSpace.appendChild(token);
-            
-            // Play move sound
-            if (stepIndex === 0 || stepIndex % 3 === 0) {
-                playSound('move');
-            }
+        const nextSpace = document.querySelector(`.board-space[data-id="${nextPos}"]`);
+        if (nextSpace) {
+            const rect = nextSpace.getBoundingClientRect();
+            const size = Math.max(26, Math.min(40, Math.min(rect.width, rect.height)));
+            // update fly size smoothly
+            fly.style.width = `${size}px`;
+            fly.style.height = `${size}px`;
+            fly.style.lineHeight = `${size}px`;
+            const dx = rect.left + rect.width/2 - (startX + initialSize/2);
+            const dy = rect.top + rect.height/2 - (startY + initialSize/2);
+            // apply transform relative to initial position
+            fly.style.transform = `translate(${dx}px, ${dy}px)`;
+            // play move sound every few steps
+            if (stepIndex === 0 || stepIndex % 3 === 0) playSound('move');
         }
-        
-        stepIndex++;
-        setTimeout(moveNextStep, stepDelay);
+
+        // prepare for next step: after duration increment index and continue
+        setTimeout(() => {
+            stepIndex++;
+            moveStep();
+        }, stepDuration);
     }
-    
-    moveNextStep();
+
+    // Start animation after a frame
+    requestAnimationFrame(() => moveStep());
 }
 
 // Helper: move local player to a specific board index (animates and updates state)

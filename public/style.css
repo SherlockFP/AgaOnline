@@ -885,12 +885,15 @@ body {
 }
 
 .board-wrapper {
-    /* Board sizing tuned to fit alongside panels and header */
-    /* Increase board area so tiles are larger while keeping side panels visible */
-    width: min(90vw, 98vh);
-    max-width: calc(100vw - 160px);
-    /* reduce max height so board sits comfortably below header and panels */
+    /* Board sizing tuned to fill the center column and use available viewport
+       space. On wide/tall screens the board will expand until limited by side
+       panels or the viewport height. */
+    width: 100%; /* fill available center column */
+    /* Limit width so side panels remain visible on desktop (280px each) */
+    max-width: calc(100vw - 560px - 30px);
+    /* Keep board within viewport height (leave room for header/controls) */
     max-height: calc(100vh - 90px);
+    height: auto;
     aspect-ratio: 1;
     position: relative;
     will-change: transform;
@@ -898,6 +901,7 @@ body {
     transform: translateZ(0) scale(var(--board-scale, 1));
     box-sizing: border-box;
     padding: 8px; /* keep a small inner gap so tiles don't touch frame */
+    margin: 0 auto;
     overflow: hidden; /* prevent enlarged tiles from spilling outside */
 }
 
@@ -922,7 +926,8 @@ body {
     grid-template-rows: repeat(11, 1fr);
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.8);
     position: relative;
-    gap: 0px;
+    gap: 4px; /* small gap so board frame is visible between tiles */
+    padding: 6px; /* keep tiles slightly inset from the board edge */
     will-change: transform;
     transform: translateZ(0);
     box-sizing: border-box;
@@ -938,7 +943,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 12px 8px; /* reduced padding to prevent large tiles pushing text */
+    padding: 8px 6px; /* reduced padding to prevent large tiles pushing text */
     font-size: 0.95em; /* slightly reduced base font */
     text-align: center;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1317,6 +1322,12 @@ body {
 .player-token.moving {
     /* Quick walk/tap animation for movement without creating glow on the tile */
     animation: playerWalk 0.22s linear both;
+}
+
+.player-token.flying {
+    animation: none !important;
+    pointer-events: none;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 12px rgba(255,255,255,0.06);
 }
 
 @keyframes playerWalk {

@@ -1,3 +1,20 @@
+// Page scaling: compute a scale so the whole app fits the browser while
+// preserving layout. Design baseline is `--design-width` x `--design-height`
+function updatePageScale() {
+    const root = document.documentElement;
+    const designW = parseFloat(getComputedStyle(root).getPropertyValue('--design-width')) || 1400;
+    const designH = parseFloat(getComputedStyle(root).getPropertyValue('--design-height')) || 900;
+    const scale = Math.min(window.innerWidth / designW, window.innerHeight / designH);
+    // don't upscale beyond 1
+    const finalScale = Math.min(1, Math.max(0.45, scale));
+    root.style.setProperty('--page-scale', finalScale);
+}
+
+window.addEventListener('resize', () => {
+    updatePageScale();
+});
+window.addEventListener('load', () => updatePageScale());
+
 // Game State
 let socket;
 let currentLobby = null;

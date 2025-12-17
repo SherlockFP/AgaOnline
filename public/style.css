@@ -135,11 +135,19 @@ body {
 }
 
 #app {
-    width: 100%;
-    height: 100vh;
+    /* Use a fixed design size and scale the whole app to fit the browser
+       using the --page-scale CSS variable (updated from JS). This ensures
+       the entire UI zooms uniformly instead of squeezing layout. */
+    --design-width: 1400;
+    --design-height: 900;
+    width: calc(var(--design-width) * 1px);
+    height: calc(var(--design-height) * 1px);
+    transform-origin: top left;
+    transform: scale(var(--page-scale, 1));
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto;
 }
 
 .screen {

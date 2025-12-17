@@ -119,12 +119,18 @@ body.light-mode {
     --accent-hover: #2563eb;
 }
 
+html {
+    /* Reserve scrollbar space to prevent layout shift when panels or header hide/show */
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     color: var(--text-primary);
     min-height: 100vh;
-    overflow: hidden;
+    overflow: auto; /* allow natural scrolling but avoid layout jumps due to disappearing scrollbars */
     transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -878,8 +884,8 @@ body {
 .board-wrapper {
     /* Board sizing tuned to fit alongside panels and header */
     /* Increase board area so tiles are larger while keeping side panels visible */
-    width: min(96vw, 98vh);
-    max-width: calc(100vw - 120px);
+    width: min(92vw, 98vh);
+    max-width: calc(100vw - 160px);
     /* reduce max height so board sits comfortably below header and panels */
     max-height: calc(100vh - 90px);
     aspect-ratio: 1;
@@ -1355,6 +1361,25 @@ body {
     .monopoly-board { grid-template-columns: 0.75fr repeat(9, 1fr) 0.75fr; grid-template-rows: 0.75fr repeat(9, 1fr) 0.75fr; }
     .board-center { width: 38%; height: 38%; }
     .board-space { padding: 10px 6px; font-size: 0.9em; }
+}
+
+/* Mobile-specific: show only board and players overlay, hide chat/right panels */
+@media (max-width: 800px) {
+    .right-panel { display: none !important; }
+    .left-panel { width: 100%; max-width: 100%; order: 1; padding: 8px; background: transparent; }
+    .center-panel { order: 2; width: 100%; display: flex; justify-content: center; align-items: center; }
+    .game-content { flex-direction: column; align-items: stretch; }
+    /* Keep players panel compact and show start button */
+    .players-section .panel-content { padding: 6px; max-height: 220px; overflow: auto; background: rgba(10,14,26,0.6); border-radius: 10px; }
+    .panel-section:not(.players-section):not(.setup-section) { display: none !important; }
+    /* Mobile start button styling */
+    .btn-start-mobile { display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 10px 12px; border-radius: 10px; font-weight: 800; box-shadow: 0 8px 20px rgba(16,185,129,0.12); }
+    /* Show mobile start for small screens */
+    #startBtnMobile { display: block !important; }
+    /* Hide central start button to avoid duplication */
+    #startBtn { display: none !important; }
+    /* Board should take most of the viewport */
+    .board-wrapper { width: calc(100vw - 16px); max-width: calc(100vw - 16px); margin: 8px auto; }
 }
 
 .board-event-display {

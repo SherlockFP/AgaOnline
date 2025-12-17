@@ -1260,6 +1260,9 @@ function updateLobbyUI() {
     if (idEl) idEl.textContent = `Lobi ID: ${currentLobby.id}`;
     if (copyBtn) copyBtn.style.display = 'block';
 
+    // Mirror start button visibility for mobile start button if present
+    const mobileStart = document.getElementById('startBtnMobile');
+
     if (currentLobby.started) {
         colorsLocked = true;
     }
@@ -1275,8 +1278,13 @@ function updateLobbyUI() {
         // Disable start until requiredPlayers reached
         const required = currentLobby.requiredPlayers || 1;
         startBtn.disabled = currentLobby.players.length < required;
+        if (mobileStart) {
+            mobileStart.style.display = 'block';
+            mobileStart.disabled = startBtn.disabled;
+        }
     } else if (startBtn) {
         startBtn.style.display = 'none';
+        if (mobileStart) mobileStart.style.display = 'none';
     }
 
     // Populate lobby settings inputs if present

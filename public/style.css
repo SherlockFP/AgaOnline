@@ -669,6 +669,9 @@ body {
     gap: 15px;
     padding: 15px;
     overflow: visible; /* allow board to overflow if needed so bottom row isn't clipped */
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* ===== PANELS ===== */
@@ -884,7 +887,7 @@ body {
 .board-wrapper {
     /* Board sizing tuned to fit alongside panels and header */
     /* Increase board area so tiles are larger while keeping side panels visible */
-    width: min(92vw, 98vh);
+    width: min(90vw, 98vh);
     max-width: calc(100vw - 160px);
     /* reduce max height so board sits comfortably below header and panels */
     max-height: calc(100vh - 90px);
@@ -892,7 +895,7 @@ body {
     position: relative;
     will-change: transform;
     transform-origin: center center;
-    transform: translateZ(0) scale(var(--board-scale, 1.03));
+    transform: translateZ(0) scale(var(--board-scale, 1));
     box-sizing: border-box;
     padding: 8px; /* keep a small inner gap so tiles don't touch frame */
     overflow: hidden; /* prevent enlarged tiles from spilling outside */
@@ -1357,10 +1360,22 @@ body {
 }
 
 @media (max-width: 800px) {
-    .board-wrapper { width: min(96vw, 86vh); max-width: calc(100vw - 60px); --board-scale: 1; }
-    .monopoly-board { grid-template-columns: 0.75fr repeat(9, 1fr) 0.75fr; grid-template-rows: 0.75fr repeat(9, 1fr) 0.75fr; }
+    /* Switch to single-column layout so board fills width on small screens */
+    .game-content { display: flex; flex-direction: column; padding: 8px; grid-template-columns: none; }
+    .left-panel { order: 1; width: 100%; max-width: 100%; }
+    .center-panel { order: 2; width: 100%; }
+    .board-wrapper { width: calc(100vw - 16px); max-width: calc(100vw - 16px); --board-scale: 1; height: calc(100vh - 140px); margin: 8px auto; }
+    .monopoly-board { grid-template-columns: 0.75fr repeat(9, 1fr) 0.75fr; grid-template-rows: 0.75fr repeat(9, 1fr) 0.75fr; height: 100%; }
     .board-center { width: 38%; height: 38%; }
-    .board-space { padding: 10px 6px; font-size: 0.9em; }
+    .board-space { padding: 10px 6px; font-size: 0.95em; }
+
+    /* Hide all panel-sections except players-section so mobile shows board + players only */
+    .panel-section { display: none !important; }
+    .players-section, .players-section .panel-content { display: block !important; }
+    .players-section .panel-content { max-height: 220px; overflow: auto; }
+
+    /* Ensure right panel is hidden */
+    .right-panel { display: none !important; }
 }
 
 /* Mobile-specific: show only board and players overlay, hide chat/right panels */
